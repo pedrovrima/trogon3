@@ -1,0 +1,383 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model BANDER_REGISTER {
+  bander_id   Int       @id @default(autoincrement())
+  name        String    @db.VarChar(45)
+  code        String    @db.VarChar(3)
+  email       String    @db.VarChar(45)
+  phone       String    @db.VarChar(14)
+  notes       String    @db.VarChar(250)
+  created_at  DateTime  @db.DateTime(0)
+  has_changed Bytes     @db.Binary(1)
+  original_id Int?
+  updated_at  DateTime? @db.DateTime(0)
+  capture     CAPTURE[]
+}
+
+model BANDS {
+  band_id              Int                  @id @default(autoincrement())
+  string_id            Int
+  band_number          String               @db.VarChar(45)
+  used                 Int
+  created_at           DateTime             @db.DateTime(0)
+  has_changed          Int                  @db.TinyInt
+  original_id          Int?
+  updated_at           DateTime?            @db.DateTime(0)
+  band_string_register BAND_STRING_REGISTER @relation(fields: [string_id], references: [string_id], onUpdate: Restrict, map: "BANDS_ibfk_1")
+  capture              CAPTURE[]
+
+  @@index([string_id], map: "string_id")
+}
+
+model BAND_STRING_REGISTER {
+  string_id   Int       @id @default(autoincrement())
+  size        String    @db.VarChar(2)
+  first_band  String    @db.VarChar(10)
+  created_at  DateTime  @db.DateTime(0)
+  has_changed Boolean   @default(false)
+  original_id Int?
+  updated_at  DateTime? @db.DateTime(0)
+  bands       BANDS[]
+}
+
+model CAPTURE {
+  capture_id                 Int                          @id @default(autoincrement())
+  capture_time               String?                      @db.VarChar(3)
+  capture_code               String                       @db.VarChar(1)
+  notes                      String?                      @db.VarChar(250)
+  net_eff_id                 Int
+  bander_id                  Int
+  band_id                    Int
+  spp_id                     Int
+  created_at                 DateTime                     @db.DateTime(0)
+  has_changed                Boolean
+  updated_at                 DateTime?                    @db.DateTime(0)
+  original_id                Int?
+  bands                      BANDS                        @relation(fields: [band_id], references: [band_id], onUpdate: Restrict, map: "CAPTURE_ibfk_3")
+  bander_register            BANDER_REGISTER              @relation(fields: [bander_id], references: [bander_id], onUpdate: Restrict, map: "CAPTURE_ibfk_2")
+  net_effort                 NET_EFFORT                   @relation(fields: [net_eff_id], references: [net_eff_id], onUpdate: Restrict, map: "CAPTURE_ibfk_1")
+  spp_register               SPP_REGISTER                 @relation(fields: [spp_id], references: [spp_id], onUpdate: Restrict, map: "CAPTURE_ibfk_4")
+  capture_categorical_values CAPTURE_CATEGORICAL_VALUES[]
+  capture_continuous_values  CAPTURE_CONTINUOUS_VALUES[]
+  capture_flag               CAPTURE_FLAG[]
+
+  @@index([band_id], map: "band_id")
+  @@index([bander_id], map: "bander_id")
+  @@index([net_eff_id], map: "net_eff_id")
+  @@index([spp_id], map: "spp_id")
+}
+
+model CAPTURE_CATEGORICAL_OPTIONS {
+  capture_categorical_option_id Int                          @id @default(autoincrement())
+  description                   String                       @db.Text
+  value_oama                    String                       @db.VarChar(45)
+  created_at                    DateTime                     @db.DateTime(0)
+  has_changed                   Boolean
+  original_id                   Int?
+  capture_variable_id           Int
+  updated_at                    DateTime?                    @db.DateTime(0)
+  capture_variable_register     CAPTURE_VARIABLE_REGISTER    @relation(fields: [capture_variable_id], references: [capture_variable_id], onUpdate: Restrict, map: "CAPTURE_CATEGORICAL_OPTIONS_ibfk_1")
+  capture_categorical_values    CAPTURE_CATEGORICAL_VALUES[]
+
+  @@index([capture_variable_id], map: "capture_variable_id")
+}
+
+model CAPTURE_CATEGORICAL_VALUES {
+  capture_categorical_values_id Int                         @id @default(autoincrement())
+  capture_id                    Int
+  capture_categorical_option_id Int
+  created_at                    DateTime                    @db.DateTime(0)
+  has_changed                   Boolean
+  original_id                   Int?
+  updated_at                    DateTime?                   @db.DateTime(0)
+  capture_variable_id           Int
+  capture_categorical_options   CAPTURE_CATEGORICAL_OPTIONS @relation(fields: [capture_categorical_option_id], references: [capture_categorical_option_id], onUpdate: Restrict, map: "CAPTURE_CATEGORICAL_VALUES_ibfk_2")
+  capture                       CAPTURE                     @relation(fields: [capture_id], references: [capture_id], onUpdate: Restrict, map: "CAPTURE_CATEGORICAL_VALUES_ibfk_1")
+  capture_variable_register     CAPTURE_VARIABLE_REGISTER   @relation(fields: [capture_variable_id], references: [capture_variable_id], onUpdate: Restrict, map: "CAPTURE_CATEGORICAL_VALUES_capture_variable_id_foreign_idx")
+
+  @@index([capture_variable_id], map: "CAPTURE_CATEGORICAL_VALUES_capture_variable_id_foreign_idx")
+  @@index([capture_categorical_option_id], map: "capture_categorical_option_id")
+  @@index([capture_id], map: "capture_id")
+}
+
+model CAPTURE_CONTINUOUS_VALUES {
+  capture_continuous_values_id Int                       @id @default(autoincrement())
+  capture_id                   Int
+  value                        String                    @db.VarChar(50)
+  created_at                   DateTime                  @db.DateTime(0)
+  has_changed                  Boolean
+  original_id                  Int?
+  updated_at                   DateTime?                 @db.DateTime(0)
+  capture_variable_id          Int
+  capture                      CAPTURE                   @relation(fields: [capture_id], references: [capture_id], onUpdate: Restrict, map: "CAPTURE_CONTINUOUS_VALUES_ibfk_1")
+  capture_variable_register    CAPTURE_VARIABLE_REGISTER @relation(fields: [capture_variable_id], references: [capture_variable_id], onUpdate: Restrict, map: "CAPTURE_CONTINUOUS_VALUES_capture_variable_id_foreign_idx")
+
+  @@index([capture_variable_id], map: "CAPTURE_CONTINUOUS_VALUES_capture_variable_id_foreign_idx")
+  @@index([capture_id], map: "capture_id")
+}
+
+model CAPTURE_FLAG {
+  flag_id    Int     @id @default(autoincrement())
+  capture_id Int
+  note       String? @db.Text
+  capture    CAPTURE @relation(fields: [capture_id], references: [capture_id], onUpdate: Restrict, map: "CAPTURE_FLAG_ibfk_1")
+
+  @@index([capture_id], map: "capture_id")
+}
+
+model CAPTURE_VARIABLE_REGISTER {
+  capture_variable_id         Int                           @id
+  name                        String                        @db.VarChar(45)
+  description                 String                        @db.Text
+  portuguese_label            String                        @db.VarChar(45)
+  field_size                  String                        @db.VarChar(45)
+  duplicable                  Boolean
+  type                        String                        @db.VarChar(45)
+  created_at                  DateTime                      @db.DateTime(0)
+  has_changed                 Boolean                       @default(false)
+  original_id                 Int?
+  updated_at                  DateTime?                     @db.DateTime(0)
+  special                     Boolean?
+  unit                        String?                       @db.VarChar(10)
+  precision                   Int?                          @db.TinyInt
+  capture_categorical_options CAPTURE_CATEGORICAL_OPTIONS[]
+  capture_categorical_values  CAPTURE_CATEGORICAL_VALUES[]
+  capture_continuous_values   CAPTURE_CONTINUOUS_VALUES[]
+  protocol_vars               PROTOCOL_VARS[]
+}
+
+model EFFORT {
+  effort_id                 Int                         @id @default(autoincrement())
+  date_effort               DateTime                    @db.DateTime(0)
+  notes                     String                      @db.VarChar(250)
+  created_at                DateTime                    @db.DateTime(0)
+  has_changed               Bytes                       @db.Binary(1)
+  original_id               Int?
+  station_id                Int
+  protocol_id               Int
+  updated_at                DateTime?                   @db.DateTime(0)
+  protocol_register         PROTOCOL_REGISTER           @relation(fields: [protocol_id], references: [protocol_id], onUpdate: Restrict, map: "EFFORT_ibfk_2")
+  station_register          STATION_REGISTER            @relation(fields: [station_id], references: [station_id], onUpdate: Restrict, map: "EFFORT_ibfk_1")
+  effort_categorical_values EFFORT_CATEGORICAL_VALUES[]
+  effort_continuous_values  EFFORT_CONTINUOUS_VALUES[]
+  effort_summaries          EFFORT_SUMMARIES[]
+  net_effort                NET_EFFORT[]
+
+  @@index([protocol_id], map: "protocol_id")
+  @@index([station_id], map: "station_id")
+}
+
+model EFFORT_CATEGORICAL_OPTIONS {
+  effort_categorical_option_id Int                         @id @default(autoincrement())
+  description                  String                      @db.Text
+  value_oama                   String                      @db.VarChar(45)
+  created_at                   DateTime                    @db.DateTime(0)
+  has_changed                  Boolean
+  original_id                  Int?
+  effort_variable_id           Int
+  updated_at                   DateTime?                   @db.DateTime(0)
+  effort_variable_register     EFFORT_VARIABLE_REGISTER    @relation(fields: [effort_variable_id], references: [effort_variable_id], onUpdate: Restrict, map: "EFFORT_CATEGORICAL_OPTIONS_ibfk_1")
+  effort_categorical_values    EFFORT_CATEGORICAL_VALUES[]
+
+  @@index([effort_variable_id], map: "effort_variable_id")
+}
+
+model EFFORT_CATEGORICAL_VALUES {
+  effort_categorical_value_id  Int                        @id @default(autoincrement())
+  effort_id                    Int
+  effort_categorical_option_id Int
+  effort_time_id               Int
+  created_at                   DateTime                   @db.DateTime(0)
+  has_changed                  Boolean
+  original_id                  Int?
+  updated_at                   DateTime?                  @db.DateTime(0)
+  effort_variable_id           Int
+  effort_categorical_options   EFFORT_CATEGORICAL_OPTIONS @relation(fields: [effort_categorical_option_id], references: [effort_categorical_option_id], onUpdate: Restrict, map: "EFFORT_CATEGORICAL_VALUES_ibfk_2")
+  effort                       EFFORT                     @relation(fields: [effort_id], references: [effort_id], onUpdate: Restrict, map: "EFFORT_CATEGORICAL_VALUES_ibfk_1")
+  effort_time                  EFFORT_TIME                @relation(fields: [effort_time_id], references: [effort_time_id], onUpdate: Restrict, map: "EFFORT_CATEGORICAL_VALUES_ibfk_3")
+  effort_variable_register     EFFORT_VARIABLE_REGISTER   @relation(fields: [effort_variable_id], references: [effort_variable_id], onUpdate: Restrict, map: "EFFORT_CATEGORICAL_VALUES_effort_variable_id_foreign_idx")
+
+  @@index([effort_variable_id], map: "EFFORT_CATEGORICAL_VALUES_effort_variable_id_foreign_idx")
+  @@index([effort_categorical_option_id], map: "effort_categorical_option_id")
+  @@index([effort_id], map: "effort_id")
+  @@index([effort_time_id], map: "effort_time_id")
+}
+
+model EFFORT_CONTINUOUS_VALUES {
+  effort_continuous_value_id Int                      @id @default(autoincrement())
+  effort_id                  Int
+  value                      String                   @db.VarChar(6)
+  effort_time_id             Int
+  created_at                 DateTime                 @db.DateTime(0)
+  has_changed                Boolean
+  original_id                Int?
+  updated_at                 DateTime?                @db.DateTime(0)
+  effort_variable_id         Int
+  effort                     EFFORT                   @relation(fields: [effort_id], references: [effort_id], onUpdate: Restrict, map: "EFFORT_CONTINUOUS_VALUES_ibfk_1")
+  effort_time                EFFORT_TIME              @relation(fields: [effort_time_id], references: [effort_time_id], onUpdate: Restrict, map: "EFFORT_CONTINUOUS_VALUES_ibfk_2")
+  effort_variable_register   EFFORT_VARIABLE_REGISTER @relation(fields: [effort_variable_id], references: [effort_variable_id], onUpdate: Restrict, map: "EFFORT_CONTINUOUS_VALUES_effort_variable_id_foreign_idx")
+
+  @@index([effort_variable_id], map: "EFFORT_CONTINUOUS_VALUES_effort_variable_id_foreign_idx")
+  @@index([effort_id], map: "effort_id")
+  @@index([effort_time_id], map: "effort_time_id")
+}
+
+model EFFORT_SUMMARIES {
+  effort_summary_id Int       @id @default(autoincrement())
+  effort_id         Int
+  new_bands         Int
+  recapture         Int
+  unbanded          Int
+  created_at        DateTime  @db.DateTime(0)
+  has_changed       Boolean
+  original_id       Int?
+  updated_at        DateTime? @db.DateTime(0)
+  effort            EFFORT    @relation(fields: [effort_id], references: [effort_id], onUpdate: Restrict, map: "EFFORT_SUMMARIES_ibfk_1")
+
+  @@index([effort_id], map: "effort_id")
+}
+
+model EFFORT_TIME {
+  effort_time_id            Int                         @id @default(autoincrement())
+  description               String                      @db.Text
+  portuguese_label          String                      @db.VarChar(45)
+  created_at                DateTime                    @db.DateTime(0)
+  has_changed               Boolean
+  original_id               Int?
+  updated_at                DateTime?                   @db.DateTime(0)
+  effort_categorical_values EFFORT_CATEGORICAL_VALUES[]
+  effort_continuous_values  EFFORT_CONTINUOUS_VALUES[]
+}
+
+model EFFORT_VARIABLE_REGISTER {
+  effort_variable_id         Int                          @id
+  name                       String                       @db.VarChar(45)
+  description                String                       @db.Text
+  portuguese_label           String                       @db.VarChar(45)
+  field_size                 String                       @db.VarChar(45)
+  type                       String                       @db.VarChar(45)
+  created_at                 DateTime                     @db.DateTime(0)
+  has_changed                Boolean                      @default(false)
+  original_id                Int?
+  updated_at                 DateTime?                    @db.DateTime(0)
+  unit                       String?                      @db.VarChar(10)
+  effort_categorical_options EFFORT_CATEGORICAL_OPTIONS[]
+  effort_categorical_values  EFFORT_CATEGORICAL_VALUES[]
+  effort_continuous_values   EFFORT_CONTINUOUS_VALUES[]
+}
+
+model NET_EFFORT {
+  net_eff_id   Int          @id @default(autoincrement())
+  effort_id    Int
+  net_id       Int
+  created_at   DateTime     @db.DateTime(0)
+  has_changed  Boolean
+  original_id  Int?
+  updated_at   DateTime?    @db.DateTime(0)
+  rede_id      String?      @map("REDE.ID") @db.VarChar(2)
+  effort       EFFORT       @relation(fields: [effort_id], references: [effort_id], onUpdate: Restrict, map: "NET_EFFORT_ibfk_1")
+  net_register NET_REGISTER @relation(fields: [net_id], references: [net_id], onUpdate: Restrict, map: "NET_EFFORT_ibfk_2")
+  capture      CAPTURE[]
+
+  @@index([effort_id], map: "effort_id")
+  @@index([net_id], map: "net_id")
+}
+
+model NET_OC {
+  net_oc_id   Int       @id @default(autoincrement())
+  open_time   DateTime  @db.DateTime(0)
+  close_time  DateTime  @db.DateTime(0)
+  created_at  DateTime? @db.DateTime(0)
+  has_changed Boolean
+  original_id Int?
+  net_eff_id  Int
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model NET_REGISTER {
+  net_id           Int              @id @default(autoincrement())
+  net_number       String           @db.VarChar(45)
+  net_lat          Int
+  net_long         Int
+  has_changed      Boolean
+  original_id      Int?
+  station_id       Int
+  updated_at       DateTime         @db.DateTime(0)
+  created_at       DateTime         @db.DateTime(0)
+  station_register STATION_REGISTER @relation(fields: [station_id], references: [station_id], onUpdate: Restrict, map: "NET_REGISTER_ibfk_1")
+  net_effort       NET_EFFORT[]
+
+  @@index([station_id], map: "station_id")
+}
+
+model PROTOCOL_REGISTER {
+  protocol_id          Int             @id @default(autoincrement())
+  protocol_code        String          @db.VarChar(45)
+  protocol_description String          @db.Text
+  created_at           DateTime        @db.DateTime(0)
+  has_changed          Boolean
+  original_id          Int?
+  updated_at           DateTime?       @db.DateTime(0)
+  effort               EFFORT[]
+  protocol_vars        PROTOCOL_VARS[]
+}
+
+model PROTOCOL_VARS {
+  protocol_param_id         Int                       @id @default(autoincrement())
+  protocol_id               Int
+  mandatory                 Boolean
+  order                     Int                       @default(0)
+  has_changed               Boolean
+  created_at                DateTime                  @db.DateTime(0)
+  original_id               Int?
+  updated_at                DateTime?                 @db.DateTime(0)
+  capture_variable_id       Int
+  capture_variable_register CAPTURE_VARIABLE_REGISTER @relation(fields: [capture_variable_id], references: [capture_variable_id], onUpdate: Restrict, map: "PROTOCOL_VARS_ibfk_2")
+  protocol_register         PROTOCOL_REGISTER         @relation(fields: [protocol_id], references: [protocol_id], onUpdate: Restrict, map: "PROTOCOL_VARS_ibfk_1")
+
+  @@index([protocol_id], map: "protocol_id")
+  @@index([capture_variable_id], map: "variable_id")
+}
+
+model SPP_REGISTER {
+  spp_id      Int       @id @default(autoincrement())
+  order       String    @db.VarChar(45)
+  family      String    @db.VarChar(45)
+  genus       String    @db.VarChar(45)
+  species     String    @db.VarChar(45)
+  pt_name     String    @db.VarChar(45)
+  en_name     String    @db.VarChar(45)
+  sci_code    String    @db.VarChar(6)
+  has_changed Boolean
+  original_id Int?
+  created_at  DateTime  @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+  capture     CAPTURE[]
+}
+
+model STATION_REGISTER {
+  station_id   Int            @id @default(autoincrement())
+  station_code String         @db.VarChar(6)
+  station_name String         @db.VarChar(45)
+  city         String         @db.VarChar(45)
+  state        String         @db.VarChar(45)
+  center_lat   Decimal        @db.Decimal(10, 0)
+  center_long  Decimal        @db.Decimal(10, 0)
+  has_changed  Boolean
+  original_id  Int?
+  created_at   DateTime       @db.DateTime(0)
+  updated_at   DateTime?      @db.DateTime(0)
+  effort       EFFORT[]
+  net_register NET_REGISTER[]
+}
+
+model SequelizeMeta {
+  name String @id @unique(map: "name") @db.VarChar(255)
+}
