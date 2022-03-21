@@ -23,7 +23,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "pages/api/protocol_variables.js"  ],
+, "pages/api/get_protocol_variables.js"  ],
   "exclude": [
     "node_modules"
   ]
