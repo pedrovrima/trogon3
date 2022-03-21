@@ -1,14 +1,15 @@
 import { useForm } from "react-hook-form";
 import InputField from "../fields/input";
 import NotesField from "../fields/notes";
-import {Box} from "@chakra-ui/react"
+import { Box, Button, Text } from "@chakra-ui/react";
+import { useState } from "react";
 const email_test = /\S+@\S+\.\S+/;
 
 const field_object = [
   {
     name: "name",
     portuguese_label: "Nome completo",
-    validation: (val) => val,
+    validation: (val) => true,
   },
   {
     name: "code",
@@ -23,21 +24,43 @@ const field_object = [
   {
     name: "phone",
     portuguese_label: "Telefone",
-    validation: (val) => val,
+    validation: (val) => true,
   },
 ];
 
 export default function BanderForm(props) {
+  const [error, setError] = useState();
   const { defaultValues } = props;
+  console.log(defaultValues);
   const {
+    reset,
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({ mode: "onBlur", defaultValues });
 
-  function onSubmit(values) {
-    alert(JSON.stringify(values, null, 2));
+  async function onSubmit(values) {
+    try {
+      const status = await fetch("/api/create_bander", {
+        method: "post",
+        body: JSON.stringify({
+          bander_id: defaultValues?.bander_id,
+          data: values,
+        }),
+      });
+
+      if (status.status == 406) {
+        setError("Código já existe para essa organização");
+        return
+      } else {
+        setError("Sucesso");
+        reset();
+        return
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   return (
@@ -51,7 +74,17 @@ export default function BanderForm(props) {
           ></InputField>
         ))}
         <NotesField form_objects={{ register, errors }} />
-        <button type="submit">Submit</button>
+        <Button
+          width="100%"
+          mt={4}
+          colorScheme="teal"
+          loadingText="Sending"
+          isLoading={isSubmitting}
+          type="submit"
+        >
+          Submit
+        </Button>{" "}
+        <Text color={error==="Sucesso"?"green":"red"}>{error}</Text>
       </form>
     </Box>
   );
