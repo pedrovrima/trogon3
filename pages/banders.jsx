@@ -131,7 +131,7 @@ function BModal({ mutate, setId, isOpen, onClose, id, mode, setMode }) {
             </ModalHeader>              <ModalCloseButton />
 
 
-            <BanderForm></BanderForm>
+            <BanderForm ></BanderForm>
           </>
         ) : data ? (
           !editMode ? (
@@ -153,10 +153,13 @@ function BModal({ mutate, setId, isOpen, onClose, id, mode, setMode }) {
                 <p>
                   <strong> Telefone:</strong> {data.phone}
                 </p>
+                <p>
+                  <strong> Comentários:</strong> {data.notes}
+                </p>
               </ModalBody>
             </div>
           ) : (
-            <BanderForm></BanderForm>
+            <BanderForm defaultValues={data}></BanderForm>
           )
         ) : (
           <Flex W="100%" mt={8} justify="center">
