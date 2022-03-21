@@ -19,6 +19,7 @@ export default function InputField(props) {
     unit,
     precision,
     capture_categorical_options,
+    validation
   } = field;
   return (
     <>
@@ -32,7 +33,7 @@ export default function InputField(props) {
           <Input
             {...register(name, {
               required: "Campo obrigatório",
-              validate: create_check(capture_categorical_options, unit),
+              validate: validation? validation:create_check(capture_categorical_options, unit),
             })}
           ></Input>
         )}
