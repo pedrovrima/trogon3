@@ -7,18 +7,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model ORGANIZATION {
+  organization_id      Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(45)
+  BANDER_REGISTER      BANDER_REGISTER[]
+  BAND_STRING_REGISTER BAND_STRING_REGISTER[]
+  CAPTURE              CAPTURE[]
+  EFFORT               EFFORT[]
+  PROTOCOL_REGISTER    PROTOCOL_REGISTER[]
+  STATION_REGISTER     STATION_REGISTER[]
+}
+
 model BANDER_REGISTER {
-  bander_id   Int       @id @default(autoincrement())
-  name        String    @db.VarChar(45)
-  code        String    @db.VarChar(3)
-  email       String    @db.VarChar(45)
-  phone       String    @db.VarChar(14)
-  notes       String    @db.VarChar(250)
-  created_at  DateTime  @db.DateTime(0)
-  has_changed Bytes     @db.Binary(1)
-  original_id Int?
-  updated_at  DateTime? @db.DateTime(0)
-  capture     CAPTURE[]
+  bander_id       Int          @id @default(autoincrement())
+  name            String       @db.VarChar(45)
+  code            String       @db.VarChar(3)
+  email           String       @db.VarChar(45)
+  phone           String       @db.VarChar(14)
+  notes           String       @db.VarChar(250)
+  created_at      DateTime     @default(now()) @db.DateTime(0)
+  has_changed     Boolean      @default(false)
+  original_id     Int?
+  updated_at      DateTime?    @db.DateTime(0)
+  capture         CAPTURE[]
+  organization    ORGANIZATION @relation(fields: [organization_id], references: [organization_id], onUpdate: Restrict) 
+  organization_id Int @default(1)
+
+  @@unique([organization_id, code])
 }
 
 model BANDS {
@@ -27,7 +42,7 @@ model BANDS {
   band_number          String               @db.VarChar(45)
   used                 Int
   created_at           DateTime             @db.DateTime(0)
-  has_changed          Int                  @db.TinyInt
+  has_changed          Boolean              @default(false)
   original_id          Int?
   updated_at           DateTime?            @db.DateTime(0)
   band_string_register BAND_STRING_REGISTER @relation(fields: [string_id], references: [string_id], onUpdate: Restrict, map: "BANDS_ibfk_1")
@@ -37,14 +52,16 @@ model BANDS {
 }
 
 model BAND_STRING_REGISTER {
-  string_id   Int       @id @default(autoincrement())
-  size        String    @db.VarChar(2)
-  first_band  String    @db.VarChar(10)
-  created_at  DateTime  @db.DateTime(0)
-  has_changed Boolean   @default(false)
-  original_id Int?
-  updated_at  DateTime? @db.DateTime(0)
-  bands       BANDS[]
+  string_id       Int          @id @default(autoincrement())
+  size            String       @db.VarChar(2)
+  first_band      String       @db.VarChar(10)
+  created_at      DateTime     @db.DateTime(0)
+  has_changed     Boolean      @default(false)
+  original_id     Int?
+  updated_at      DateTime?    @db.DateTime(0)
+  bands           BANDS[]
+  organization    ORGANIZATION @relation(fields: [organization_id], references: [organization_id], onUpdate: Restrict)
+  organization_id Int
 }
 
 model CAPTURE {
@@ -67,6 +84,8 @@ model CAPTURE {
   capture_categorical_values CAPTURE_CATEGORICAL_VALUES[]
   capture_continuous_values  CAPTURE_CONTINUOUS_VALUES[]
   capture_flag               CAPTURE_FLAG[]
+  organization               ORGANIZATION                 @relation(fields: [organization_id], references: [organization_id], onUpdate: Restrict)
+  organization_id            Int
 
   @@index([band_id], map: "band_id")
   @@index([bander_id], map: "bander_id")
@@ -158,7 +177,7 @@ model EFFORT {
   date_effort               DateTime                    @db.DateTime(0)
   notes                     String                      @db.VarChar(250)
   created_at                DateTime                    @db.DateTime(0)
-  has_changed               Bytes                       @db.Binary(1)
+  has_changed               Boolean                     @default(false)
   original_id               Int?
   station_id                Int
   protocol_id               Int
@@ -170,6 +189,8 @@ model EFFORT {
   effort_summaries          EFFORT_SUMMARIES[]
   net_effort                NET_EFFORT[]
 
+  organization    ORGANIZATION @relation(fields: [organization_id], references: [organization_id], onUpdate: Restrict)
+  organization_id Int
   @@index([protocol_id], map: "protocol_id")
   @@index([station_id], map: "station_id")
 }
@@ -179,7 +200,7 @@ model EFFORT_CATEGORICAL_OPTIONS {
   description                  String                      @db.Text
   value_oama                   String                      @db.VarChar(45)
   created_at                   DateTime                    @db.DateTime(0)
-  has_changed                  Boolean
+  has_changed                  Boolean                     @default(false)
   original_id                  Int?
   effort_variable_id           Int
   updated_at                   DateTime?                   @db.DateTime(0)
@@ -195,7 +216,7 @@ model EFFORT_CATEGORICAL_VALUES {
   effort_categorical_option_id Int
   effort_time_id               Int
   created_at                   DateTime                   @db.DateTime(0)
-  has_changed                  Boolean
+  has_changed                  Boolean                    @default(false)
   original_id                  Int?
   updated_at                   DateTime?                  @db.DateTime(0)
   effort_variable_id           Int
@@ -216,7 +237,7 @@ model EFFORT_CONTINUOUS_VALUES {
   value                      String                   @db.VarChar(6)
   effort_time_id             Int
   created_at                 DateTime                 @db.DateTime(0)
-  has_changed                Boolean
+  has_changed                Boolean                  @default(false)
   original_id                Int?
   updated_at                 DateTime?                @db.DateTime(0)
   effort_variable_id         Int
@@ -236,7 +257,7 @@ model EFFORT_SUMMARIES {
   recapture         Int
   unbanded          Int
   created_at        DateTime  @db.DateTime(0)
-  has_changed       Boolean
+  has_changed       Boolean   @default(false)
   original_id       Int?
   updated_at        DateTime? @db.DateTime(0)
   effort            EFFORT    @relation(fields: [effort_id], references: [effort_id], onUpdate: Restrict, map: "EFFORT_SUMMARIES_ibfk_1")
@@ -249,7 +270,7 @@ model EFFORT_TIME {
   description               String                      @db.Text
   portuguese_label          String                      @db.VarChar(45)
   created_at                DateTime                    @db.DateTime(0)
-  has_changed               Boolean
+  has_changed               Boolean                     @default(false)
   original_id               Int?
   updated_at                DateTime?                   @db.DateTime(0)
   effort_categorical_values EFFORT_CATEGORICAL_VALUES[]
@@ -278,7 +299,7 @@ model NET_EFFORT {
   effort_id    Int
   net_id       Int
   created_at   DateTime     @db.DateTime(0)
-  has_changed  Boolean
+  has_changed  Boolean      @default(false)
   original_id  Int?
   updated_at   DateTime?    @db.DateTime(0)
   rede_id      String?      @map("REDE.ID") @db.VarChar(2)
@@ -295,7 +316,7 @@ model NET_OC {
   open_time   DateTime  @db.DateTime(0)
   close_time  DateTime  @db.DateTime(0)
   created_at  DateTime? @db.DateTime(0)
-  has_changed Boolean
+  has_changed Boolean   @default(false)
   original_id Int?
   net_eff_id  Int
   updated_at  DateTime? @db.DateTime(0)
@@ -306,7 +327,7 @@ model NET_REGISTER {
   net_number       String           @db.VarChar(45)
   net_lat          Int
   net_long         Int
-  has_changed      Boolean
+  has_changed      Boolean          @default(false)
   original_id      Int?
   station_id       Int
   updated_at       DateTime         @db.DateTime(0)
@@ -322,11 +343,13 @@ model PROTOCOL_REGISTER {
   protocol_code        String          @db.VarChar(45)
   protocol_description String          @db.Text
   created_at           DateTime        @db.DateTime(0)
-  has_changed          Boolean
+  has_changed          Boolean         @default(false)
   original_id          Int?
   updated_at           DateTime?       @db.DateTime(0)
   effort               EFFORT[]
   protocol_vars        PROTOCOL_VARS[]
+  organization         ORGANIZATION    @relation(fields: [organization_id], references: [organization_id], onUpdate: Restrict)
+  organization_id      Int
 }
 
 model PROTOCOL_VARS {
@@ -334,7 +357,7 @@ model PROTOCOL_VARS {
   protocol_id               Int
   mandatory                 Boolean
   order                     Int                       @default(0)
-  has_changed               Boolean
+  has_changed               Boolean                   @default(false)
   created_at                DateTime                  @db.DateTime(0)
   original_id               Int?
   updated_at                DateTime?                 @db.DateTime(0)
@@ -355,7 +378,7 @@ model SPP_REGISTER {
   pt_name     String    @db.VarChar(45)
   en_name     String    @db.VarChar(45)
   sci_code    String    @db.VarChar(6)
-  has_changed Boolean
+  has_changed Boolean   @default(false)
   original_id Int?
   created_at  DateTime  @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
@@ -363,19 +386,21 @@ model SPP_REGISTER {
 }
 
 model STATION_REGISTER {
-  station_id   Int            @id @default(autoincrement())
-  station_code String         @db.VarChar(6)
-  station_name String         @db.VarChar(45)
-  city         String         @db.VarChar(45)
-  state        String         @db.VarChar(45)
-  center_lat   Decimal        @db.Decimal(10, 0)
-  center_long  Decimal        @db.Decimal(10, 0)
-  has_changed  Boolean
-  original_id  Int?
-  created_at   DateTime       @db.DateTime(0)
-  updated_at   DateTime?      @db.DateTime(0)
-  effort       EFFORT[]
-  net_register NET_REGISTER[]
+  station_id      Int            @id @default(autoincrement())
+  station_code    String         @db.VarChar(6)
+  station_name    String         @db.VarChar(45)
+  city            String         @db.VarChar(45)
+  state           String         @db.VarChar(45)
+  center_lat      Decimal        @db.Decimal(10, 0)
+  center_long     Decimal        @db.Decimal(10, 0)
+  has_changed     Boolean        @default(false)
+  original_id     Int?
+  created_at      DateTime       @db.DateTime(0)
+  updated_at      DateTime?      @db.DateTime(0)
+  effort          EFFORT[]
+  net_register    NET_REGISTER[]
+  organization    ORGANIZATION   @relation(fields: [organization_id], references: [organization_id], onUpdate: Restrict)
+  organization_id Int
 }
 
 model SequelizeMeta {
