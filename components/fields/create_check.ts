@@ -2,7 +2,7 @@ export default function create_check(
   capture_categorical_options: [String],
   unit: String
 ) {
-  if (capture_categorical_options.length) {
+  if (capture_categorical_options?.length) {
     return (value: String) =>
       capture_categorical_options.includes(value) || "Valor não permitido";
   }
