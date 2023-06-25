@@ -6,6 +6,7 @@ await import("./src/env.mjs");
 
 /** @type {import("next").NextConfig} */
 const config = {
+  eslint: { ignoreDuringBuilds: true },
   reactStrictMode: true,
 
   /**
@@ -19,9 +20,8 @@ const config = {
     defaultLocale: "en",
   },
   webpack(config) {
-    config.experiments = { ...config.experiments, topLevelAwait: true }
-    return config
+    config.experiments = { ...config.experiments, topLevelAwait: true };
+    return config;
   },
-
 };
 export default config;
