@@ -19,7 +19,7 @@ export default function Nav() {
   const router = useRouter();
 
   return (
-    <NavigationMenu className="w-full justify-between bg-destructive/10 p-4">
+    <NavigationMenu className=" max- w-full justify-between bg-destructive/10 p-4">
       <div>
         <h1 className="text-xl font-extrabold text-white">Trogon</h1>
         <NavigationMenuList>
@@ -51,7 +51,7 @@ export default function Nav() {
         }}
       >
         <Input
-          className="placeholder: w-48 p-2 text-white placeholder:text-white"
+          className="w-48 bg-muted/20 p-2 text-white placeholder:text-white"
           placeholder="Busca Anilha"
           name="bandNumber"
         ></Input>

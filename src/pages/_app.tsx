@@ -20,7 +20,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <SessionProvider session={session}>
-        <main className="justify-top flex min-h-screen flex-col items-center bg-gradient-to-b from-[#0D98BA] to-[#15162c]">
+        <main className="justify-top min-h-screen flex-col items-center bg-gradient-to-b from-[#0D98BA] to-[#15162c]">
           <Nav></Nav>
           <Component {...pageProps} />
         </main>
