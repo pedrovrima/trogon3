@@ -8,6 +8,27 @@
       "when": 1686348192269,
       "tag": "0000_early_hulk",
       "breakpoints": false
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1687918302823,
+      "tag": "0001_smooth_komodo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1687918448336,
+      "tag": "0002_graceful_monster_badoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1687918480184,
+      "tag": "0003_melodic_scrambler",
+      "breakpoints": true
     }
   ]
 }

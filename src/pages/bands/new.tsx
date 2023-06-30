@@ -1,13 +1,10 @@
-import { useRouter } from "next/router";
 import { Input } from "@/components/ui/input";
-import { type FormEvent } from "react";
-import SideMenu from "./side_menu";
-import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/utils/api";
+
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -18,8 +15,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function NewBands() {
-  const router = useRouter();
+  const mutation = api.bands.createBands.useMutation();
 
+  console.log(mutation.error?.message);
   const formSchema = z.object({
     bandSize: z.string().min(1).max(2),
     initialBandNumber: z
@@ -40,9 +38,11 @@ export default function NewBands() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // await router.push(`/bands/${values.bandNumber}`);
-    console.log(values);
-    return;
+    try {
+      await mutation.mutateAsync(values);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -96,7 +96,11 @@ export default function NewBands() {
               </FormItem>
             )}
           />
-          <Button type="submit">Enviar</Button>
+          <div className="mt-8 flex items-center justify-center">
+            <Button className="w-36 bg-primary" type="submit">
+              Enviar
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
