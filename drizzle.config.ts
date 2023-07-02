@@ -1,9 +1,10 @@
 import type { Config } from "drizzle-kit";
-import {env} from "@/env.mjs"; 
 
 export default {
-  schema: "./src/schema.ts",
+  driver: "mysql2",
+  schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  connectionString: `mysql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:3306/${env.DB_DATABASE}`
-    
+  dbCredentials: {
+    connectionString: `mysql://pmartins_pvm:pegaju11@www.pmartins.a2hosted.com:3306/pmartins_trogon_test`,
+  },
 } satisfies Config;
