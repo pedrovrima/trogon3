@@ -37,37 +37,42 @@
   }
  
   :root {
+    --background: 210 30% 15%; /* Deep navy blue */
+    --foreground: 200 15% 75%; /* Off white, with a hint of blue */
     
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
- 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
- 
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
- 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
- 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
- 
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --ring: 216 34% 17%;
- 
-    --radius: 0.5rem;
+    --muted: 210 15% 30%; /* Muted navy */
+    --muted-foreground: 200 15% 60%; /* Muted off white */
+    
+    --popover: 210 30% 20%; /* Darker navy blue */
+    --popover-foreground: 200 15% 80%; /* Brighter off white */
+    
+    --card: 210 25% 25%; /* Navy blue */
+    --card-foreground: 200 15% 70%; /* Light off white */
+    
+    --border: 210 15% 35%; /* Slightly lighter navy border */
+    --input: 210 15% 35%; /* Slightly lighter navy input */
+    
+    --primary: 160 45% 50%; /* Greenish hue for primary */
+    --primary-foreground: 210 30% 5%; /* Very dark navy */
+    
+    --secondary: 210 20% 40%; /* Secondary navy blue */
+    --secondary-foreground: 160 45% 50%; /* Secondary greenish hue */
+    
+    --accent: 160 35% 40%; /* Greenish accent */
+    --accent-foreground: 210 30% 10%; /* Dark navy accent foreground */
+    
+    --destructive: 0 75% 60%; /* Bright red for destructive actions */
+    --destructive-foreground: 200 15% 90%; /* Almost white for contrast on destructive actions */
+    
+    --success: 120 39% 50%; /* Success greenish color */
+    --success-foreground: 200 15% 90%; /* Almost white for success actions for more contrast */
+    
+    --ring: 210 15% 35%; /* Navy blueish ring */
+    
+    --radius: 0.5rem; /* Unchanged */
+    
+    
+    
   }
 }
  

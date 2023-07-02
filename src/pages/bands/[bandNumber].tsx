@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import { api } from "@/utils/api";
 import { DataTable, columns } from "@/components/organisms/band_table";
+import Loader from "@/components/organisms/loader";
 
 type Query = {
   bandNumber: string;
@@ -12,7 +13,10 @@ const BandDetails: NextPage = () => {
   const router = useRouter();
 
   const { bandNumber } = router.query as Query;
-  const hello = api.test.hello.useQuery({ bandNumber });
+  const hello = api.test.hello.useQuery(
+    { bandNumber },
+    { retry: 0, refetchOnWindowFocus: false }
+  );
 
   return (
     <>
@@ -22,9 +26,22 @@ const BandDetails: NextPage = () => {
         </h1>
 
         <div className="flex w-full max-w-2xl flex-col items-center gap-2">
-          {hello.isLoading && <p className="text-white">Loading</p>}
-          {hello.data && (
-            <DataTable columns={columns} data={hello.data.band_captures} />
+          {hello.isLoading && <Loader />}
+          {hello.isError && (
+            <>
+              <h2 className="text-2xl text-destructive">Erro!</h2>
+              <p>{hello.error?.message}</p>
+            </>
+          )}
+
+          {hello?.data && "band_captures" in hello.data && (
+            <>
+              {!hello?.data?.band_captures[0]?.speciesName ? (
+                <p className="text-white">Anilha ainda nao utilizada</p>
+              ) : (
+                <DataTable columns={columns} data={hello.data.band_captures} />
+              )}
+            </>
           )}
 
           {/* <AuthShowcase /> */}

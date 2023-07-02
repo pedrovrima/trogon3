@@ -1,8 +1,11 @@
+import { api } from "@/utils/api";
 import { type NextPage } from "next";
 import Head from "next/head";
 // import { signIn, signOut, useSession } from "next-auth/react";
 
 const Home: NextPage = () => {
+  const bandCount = api.bands.getBandCount.useQuery();
+  console.log(bandCount);
   return (
     <>
       <Head>

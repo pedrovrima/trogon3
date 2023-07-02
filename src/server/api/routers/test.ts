@@ -56,7 +56,29 @@ export const testRouter = createTRPCRouter({
           )
         );
 
-      console.log(band_captures);
+      if (band_captures.length === 0) {
+        const bands_info = await db
+          .select()
+          .from(bands)
+          .leftJoin(
+            bandStringRegister,
+            eq(bands.stringId, bandStringRegister.stringId)
+          )
+          .where(
+            and(
+              eq(bands.bandNumber, bandNumber as string),
+              eq(bandStringRegister.size, bandSize as string)
+            )
+          );
+        if (bands_info.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Anilha não encontrada",
+          });
+        } else {
+          return [];
+        }
+      }
 
       return {
         band_captures,

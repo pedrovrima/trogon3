@@ -1,6 +1,10 @@
 import {
   NavigationMenu,
   NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+  NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { useRouter } from "next/router";
 import { Input } from "@/components/ui/input";
@@ -39,30 +43,12 @@ export default function Nav() {
     return;
   };
   return (
-    <NavigationMenu className="w-full justify-between bg-muted-foreground/20 p-4">
+    <NavigationMenu className="w-full justify-between bg-muted/70 p-4">
       <div>
         <div className="flex gap-4">
           <SideMenu />
-          <h1 className="text-xl font-extrabold text-primary">Trogon</h1>
+          <h1 className="text-xl font-extrabold text-foreground">Trogon</h1>
         </div>
-        <NavigationMenuList>
-          {/* <NavigationMenuItem>
-          <NavigationMenuTrigger className="bg-inherit">
-            Item One
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <NavigationMenuLink>Link</NavigationMenuLink>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className="bg-inherit">
-            Item One
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <NavigationMenuLink>Link</NavigationMenuLink>
-          </NavigationMenuContent>
-        </NavigationMenuItem> */}
-        </NavigationMenuList>
       </div>
       <BandForm />
     </NavigationMenu>

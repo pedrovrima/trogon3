@@ -41,6 +41,9 @@ const Menu = () => {
           <AccordionContent>
             <Link href={"/bands/new"}>Adicionar</Link>
           </AccordionContent>
+          <AccordionContent>
+            <Link href={"/bands/summary"}>Sumário</Link>
+          </AccordionContent>
         </AccordionItem>
       </Accordion>
     </div>

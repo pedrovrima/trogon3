@@ -13,6 +13,7 @@ import {
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import QueryModal from "@/components/organisms/query_modal";
 
 export default function NewBands() {
   const mutation = api.bands.createBands.useMutation();
@@ -45,8 +46,16 @@ export default function NewBands() {
     }
   };
 
+  console.log(mutation);
+
   return (
     <div className="flex w-full flex-col items-center justify-center">
+      <QueryModal
+        isLoading={mutation.isLoading}
+        isSuccess={mutation.isSuccess}
+        errorMessage={mutation.error?.message}
+        isError={mutation.isError}
+      />
       <h1 className="m-8 text-center text-2xl font-bold">
         Adicionar sequencia de anilhas
       </h1>
