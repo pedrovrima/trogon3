@@ -16,7 +16,9 @@ export const env = createEnv({
     DB_HOST: z.string().min(1),
     DB_USER: z.string().min(1),
     DB_PASSWORD: z.string().min(1),
-    DB_DATABASE: z.string().min(1),
+    DB_DATABASE_PROD: z.string().min(1),
+    DB_DATABASE_DEV: z.string().min(1),
+
     // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   },
 
@@ -40,6 +42,7 @@ export const env = createEnv({
     DB_HOST: process.env.DB_HOST,
     DB_USER: process.env.DB_USER,
     DB_PASSWORD: process.env.DB_PASSWORD,
-    DB_DATABASE: process.env.DB_DATABASE,
+    DB_DATABASE_PROD: process.env.DB_DATABASE_PROD,
+    DB_DATABASE_DEV: process.env.DB_DATABASE_DEV,
   },
 });

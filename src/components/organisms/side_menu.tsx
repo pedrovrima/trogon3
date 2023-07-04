@@ -45,6 +45,15 @@ const Menu = () => {
             <Link href={"/bands/summary"}>Sumário</Link>
           </AccordionContent>
         </AccordionItem>
+        <AccordionItem value="item-2" className="px-4">
+          <AccordionTrigger>Pessoas Anilhadoras</AccordionTrigger>
+          <AccordionContent>
+            <Link href={"/banders/new"}>Adicionar</Link>
+          </AccordionContent>
+          <AccordionContent>
+            <Link href={"/banders"}>Sumário</Link>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </div>
   );
