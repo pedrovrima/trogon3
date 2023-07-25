@@ -14,8 +14,11 @@ export const env = createEnv({
         : z.string().min(1).optional(),
     NEXTAUTH_URL: z.string().min(1),
     DB_HOST: z.string().min(1),
-    DB_USER: z.string().min(1),
-    DB_PASSWORD: z.string().min(1),
+    DB_USER_PROD: z.string().min(1),
+    DB_USER_DEV: z.string().min(1),
+
+    DB_PASSWORD_PROD: z.string().min(1),
+    DB_PASSWORD_DEV: z.string().min(1),
     DB_DATABASE_PROD: z.string().min(1),
     DB_DATABASE_DEV: z.string().min(1),
 
@@ -40,8 +43,11 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     DB_HOST: process.env.DB_HOST,
-    DB_USER: process.env.DB_USER,
-    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_USER_PROD: process.env.DB_USER_PROD,
+    DB_USER_DEV: process.env.DB_USER_DEV,
+
+    DB_PASSWORD_PROD: process.env.DB_PASSWORD_PROD,
+    DB_PASSWORD_DEV: process.env.DB_PASSWORD_DEV,
     DB_DATABASE_PROD: process.env.DB_DATABASE_PROD,
     DB_DATABASE_DEV: process.env.DB_DATABASE_DEV,
   },
