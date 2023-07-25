@@ -8,6 +8,9 @@ dependencies:
   '@hookform/resolvers':
     specifier: ^3.1.1
     version: 3.1.1(react-hook-form@7.45.0)
+  '@planetscale/database':
+    specifier: ^1.8.0
+    version: 1.8.0
   '@radix-ui/react-accordion':
     specifier: ^1.1.2
     version: 1.1.2(@types/react-dom@18.2.6)(@types/react@18.2.14)(react-dom@18.2.0)(react@18.2.0)
@@ -57,8 +60,8 @@ dependencies:
     specifier: ^16.3.1
     version: 16.3.1
   drizzle-orm:
-    specifier: ^0.27.0
-    version: 0.27.0(mysql2@3.4.2)
+    specifier: ^0.27.2
+    version: 0.27.2(@planetscale/database@1.8.0)(mysql2@3.4.2)
   lucide-react:
     specifier: ^0.244.0
     version: 0.244.0(react@18.2.0)
@@ -789,6 +792,11 @@ packages:
       picocolors: 1.0.0
       tslib: 2.6.0
     dev: true
+
+  /@planetscale/database@1.8.0:
+    resolution: {integrity: sha512-+zk04eXRiaJGaRnJZkCxXbBtBvQDQJXCoxqlXhLY3HzAovXfsBnh6DjXRujPRQQ7GKtT8/tOlyvZ9h6ReM+GLQ==}
+    engines: {node: '>=16'}
+    dev: false
 
   /@radix-ui/primitive@1.0.1:
     resolution: {integrity: sha512-yQ8oGX2GVsEYMWGxcovu1uGWPCxV5BFfeeYxqPmuAzUyLT9qmaMXSAhXpb0WrspIeqYzdJpkh2vHModJPgRIaw==}
@@ -2074,8 +2082,8 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.27.0(mysql2@3.4.2):
-    resolution: {integrity: sha512-LGiJ0icB+wQwgbSCOvAjONY8Ec6G/EDzQQP5PmUaQYeI9OqgpVKHC2T1fFIbvk5dabWsbokJ5NOciVAxriStig==}
+  /drizzle-orm@0.27.2(@planetscale/database@1.8.0)(mysql2@3.4.2):
+    resolution: {integrity: sha512-ZvBvceff+JlgP7FxHKe0zOU9CkZ4RcOtibumIrqfYzDGuOeF0YUY0F9iMqYpRM7pxnLRfC+oO7rWOUH3T5oFQA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
@@ -2136,6 +2144,7 @@ packages:
       sqlite3:
         optional: true
     dependencies:
+      '@planetscale/database': 1.8.0
       mysql2: 3.4.2
     dev: false
 
