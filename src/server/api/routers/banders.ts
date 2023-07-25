@@ -16,7 +16,7 @@ export const bandersRouter = createTRPCRouter({
       })
       .from(banderRegister)
       .leftJoin(capture, eq(capture.banderId, banderRegister.banderId))
-      .groupBy(banderRegister.code);
+      .groupBy(banderRegister.code, banderRegister.name, banderRegister.email);
 
     return banders.filter((bander) => bander.code !== "NA");
   }),
