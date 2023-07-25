@@ -159,9 +159,8 @@ export const bandsRouter = createTRPCRouter({
           sql`SELECT LAST_INSERT_ID() as lastId;`
         );
 
-        console.log(lastIdQuery);
+        const result = lastIdQuery.rows as LastInsertIdResult[];
 
-        const result = lastIdQuery[0] as unknown as LastInsertIdResult[];
         //eslint-disable-next-line
         let id: number;
         if (result[0]) {
