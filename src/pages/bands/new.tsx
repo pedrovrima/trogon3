@@ -14,11 +14,11 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import QueryModal from "@/components/organisms/query_modal";
+import { ComboboxDemo } from "@/components/organisms/type_combobox";
 
 export default function NewBands() {
   const mutation = api.bands.createBands.useMutation();
 
-  console.log(mutation.error?.message);
   const formSchema = z.object({
     bandSize: z.string().min(1).max(2),
     initialBandNumber: z
@@ -45,8 +45,6 @@ export default function NewBands() {
       console.log(error);
     }
   };
-
-  console.log(mutation);
 
   return (
     <div className="flex w-full flex-col items-center justify-center">

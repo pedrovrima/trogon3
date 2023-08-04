@@ -1,154 +1,207 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
   "version": "5",
   "dialect": "mysql",
+  "id": "ed90fe1f-2af7-4e2a-bf1c-784ce82744d3",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "BAND_STRING_REGISTER": {
+      "name": "BAND_STRING_REGISTER",
+      "columns": {
+        "string_id": {
+          "name": "string_id",
+          "type": "int",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "size": {
+          "name": "size",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "first_band": {
+          "name": "first_band",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
     "BANDER_REGISTER": {
       "name": "BANDER_REGISTER",
       "columns": {
         "bander_id": {
-          "autoincrement": true,
           "name": "bander_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "name": {
-          "autoincrement": false,
           "name": "name",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "code": {
-          "autoincrement": false,
           "name": "code",
           "type": "varchar(3)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "email": {
-          "autoincrement": false,
           "name": "email",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "phone": {
-          "autoincrement": false,
           "name": "phone",
           "type": "varchar(14)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "notes": {
-          "autoincrement": false,
           "name": "notes",
           "type": "varchar(250)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'current_timestamp()'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'current_timestamp()'"
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "has_changed": {
-          "default": 0,
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "BANDS": {
       "name": "BANDS",
       "columns": {
         "band_id": {
-          "autoincrement": true,
           "name": "band_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "string_id": {
-          "autoincrement": false,
           "name": "string_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "band_number": {
-          "autoincrement": false,
           "name": "band_number",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "used": {
-          "autoincrement": false,
           "name": "used",
-          "type": "int(1)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "string_id": {
           "name": "string_id",
@@ -158,175 +211,97 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "BANDS_ibfk_1": {
-          "name": "BANDS_ibfk_1",
-          "tableFrom": "BANDS",
-          "tableTo": "BAND_STRING_REGISTER",
-          "columnsFrom": [
-            "string_id"
-          ],
-          "columnsTo": [
-            "string_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        }
-      }
-    },
-    "BAND_STRING_REGISTER": {
-      "name": "BAND_STRING_REGISTER",
-      "columns": {
-        "string_id": {
-          "autoincrement": true,
-          "name": "string_id",
-          "type": "int(11)",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "size": {
-          "autoincrement": false,
-          "name": "size",
-          "type": "varchar(2)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "first_band": {
-          "autoincrement": false,
-          "name": "first_band",
-          "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "autoincrement": false,
-          "name": "created_at",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "has_changed": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "has_changed",
-          "type": "tinyint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "original_id",
-          "type": "int(11)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
-          "name": "updated_at",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "CAPTURE": {
       "name": "CAPTURE",
       "columns": {
         "capture_id": {
-          "autoincrement": true,
           "name": "capture_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "capture_time": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "capture_time",
           "type": "varchar(3)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "capture_code": {
-          "autoincrement": false,
           "name": "capture_code",
           "type": "varchar(1)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "notes": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "notes",
           "type": "varchar(250)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "net_eff_id": {
-          "autoincrement": false,
           "name": "net_eff_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "bander_id": {
-          "autoincrement": false,
           "name": "bander_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "band_id": {
-          "autoincrement": false,
           "name": "band_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "spp_id": {
-          "autoincrement": false,
           "name": "spp_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "net_eff_id": {
           "name": "net_eff_id",
@@ -357,124 +332,69 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "CAPTURE_ibfk_1": {
-          "name": "CAPTURE_ibfk_1",
-          "tableFrom": "CAPTURE",
-          "tableTo": "NET_EFFORT",
-          "columnsFrom": [
-            "net_eff_id"
-          ],
-          "columnsTo": [
-            "net_eff_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "CAPTURE_ibfk_2": {
-          "name": "CAPTURE_ibfk_2",
-          "tableFrom": "CAPTURE",
-          "tableTo": "BANDER_REGISTER",
-          "columnsFrom": [
-            "bander_id"
-          ],
-          "columnsTo": [
-            "bander_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "CAPTURE_ibfk_3": {
-          "name": "CAPTURE_ibfk_3",
-          "tableFrom": "CAPTURE",
-          "tableTo": "BANDS",
-          "columnsFrom": [
-            "band_id"
-          ],
-          "columnsTo": [
-            "band_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "CAPTURE_ibfk_4": {
-          "name": "CAPTURE_ibfk_4",
-          "tableFrom": "CAPTURE",
-          "tableTo": "SPP_REGISTER",
-          "columnsFrom": [
-            "spp_id"
-          ],
-          "columnsTo": [
-            "spp_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        }
-      }
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "CAPTURE_CATEGORICAL_OPTIONS": {
       "name": "CAPTURE_CATEGORICAL_OPTIONS",
       "columns": {
         "capture_categorical_option_id": {
-          "autoincrement": true,
           "name": "capture_categorical_option_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "description": {
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "value_oama": {
-          "autoincrement": false,
           "name": "value_oama",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "capture_variable_id": {
-          "autoincrement": false,
           "name": "capture_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "capture_variable_id": {
           "name": "capture_variable_id",
@@ -484,85 +404,69 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "CAPTURE_CATEGORICAL_OPTIONS_ibfk_1": {
-          "name": "CAPTURE_CATEGORICAL_OPTIONS_ibfk_1",
-          "tableFrom": "CAPTURE_CATEGORICAL_OPTIONS",
-          "tableTo": "CAPTURE_VARIABLE_REGISTER",
-          "columnsFrom": [
-            "capture_variable_id"
-          ],
-          "columnsTo": [
-            "capture_variable_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        }
-      }
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "CAPTURE_CATEGORICAL_VALUES": {
       "name": "CAPTURE_CATEGORICAL_VALUES",
       "columns": {
         "capture_categorical_values_id": {
-          "autoincrement": true,
           "name": "capture_categorical_values_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "capture_id": {
-          "autoincrement": false,
           "name": "capture_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "capture_categorical_option_id": {
-          "autoincrement": false,
           "name": "capture_categorical_option_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "capture_variable_id": {
-          "autoincrement": false,
           "name": "capture_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "capture_id": {
           "name": "capture_id",
@@ -586,111 +490,69 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "CAPTURE_CATEGORICAL_VALUES_capture_variable_id_foreign_idx": {
-          "name": "CAPTURE_CATEGORICAL_VALUES_capture_variable_id_foreign_idx",
-          "tableFrom": "CAPTURE_CATEGORICAL_VALUES",
-          "tableTo": "CAPTURE_VARIABLE_REGISTER",
-          "columnsFrom": [
-            "capture_variable_id"
-          ],
-          "columnsTo": [
-            "capture_variable_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "CAPTURE_CATEGORICAL_VALUES_ibfk_1": {
-          "name": "CAPTURE_CATEGORICAL_VALUES_ibfk_1",
-          "tableFrom": "CAPTURE_CATEGORICAL_VALUES",
-          "tableTo": "CAPTURE",
-          "columnsFrom": [
-            "capture_id"
-          ],
-          "columnsTo": [
-            "capture_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "CAPTURE_CATEGORICAL_VALUES_ibfk_2": {
-          "name": "CAPTURE_CATEGORICAL_VALUES_ibfk_2",
-          "tableFrom": "CAPTURE_CATEGORICAL_VALUES",
-          "tableTo": "CAPTURE_CATEGORICAL_OPTIONS",
-          "columnsFrom": [
-            "capture_categorical_option_id"
-          ],
-          "columnsTo": [
-            "capture_categorical_option_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        }
-      }
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "CAPTURE_CONTINUOUS_VALUES": {
       "name": "CAPTURE_CONTINUOUS_VALUES",
       "columns": {
         "capture_continuous_values_id": {
-          "autoincrement": true,
           "name": "capture_continuous_values_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "capture_id": {
-          "autoincrement": false,
           "name": "capture_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "value": {
-          "autoincrement": false,
           "name": "value",
-          "type": "varchar(50)",
+          "type": "varchar(100)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "capture_variable_id": {
-          "autoincrement": false,
           "name": "capture_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "capture_id": {
           "name": "capture_id",
@@ -707,62 +569,34 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "CAPTURE_CONTINUOUS_VALUES_capture_variable_id_foreign_idx": {
-          "name": "CAPTURE_CONTINUOUS_VALUES_capture_variable_id_foreign_idx",
-          "tableFrom": "CAPTURE_CONTINUOUS_VALUES",
-          "tableTo": "CAPTURE_VARIABLE_REGISTER",
-          "columnsFrom": [
-            "capture_variable_id"
-          ],
-          "columnsTo": [
-            "capture_variable_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "CAPTURE_CONTINUOUS_VALUES_ibfk_1": {
-          "name": "CAPTURE_CONTINUOUS_VALUES_ibfk_1",
-          "tableFrom": "CAPTURE_CONTINUOUS_VALUES",
-          "tableTo": "CAPTURE",
-          "columnsFrom": [
-            "capture_id"
-          ],
-          "columnsTo": [
-            "capture_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        }
-      }
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "CAPTURE_FLAG": {
       "name": "CAPTURE_FLAG",
       "columns": {
         "flag_id": {
-          "autoincrement": true,
           "name": "flag_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "capture_id": {
-          "autoincrement": false,
           "name": "capture_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "note": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "note",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "capture_id": {
           "name": "capture_id",
@@ -773,8 +607,8 @@
         }
       },
       "foreignKeys": {
-        "CAPTURE_FLAG_ibfk_1": {
-          "name": "CAPTURE_FLAG_ibfk_1",
+        "CAPTURE_FLAG_capture_id_CAPTURE_capture_id_fk": {
+          "name": "CAPTURE_FLAG_capture_id_CAPTURE_capture_id_fk",
           "tableFrom": "CAPTURE_FLAG",
           "tableTo": "CAPTURE",
           "columnsFrom": [
@@ -786,190 +620,183 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "CAPTURE_VARIABLE_REGISTER": {
       "name": "CAPTURE_VARIABLE_REGISTER",
       "columns": {
         "capture_variable_id": {
-          "autoincrement": false,
           "name": "capture_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "name": {
-          "autoincrement": false,
           "name": "name",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "description": {
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "portuguese_label": {
-          "autoincrement": false,
           "name": "portuguese_label",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "field_size": {
-          "autoincrement": false,
           "name": "field_size",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "duplicable": {
-          "autoincrement": false,
           "name": "duplicable",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "type": {
-          "autoincrement": false,
           "name": "type",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "default": 0,
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "special": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "special",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "unit": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "unit",
           "type": "varchar(10)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "precision": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "precision",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "EFFORT": {
       "name": "EFFORT",
       "columns": {
         "effort_id": {
-          "autoincrement": true,
           "name": "effort_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "date_effort": {
-          "autoincrement": false,
           "name": "date_effort",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "notes": {
-          "autoincrement": false,
           "name": "notes",
           "type": "varchar(250)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "binary(1)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "station_id": {
-          "autoincrement": false,
           "name": "station_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "protocol_id": {
-          "autoincrement": false,
           "name": "protocol_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "station_id": {
           "name": "station_id",
@@ -987,8 +814,8 @@
         }
       },
       "foreignKeys": {
-        "EFFORT_ibfk_1": {
-          "name": "EFFORT_ibfk_1",
+        "EFFORT_station_id_STATION_REGISTER_station_id_fk": {
+          "name": "EFFORT_station_id_STATION_REGISTER_station_id_fk",
           "tableFrom": "EFFORT",
           "tableTo": "STATION_REGISTER",
           "columnsFrom": [
@@ -1000,8 +827,8 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         },
-        "EFFORT_ibfk_2": {
-          "name": "EFFORT_ibfk_2",
+        "EFFORT_protocol_id_PROTOCOL_REGISTER_protocol_id_fk": {
+          "name": "EFFORT_protocol_id_PROTOCOL_REGISTER_protocol_id_fk",
           "tableFrom": "EFFORT",
           "tableTo": "PROTOCOL_REGISTER",
           "columnsFrom": [
@@ -1013,71 +840,69 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "EFFORT_CATEGORICAL_OPTIONS": {
       "name": "EFFORT_CATEGORICAL_OPTIONS",
       "columns": {
         "effort_categorical_option_id": {
-          "autoincrement": true,
           "name": "effort_categorical_option_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "description": {
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "value_oama": {
-          "autoincrement": false,
           "name": "value_oama",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "effort_variable_id": {
-          "autoincrement": false,
           "name": "effort_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "effort_variable_id": {
           "name": "effort_variable_id",
@@ -1088,8 +913,8 @@
         }
       },
       "foreignKeys": {
-        "EFFORT_CATEGORICAL_OPTIONS_ibfk_1": {
-          "name": "EFFORT_CATEGORICAL_OPTIONS_ibfk_1",
+        "EFFORT_CATEGORICAL_OPTIONS_effort_variable_id_EFFORT_VARIABLE_REGISTER_effort_variable_id_fk": {
+          "name": "EFFORT_CATEGORICAL_OPTIONS_effort_variable_id_EFFORT_VARIABLE_REGISTER_effort_variable_id_fk",
           "tableFrom": "EFFORT_CATEGORICAL_OPTIONS",
           "tableTo": "EFFORT_VARIABLE_REGISTER",
           "columnsFrom": [
@@ -1101,78 +926,76 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "EFFORT_CATEGORICAL_VALUES": {
       "name": "EFFORT_CATEGORICAL_VALUES",
       "columns": {
         "effort_categorical_value_id": {
-          "autoincrement": true,
           "name": "effort_categorical_value_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "effort_id": {
-          "autoincrement": false,
           "name": "effort_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "effort_categorical_option_id": {
-          "autoincrement": false,
           "name": "effort_categorical_option_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "effort_time_id": {
-          "autoincrement": false,
           "name": "effort_time_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "effort_variable_id": {
-          "autoincrement": false,
           "name": "effort_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "effort_id": {
           "name": "effort_id",
@@ -1204,21 +1027,8 @@
         }
       },
       "foreignKeys": {
-        "EFFORT_CATEGORICAL_VALUES_effort_variable_id_foreign_idx": {
-          "name": "EFFORT_CATEGORICAL_VALUES_effort_variable_id_foreign_idx",
-          "tableFrom": "EFFORT_CATEGORICAL_VALUES",
-          "tableTo": "EFFORT_VARIABLE_REGISTER",
-          "columnsFrom": [
-            "effort_variable_id"
-          ],
-          "columnsTo": [
-            "effort_variable_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "EFFORT_CATEGORICAL_VALUES_ibfk_1": {
-          "name": "EFFORT_CATEGORICAL_VALUES_ibfk_1",
+        "EFFORT_CATEGORICAL_VALUES_effort_id_EFFORT_effort_id_fk": {
+          "name": "EFFORT_CATEGORICAL_VALUES_effort_id_EFFORT_effort_id_fk",
           "tableFrom": "EFFORT_CATEGORICAL_VALUES",
           "tableTo": "EFFORT",
           "columnsFrom": [
@@ -1230,8 +1040,8 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         },
-        "EFFORT_CATEGORICAL_VALUES_ibfk_2": {
-          "name": "EFFORT_CATEGORICAL_VALUES_ibfk_2",
+        "EFFORT_CATEGORICAL_VALUES_effort_categorical_option_id_EFFORT_CATEGORICAL_OPTIONS_effort_categorical_option_id_fk": {
+          "name": "EFFORT_CATEGORICAL_VALUES_effort_categorical_option_id_EFFORT_CATEGORICAL_OPTIONS_effort_categorical_option_id_fk",
           "tableFrom": "EFFORT_CATEGORICAL_VALUES",
           "tableTo": "EFFORT_CATEGORICAL_OPTIONS",
           "columnsFrom": [
@@ -1243,8 +1053,8 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         },
-        "EFFORT_CATEGORICAL_VALUES_ibfk_3": {
-          "name": "EFFORT_CATEGORICAL_VALUES_ibfk_3",
+        "EFFORT_CATEGORICAL_VALUES_effort_time_id_EFFORT_TIME_effort_time_id_fk": {
+          "name": "EFFORT_CATEGORICAL_VALUES_effort_time_id_EFFORT_TIME_effort_time_id_fk",
           "tableFrom": "EFFORT_CATEGORICAL_VALUES",
           "tableTo": "EFFORT_TIME",
           "columnsFrom": [
@@ -1255,79 +1065,90 @@
           ],
           "onDelete": "restrict",
           "onUpdate": "restrict"
+        },
+        "EFFORT_CATEGORICAL_VALUES_effort_variable_id_EFFORT_VARIABLE_REGISTER_effort_variable_id_fk": {
+          "name": "EFFORT_CATEGORICAL_VALUES_effort_variable_id_EFFORT_VARIABLE_REGISTER_effort_variable_id_fk",
+          "tableFrom": "EFFORT_CATEGORICAL_VALUES",
+          "tableTo": "EFFORT_VARIABLE_REGISTER",
+          "columnsFrom": [
+            "effort_variable_id"
+          ],
+          "columnsTo": [
+            "effort_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "EFFORT_CONTINUOUS_VALUES": {
       "name": "EFFORT_CONTINUOUS_VALUES",
       "columns": {
         "effort_continuous_value_id": {
-          "autoincrement": true,
           "name": "effort_continuous_value_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "effort_id": {
-          "autoincrement": false,
           "name": "effort_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "value": {
-          "autoincrement": false,
           "name": "value",
           "type": "varchar(6)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "effort_time_id": {
-          "autoincrement": false,
           "name": "effort_time_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "effort_variable_id": {
-          "autoincrement": false,
           "name": "effort_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "effort_id": {
           "name": "effort_id",
@@ -1352,21 +1173,8 @@
         }
       },
       "foreignKeys": {
-        "EFFORT_CONTINUOUS_VALUES_effort_variable_id_foreign_idx": {
-          "name": "EFFORT_CONTINUOUS_VALUES_effort_variable_id_foreign_idx",
-          "tableFrom": "EFFORT_CONTINUOUS_VALUES",
-          "tableTo": "EFFORT_VARIABLE_REGISTER",
-          "columnsFrom": [
-            "effort_variable_id"
-          ],
-          "columnsTo": [
-            "effort_variable_id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "restrict"
-        },
-        "EFFORT_CONTINUOUS_VALUES_ibfk_1": {
-          "name": "EFFORT_CONTINUOUS_VALUES_ibfk_1",
+        "EFFORT_CONTINUOUS_VALUES_effort_id_EFFORT_effort_id_fk": {
+          "name": "EFFORT_CONTINUOUS_VALUES_effort_id_EFFORT_effort_id_fk",
           "tableFrom": "EFFORT_CONTINUOUS_VALUES",
           "tableTo": "EFFORT",
           "columnsFrom": [
@@ -1378,8 +1186,8 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         },
-        "EFFORT_CONTINUOUS_VALUES_ibfk_2": {
-          "name": "EFFORT_CONTINUOUS_VALUES_ibfk_2",
+        "EFFORT_CONTINUOUS_VALUES_effort_time_id_EFFORT_TIME_effort_time_id_fk": {
+          "name": "EFFORT_CONTINUOUS_VALUES_effort_time_id_EFFORT_TIME_effort_time_id_fk",
           "tableFrom": "EFFORT_CONTINUOUS_VALUES",
           "tableTo": "EFFORT_TIME",
           "columnsFrom": [
@@ -1390,79 +1198,90 @@
           ],
           "onDelete": "restrict",
           "onUpdate": "restrict"
+        },
+        "EFFORT_CONTINUOUS_VALUES_effort_variable_id_EFFORT_VARIABLE_REGISTER_effort_variable_id_fk": {
+          "name": "EFFORT_CONTINUOUS_VALUES_effort_variable_id_EFFORT_VARIABLE_REGISTER_effort_variable_id_fk",
+          "tableFrom": "EFFORT_CONTINUOUS_VALUES",
+          "tableTo": "EFFORT_VARIABLE_REGISTER",
+          "columnsFrom": [
+            "effort_variable_id"
+          ],
+          "columnsTo": [
+            "effort_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "EFFORT_SUMMARIES": {
       "name": "EFFORT_SUMMARIES",
       "columns": {
         "effort_summary_id": {
-          "autoincrement": true,
           "name": "effort_summary_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "effort_id": {
-          "autoincrement": false,
           "name": "effort_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "new_bands": {
-          "autoincrement": false,
           "name": "new_bands",
-          "type": "int(3)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "recapture": {
-          "autoincrement": false,
           "name": "recapture",
-          "type": "int(3)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "unbanded": {
-          "autoincrement": false,
           "name": "unbanded",
-          "type": "int(3)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "effort_id": {
           "name": "effort_id",
@@ -1473,8 +1292,8 @@
         }
       },
       "foreignKeys": {
-        "EFFORT_SUMMARIES_ibfk_1": {
-          "name": "EFFORT_SUMMARIES_ibfk_1",
+        "EFFORT_SUMMARIES_effort_id_EFFORT_effort_id_fk": {
+          "name": "EFFORT_SUMMARIES_effort_id_EFFORT_effort_id_fk",
           "tableFrom": "EFFORT_SUMMARIES",
           "tableTo": "EFFORT",
           "columnsFrom": [
@@ -1486,220 +1305,212 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "EFFORT_TIME": {
       "name": "EFFORT_TIME",
       "columns": {
         "effort_time_id": {
-          "autoincrement": true,
           "name": "effort_time_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "description": {
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "portuguese_label": {
-          "autoincrement": false,
           "name": "portuguese_label",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "EFFORT_VARIABLE_REGISTER": {
       "name": "EFFORT_VARIABLE_REGISTER",
       "columns": {
         "effort_variable_id": {
-          "autoincrement": false,
           "name": "effort_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "name": {
-          "autoincrement": false,
           "name": "name",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "description": {
-          "autoincrement": false,
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "portuguese_label": {
-          "autoincrement": false,
           "name": "portuguese_label",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "field_size": {
-          "autoincrement": false,
           "name": "field_size",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "type": {
-          "autoincrement": false,
           "name": "type",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "default": 0,
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "unit": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "unit",
           "type": "varchar(10)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "NET_EFFORT": {
       "name": "NET_EFFORT",
       "columns": {
         "net_eff_id": {
-          "autoincrement": true,
           "name": "net_eff_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "effort_id": {
-          "autoincrement": false,
           "name": "effort_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "net_id": {
-          "autoincrement": false,
           "name": "net_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "REDE.ID": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "REDE.ID",
           "type": "varchar(2)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "effort_id": {
           "name": "effort_id",
@@ -1717,8 +1528,8 @@
         }
       },
       "foreignKeys": {
-        "NET_EFFORT_ibfk_1": {
-          "name": "NET_EFFORT_ibfk_1",
+        "NET_EFFORT_effort_id_EFFORT_effort_id_fk": {
+          "name": "NET_EFFORT_effort_id_EFFORT_effort_id_fk",
           "tableFrom": "NET_EFFORT",
           "tableTo": "EFFORT",
           "columnsFrom": [
@@ -1730,8 +1541,8 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         },
-        "NET_EFFORT_ibfk_2": {
-          "name": "NET_EFFORT_ibfk_2",
+        "NET_EFFORT_net_id_NET_REGISTER_net_id_fk": {
+          "name": "NET_EFFORT_net_id_NET_REGISTER_net_id_fk",
           "tableFrom": "NET_EFFORT",
           "tableTo": "NET_REGISTER",
           "columnsFrom": [
@@ -1743,144 +1554,140 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "NET_OC": {
       "name": "NET_OC",
       "columns": {
         "net_oc_id": {
-          "autoincrement": true,
           "name": "net_oc_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "open_time": {
-          "autoincrement": false,
           "name": "open_time",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "close_time": {
-          "autoincrement": false,
           "name": "close_time",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "net_eff_id": {
-          "autoincrement": false,
           "name": "net_eff_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "NET_REGISTER": {
       "name": "NET_REGISTER",
       "columns": {
         "net_id": {
-          "autoincrement": true,
           "name": "net_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "net_number": {
-          "autoincrement": false,
           "name": "net_number",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "net_lat": {
-          "autoincrement": false,
           "name": "net_lat",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "net_long": {
-          "autoincrement": false,
           "name": "net_long",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "station_id": {
-          "autoincrement": false,
           "name": "station_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "station_id": {
           "name": "station_id",
@@ -1891,8 +1698,8 @@
         }
       },
       "foreignKeys": {
-        "NET_REGISTER_ibfk_1": {
-          "name": "NET_REGISTER_ibfk_1",
+        "NET_REGISTER_station_id_STATION_REGISTER_station_id_fk": {
+          "name": "NET_REGISTER_station_id_STATION_REGISTER_station_id_fk",
           "tableFrom": "NET_REGISTER",
           "tableTo": "STATION_REGISTER",
           "columnsFrom": [
@@ -1904,138 +1711,134 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "PROTOCOL_REGISTER": {
       "name": "PROTOCOL_REGISTER",
       "columns": {
         "protocol_id": {
-          "autoincrement": true,
           "name": "protocol_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "protocol_code": {
-          "autoincrement": false,
           "name": "protocol_code",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "protocol_description": {
-          "autoincrement": false,
           "name": "protocol_description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "PROTOCOL_VARS": {
       "name": "PROTOCOL_VARS",
       "columns": {
         "protocol_param_id": {
-          "autoincrement": true,
           "name": "protocol_param_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "protocol_id": {
-          "autoincrement": false,
           "name": "protocol_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "mandatory": {
-          "autoincrement": false,
           "name": "mandatory",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "order": {
-          "default": 0,
-          "autoincrement": false,
           "name": "order",
-          "type": "int(2)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "capture_variable_id": {
-          "autoincrement": false,
           "name": "capture_variable_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "protocol_id": {
           "name": "protocol_id",
@@ -2053,8 +1856,8 @@
         }
       },
       "foreignKeys": {
-        "PROTOCOL_VARS_ibfk_1": {
-          "name": "PROTOCOL_VARS_ibfk_1",
+        "PROTOCOL_VARS_protocol_id_PROTOCOL_REGISTER_protocol_id_fk": {
+          "name": "PROTOCOL_VARS_protocol_id_PROTOCOL_REGISTER_protocol_id_fk",
           "tableFrom": "PROTOCOL_VARS",
           "tableTo": "PROTOCOL_REGISTER",
           "columnsFrom": [
@@ -2066,8 +1869,8 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         },
-        "PROTOCOL_VARS_ibfk_2": {
-          "name": "PROTOCOL_VARS_ibfk_2",
+        "PROTOCOL_VARS_capture_variable_id_CAPTURE_VARIABLE_REGISTER_capture_variable_id_fk": {
+          "name": "PROTOCOL_VARS_capture_variable_id_CAPTURE_VARIABLE_REGISTER_capture_variable_id_fk",
           "tableFrom": "PROTOCOL_VARS",
           "tableTo": "CAPTURE_VARIABLE_REGISTER",
           "columnsFrom": [
@@ -2079,20 +1882,20 @@
           "onDelete": "restrict",
           "onUpdate": "restrict"
         }
-      }
+      },
+      "compositePrimaryKeys": {}
     },
     "SequelizeMeta": {
       "name": "SequelizeMeta",
       "columns": {
         "name": {
-          "autoincrement": false,
           "name": "name",
           "type": "varchar(255)",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {
         "name": {
           "name": "name",
@@ -2102,188 +1905,185 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "SPP_REGISTER": {
       "name": "SPP_REGISTER",
       "columns": {
         "spp_id": {
-          "autoincrement": true,
           "name": "spp_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "order": {
-          "autoincrement": false,
           "name": "order",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "family": {
-          "autoincrement": false,
           "name": "family",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "genus": {
-          "autoincrement": false,
           "name": "genus",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "species": {
-          "autoincrement": false,
           "name": "species",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "pt_name": {
-          "autoincrement": false,
           "name": "pt_name",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "en_name": {
-          "autoincrement": false,
           "name": "en_name",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "sci_code": {
-          "autoincrement": false,
           "name": "sci_code",
           "type": "varchar(6)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     },
     "STATION_REGISTER": {
       "name": "STATION_REGISTER",
       "columns": {
         "station_id": {
-          "autoincrement": true,
           "name": "station_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": true
         },
         "station_code": {
-          "autoincrement": false,
           "name": "station_code",
           "type": "varchar(6)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "station_name": {
-          "autoincrement": false,
           "name": "station_name",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "city": {
-          "autoincrement": false,
           "name": "city",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "state": {
-          "autoincrement": false,
           "name": "state",
           "type": "varchar(45)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "center_lat": {
-          "autoincrement": false,
           "name": "center_lat",
           "type": "decimal(10,0)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "center_long": {
-          "autoincrement": false,
           "name": "center_long",
           "type": "decimal(10,0)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "has_changed": {
-          "autoincrement": false,
           "name": "has_changed",
           "type": "tinyint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "original_id": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "original_id",
-          "type": "int(11)",
+          "type": "int",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
-          "autoincrement": false,
           "name": "created_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "autoincrement": false
         },
         "updated_at": {
-          "default": "'NULL'",
-          "autoincrement": false,
           "name": "updated_at",
           "type": "datetime",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
     }
   },
   "schemas": {},

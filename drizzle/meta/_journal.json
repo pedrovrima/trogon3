@@ -29,6 +29,27 @@
       "when": 1687918480184,
       "tag": "0003_melodic_scrambler",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1690341420856,
+      "tag": "0004_left_leo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1690341488222,
+      "tag": "0005_lucky_justice",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1690937586382,
+      "tag": "0006_classy_molten_man",
+      "breakpoints": true
     }
   ]
 }

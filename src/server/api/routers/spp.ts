@@ -8,9 +8,21 @@ import {
 
 import db from "@/db";
 import { capture, sppRegister } from "drizzle/schema";
-import { TRPCError } from "@trpc/server";
 
 export const sppRouter = createTRPCRouter({
+  getSppOptions: publicProcedure.query(async () => {
+    const spp = await db
+      .select({
+        id: sppRegister.sppId,
+        ptName: sppRegister.ptName,
+        sciName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
+        code: sppRegister.sciCode,
+      })
+      .from(sppRegister);
+
+    return spp;
+  }),
+
   getSppSummary: publicProcedure.query(async () => {
     const spp = await db
       .select({

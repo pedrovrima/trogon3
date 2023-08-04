@@ -9,6 +9,7 @@ export const bandersRouter = createTRPCRouter({
   getBanders: publicProcedure.query(async () => {
     const banders = await db
       .select({
+        id: banderRegister.banderId,
         name: banderRegister.name,
         code: banderRegister.code,
         email: banderRegister.email,
@@ -16,7 +17,12 @@ export const bandersRouter = createTRPCRouter({
       })
       .from(banderRegister)
       .leftJoin(capture, eq(capture.banderId, banderRegister.banderId))
-      .groupBy(banderRegister.code, banderRegister.name, banderRegister.email);
+      .groupBy(
+        banderRegister.code,
+        banderRegister.name,
+        banderRegister.email,
+        banderRegister.banderId
+      );
 
     return banders.filter((bander) => bander.code !== "NA");
   }),

@@ -1,115 +1,197 @@
 import {
   mysqlTable,
-  mysqlSchema,
-  AnyMySqlColumn,
+  primaryKey,
+  int,
   varchar,
   datetime,
   tinyint,
-  index,
-  foreignKey,
   text,
   binary,
-  uniqueIndex,
   decimal,
-  int,
 } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
+import { table } from "console";
 
-export const banderRegister = mysqlTable("BANDER_REGISTER", {
-  banderId: int("bander_id").autoincrement().primaryKey().notNull(),
-  name: varchar("name", { length: 45 }).notNull(),
-  code: varchar("code", { length: 3 }).notNull(),
-  email: varchar("email", { length: 45 }).notNull(),
-  phone: varchar("phone", { length: 14 }).notNull(),
-  notes: varchar("notes", { length: 250 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" })
-    .default("current_timestamp()")
-    .notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-});
-
-export const bands = mysqlTable(
-  "BANDS",
+export const checklistMetadata = mysqlTable(
+  "CHECKLIST_METADATA",
   {
-    bandId: int("band_id").autoincrement().primaryKey().notNull(),
-    stringId: int("string_id")
-      .notNull()
-      .references(() => bandStringRegister.stringId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    bandNumber: varchar("band_number", { length: 45 }).notNull(),
-    used: int("used").notNull().default(0),
+    checklistMetadataId: int("checklist_metadata_id").autoincrement().notNull(),
     createdAt: datetime("created_at", { mode: "string" })
-      .notNull()
-      .default("current_timestamp()"),
-    hasChanged: tinyint("has_changed").notNull(),
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
+    stationId: int("station_id").notNull(),
+    date: datetime("date", { mode: "string" }).notNull(),
+    startTime: datetime("start_time", { mode: "string" }).notNull(),
+    endTime: datetime("end_time", { mode: "string" }).notNull(),
+    notes: varchar("notes", { length: 250 }),
+    activity: varchar("activity", { length: 45 }).notNull(),
   },
   (table) => {
     return {
-      stringId: index("string_id").on(table.stringId),
+      checklistMetadataChecklistMetadataId: primaryKey(
+        table.checklistMetadataId
+      ),
     };
   }
 );
 
-export const bandStringRegister = mysqlTable("BAND_STRING_REGISTER", {
-  stringId: int("string_id").autoincrement().primaryKey().notNull(),
-  size: varchar("size", { length: 2 }).notNull(),
-  firstBand: varchar("first_band", { length: 10 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" })
-    .notNull()
-    .default("current_timestamp()"),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-});
+export const checklistObservers = mysqlTable(
+  "CHECKLIST_OBSERVERS",
+  {
+    checklistObserversId: int("checklist_observers_id")
+      .autoincrement()
+      .notNull(),
+    checklistMetadataId: int("checklist_metadata_id").notNull(),
+    observerId: int("observer_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      checklistObserversChecklistObserversId: primaryKey(
+        table.checklistObserversId
+      ),
+    };
+  }
+);
+
+export const checklistSpecies = mysqlTable(
+  "CHECKLIST_SPECIES",
+  {
+    checklistSpeciesId: int("checklist_species_id").autoincrement().notNull(),
+    checklistMetadataId: int("checklist_metadata_id").notNull(),
+    speciesId: int("species_id").notNull(),
+    detectionTypeId: int("detection_type_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      checklistSpeciesChecklistSpeciesId: primaryKey(table.checklistSpeciesId),
+    };
+  }
+);
+
+export const checklistDetectionTypes = mysqlTable(
+  "CHECKLIST_DETECTION_TYPES",
+  {
+    checklistDetectionTypesId: int("checklist_detection_types_id")
+      .autoincrement()
+      .notNull(),
+    detectionTypeCode: varchar("detection_type_code", { length: 45 }).notNull(),
+    detectionTypeName: varchar("detection_type_name", { length: 45 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      checklistDetectionTypesChecklistDetectionTypesId: primaryKey(
+        table.checklistDetectionTypesId
+      ),
+    };
+  }
+);
+
+export const banderRegister = mysqlTable(
+  "BANDER_REGISTER",
+  {
+    banderId: int("bander_id").autoincrement().notNull(),
+    name: varchar("name", { length: 45 }).notNull(),
+    code: varchar("code", { length: 3 }).notNull(),
+    email: varchar("email", { length: 45 }).notNull(),
+    phone: varchar("phone", { length: 14 }).notNull(),
+    notes: varchar("notes", { length: 250 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+  },
+  (table) => {
+    return {
+      banderRegisterBanderId: primaryKey(table.banderId),
+    };
+  }
+);
+
+export const bands = mysqlTable(
+  "BANDS",
+  {
+    bandId: int("band_id").autoincrement().notNull(),
+    stringId: int("string_id").notNull(),
+    bandNumber: varchar("band_number", { length: 45 }).notNull(),
+    used: int("used").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      bandsBandId: primaryKey(table.bandId),
+    };
+  }
+);
+
+export const bandStringRegister = mysqlTable(
+  "BAND_STRING_REGISTER",
+  {
+    stringId: int("string_id").autoincrement().notNull(),
+    size: varchar("size", { length: 2 }).notNull(),
+    firstBand: varchar("first_band", { length: 10 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      bandStringRegisterStringId: primaryKey(table.stringId),
+    };
+  }
+);
 
 export const capture = mysqlTable(
   "CAPTURE",
   {
-    captureId: int("capture_id").autoincrement().primaryKey().notNull(),
+    captureId: int("capture_id").autoincrement().notNull(),
     captureTime: varchar("capture_time", { length: 3 }),
     captureCode: varchar("capture_code", { length: 1 }).notNull(),
     notes: varchar("notes", { length: 250 }),
-    netEffId: int("net_eff_id")
-      .notNull()
-      .references(() => netEffort.netEffId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    banderId: int("bander_id")
-      .notNull()
-      .references(() => banderRegister.banderId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    bandId: int("band_id")
-      .notNull()
-      .references(() => bands.bandId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    sppId: int("spp_id")
-      .notNull()
-      .references(() => sppRegister.sppId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    netEffId: int("net_eff_id").notNull(),
+    banderId: int("bander_id").notNull(),
+    bandId: int("band_id").notNull(),
+    sppId: int("spp_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     updatedAt: datetime("updated_at", { mode: "string" }),
     originalId: int("original_id"),
   },
   (table) => {
     return {
-      netEffId: index("net_eff_id").on(table.netEffId),
-      banderId: index("bander_id").on(table.banderId),
-      bandId: index("band_id").on(table.bandId),
-      sppId: index("spp_id").on(table.sppId),
+      captureCaptureId: primaryKey(table.captureId),
     };
   }
 );
@@ -119,25 +201,21 @@ export const captureCategoricalOptions = mysqlTable(
   {
     captureCategoricalOptionId: int("capture_categorical_option_id")
       .autoincrement()
-      .primaryKey()
       .notNull(),
     description: text("description").notNull(),
     valueOama: varchar("value_oama", { length: 45 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    captureVariableId: int("capture_variable_id").notNull(),
     updatedAt: datetime("updated_at", { mode: "string" }),
   },
   (table) => {
     return {
-      captureVariableId: index("capture_variable_id").on(
-        table.captureVariableId
+      captureCategoricalOptionsCaptureCategoricalOptionId: primaryKey(
+        table.captureCategoricalOptionId
       ),
     };
   }
@@ -148,40 +226,22 @@ export const captureCategoricalValues = mysqlTable(
   {
     captureCategoricalValuesId: int("capture_categorical_values_id")
       .autoincrement()
-      .primaryKey()
       .notNull(),
-    captureId: int("capture_id")
-      .notNull()
-      .references(() => capture.captureId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    captureCategoricalOptionId: int("capture_categorical_option_id")
-      .notNull()
-      .references(() => captureCategoricalOptions.captureCategoricalOptionId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    captureId: int("capture_id").notNull(),
+    captureCategoricalOptionId: int("capture_categorical_option_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    captureVariableId: int("capture_variable_id").notNull(),
   },
   (table) => {
     return {
-      captureId: index("capture_id").on(table.captureId),
-      captureCategoricalOptionId: index("capture_categorical_option_id").on(
-        table.captureCategoricalOptionId
+      captureCategoricalValuesCaptureCategoricalValuesId: primaryKey(
+        table.captureCategoricalValuesId
       ),
-      captureVariableIdForeignIdx: index(
-        "CAPTURE_CATEGORICAL_VALUES_capture_variable_id_foreign_idx"
-      ).on(table.captureVariableId),
     };
   }
 );
@@ -191,32 +251,22 @@ export const captureContinuousValues = mysqlTable(
   {
     captureContinuousValuesId: int("capture_continuous_values_id")
       .autoincrement()
-      .primaryKey()
       .notNull(),
-    captureId: int("capture_id")
-      .notNull()
-      .references(() => capture.captureId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    value: varchar("value", { length: 50 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    captureId: int("capture_id").notNull(),
+    value: varchar("value", { length: 100 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    captureVariableId: int("capture_variable_id").notNull(),
   },
   (table) => {
     return {
-      captureId: index("capture_id").on(table.captureId),
-      captureVariableIdForeignIdx: index(
-        "CAPTURE_CONTINUOUS_VALUES_capture_variable_id_foreign_idx"
-      ).on(table.captureVariableId),
+      captureContinuousValuesCaptureContinuousValuesId: primaryKey(
+        table.captureContinuousValuesId
+      ),
     };
   }
 );
@@ -224,66 +274,64 @@ export const captureContinuousValues = mysqlTable(
 export const captureFlag = mysqlTable(
   "CAPTURE_FLAG",
   {
-    flagId: int("flag_id").autoincrement().primaryKey().notNull(),
-    captureId: int("capture_id")
-      .notNull()
-      .references(() => capture.captureId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    flagId: int("flag_id").autoincrement().notNull(),
+    captureId: int("capture_id").notNull(),
     note: text("note"),
   },
   (table) => {
     return {
-      captureId: index("capture_id").on(table.captureId),
+      captureFlagFlagId: primaryKey(table.flagId),
     };
   }
 );
 
-export const captureVariableRegister = mysqlTable("CAPTURE_VARIABLE_REGISTER", {
-  captureVariableId: int("capture_variable_id").primaryKey().notNull(),
-  name: varchar("name", { length: 45 }).notNull(),
-  description: text("description").notNull(),
-  portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-  fieldSize: varchar("field_size", { length: 45 }).notNull(),
-  duplicable: tinyint("duplicable").notNull(),
-  type: varchar("type", { length: 45 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-  special: tinyint("special"),
-  unit: varchar("unit", { length: 10 }),
-  precision: tinyint("precision"),
-});
+export const captureVariableRegister = mysqlTable(
+  "CAPTURE_VARIABLE_REGISTER",
+  {
+    captureVariableId: int("capture_variable_id").autoincrement().notNull(),
+    name: varchar("name", { length: 45 }).notNull(),
+    description: text("description").notNull(),
+    portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
+    fieldSize: varchar("field_size", { length: 45 }).notNull(),
+    duplicable: tinyint("duplicable").notNull(),
+    type: varchar("type", { length: 45 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+    special: tinyint("special"),
+    unit: varchar("unit", { length: 10 }),
+    precision: tinyint("precision"),
+  },
+  (table) => {
+    return {
+      captureVariableRegisterCaptureVariableId: primaryKey(
+        table.captureVariableId
+      ),
+    };
+  }
+);
 
 export const effort = mysqlTable(
   "EFFORT",
   {
-    effortId: int("effort_id").autoincrement().primaryKey().notNull(),
+    effortId: int("effort_id").autoincrement().notNull(),
     dateEffort: datetime("date_effort", { mode: "string" }).notNull(),
     notes: varchar("notes", { length: 250 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: binary("has_changed", { length: 1 }).notNull(),
     originalId: int("original_id"),
-    stationId: int("station_id")
-      .notNull()
-      .references(() => stationRegister.stationId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    protocolId: int("protocol_id")
-      .notNull()
-      .references(() => protocolRegister.protocolId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    stationId: int("station_id").notNull(),
+    protocolId: int("protocol_id").notNull(),
     updatedAt: datetime("updated_at", { mode: "string" }),
   },
   (table) => {
     return {
-      stationId: index("station_id").on(table.stationId),
-      protocolId: index("protocol_id").on(table.protocolId),
+      effortEffortId: primaryKey(table.effortId),
     };
   }
 );
@@ -293,24 +341,22 @@ export const effortCategoricalOptions = mysqlTable(
   {
     effortCategoricalOptionId: int("effort_categorical_option_id")
       .autoincrement()
-      .primaryKey()
       .notNull(),
     description: text("description").notNull(),
     valueOama: varchar("value_oama", { length: 45 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
-    effortVariableId: int("effort_variable_id")
-      .notNull()
-      .references(() => effortVariableRegister.effortVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    effortVariableId: int("effort_variable_id").notNull(),
     updatedAt: datetime("updated_at", { mode: "string" }),
   },
   (table) => {
     return {
-      effortVariableId: index("effort_variable_id").on(table.effortVariableId),
+      effortCategoricalOptionsEffortCategoricalOptionId: primaryKey(
+        table.effortCategoricalOptionId
+      ),
     };
   }
 );
@@ -320,47 +366,23 @@ export const effortCategoricalValues = mysqlTable(
   {
     effortCategoricalValueId: int("effort_categorical_value_id")
       .autoincrement()
-      .primaryKey()
       .notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    effortCategoricalOptionId: int("effort_categorical_option_id")
-      .notNull()
-      .references(() => effortCategoricalOptions.effortCategoricalOptionId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    effortTimeId: int("effort_time_id")
-      .notNull()
-      .references(() => effortTime.effortTimeId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    effortId: int("effort_id").notNull(),
+    effortCategoricalOptionId: int("effort_categorical_option_id").notNull(),
+    effortTimeId: int("effort_time_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
-    effortVariableId: int("effort_variable_id")
-      .notNull()
-      .references(() => effortVariableRegister.effortVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    effortVariableId: int("effort_variable_id").notNull(),
   },
   (table) => {
     return {
-      effortId: index("effort_id").on(table.effortId),
-      effortCategoricalOptionId: index("effort_categorical_option_id").on(
-        table.effortCategoricalOptionId
+      effortCategoricalValuesEffortCategoricalValueId: primaryKey(
+        table.effortCategoricalValueId
       ),
-      effortTimeId: index("effort_time_id").on(table.effortTimeId),
-      effortVariableIdForeignIdx: index(
-        "EFFORT_CATEGORICAL_VALUES_effort_variable_id_foreign_idx"
-      ).on(table.effortVariableId),
     };
   }
 );
@@ -370,39 +392,23 @@ export const effortContinuousValues = mysqlTable(
   {
     effortContinuousValueId: int("effort_continuous_value_id")
       .autoincrement()
-      .primaryKey()
       .notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    effortId: int("effort_id").notNull(),
     value: varchar("value", { length: 6 }).notNull(),
-    effortTimeId: int("effort_time_id")
-      .notNull()
-      .references(() => effortTime.effortTimeId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    effortTimeId: int("effort_time_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
-    effortVariableId: int("effort_variable_id")
-      .notNull()
-      .references(() => effortVariableRegister.effortVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    effortVariableId: int("effort_variable_id").notNull(),
   },
   (table) => {
     return {
-      effortId: index("effort_id").on(table.effortId),
-      effortTimeId: index("effort_time_id").on(table.effortTimeId),
-      effortVariableIdForeignIdx: index(
-        "EFFORT_CONTINUOUS_VALUES_effort_variable_id_foreign_idx"
-      ).on(table.effortVariableId),
+      effortContinuousValuesEffortContinuousValueId: primaryKey(
+        table.effortContinuousValueId
+      ),
     };
   }
 );
@@ -410,72 +416,80 @@ export const effortContinuousValues = mysqlTable(
 export const effortSummaries = mysqlTable(
   "EFFORT_SUMMARIES",
   {
-    effortSummaryId: int("effort_summary_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    effortSummaryId: int("effort_summary_id").autoincrement().notNull(),
+    effortId: int("effort_id").notNull(),
     newBands: int("new_bands").notNull(),
     recapture: int("recapture").notNull(),
     unbanded: int("unbanded").notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
   },
   (table) => {
     return {
-      effortId: index("effort_id").on(table.effortId),
+      effortSummariesEffortSummaryId: primaryKey(table.effortSummaryId),
     };
   }
 );
 
-export const effortTime = mysqlTable("EFFORT_TIME", {
-  effortTimeId: int("effort_time_id").autoincrement().primaryKey().notNull(),
-  description: text("description").notNull(),
-  portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-});
+export const effortTime = mysqlTable(
+  "EFFORT_TIME",
+  {
+    effortTimeId: int("effort_time_id").autoincrement().notNull(),
+    description: text("description").notNull(),
+    portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      effortTimeEffortTimeId: primaryKey(table.effortTimeId),
+    };
+  }
+);
 
-export const effortVariableRegister = mysqlTable("EFFORT_VARIABLE_REGISTER", {
-  effortVariableId: int("effort_variable_id").primaryKey().notNull(),
-  name: varchar("name", { length: 45 }).notNull(),
-  description: text("description").notNull(),
-  portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-  fieldSize: varchar("field_size", { length: 45 }).notNull(),
-  type: varchar("type", { length: 45 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-  unit: varchar("unit", { length: 10 }),
-});
+export const effortVariableRegister = mysqlTable(
+  "EFFORT_VARIABLE_REGISTER",
+  {
+    effortVariableId: int("effort_variable_id").autoincrement().notNull(),
+    name: varchar("name", { length: 45 }).notNull(),
+    description: text("description").notNull(),
+    portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
+    fieldSize: varchar("field_size", { length: 45 }).notNull(),
+    type: varchar("type", { length: 45 }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+    unit: varchar("unit", { length: 10 }),
+  },
+  (table) => {
+    return {
+      effortVariableRegisterEffortVariableId: primaryKey(
+        table.effortVariableId
+      ),
+    };
+  }
+);
 
 export const netEffort = mysqlTable(
   "NET_EFFORT",
   {
-    netEffId: int("net_eff_id").autoincrement().primaryKey().notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    netId: int("net_id")
-      .notNull()
-      .references(() => netRegister.netId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    netEffId: int("net_eff_id").autoincrement().notNull(),
+    effortId: int("effort_id").notNull(),
+    netId: int("net_id").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
@@ -483,88 +497,141 @@ export const netEffort = mysqlTable(
   },
   (table) => {
     return {
-      effortId: index("effort_id").on(table.effortId),
-      netId: index("net_id").on(table.netId),
+      netEffortNetEffId: primaryKey(table.netEffId),
     };
   }
 );
 
-export const netOc = mysqlTable("NET_OC", {
-  netOcId: int("net_oc_id").autoincrement().primaryKey().notNull(),
-  openTime: datetime("open_time", { mode: "string" }).notNull(),
-  closeTime: datetime("close_time", { mode: "string" }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  netEffId: int("net_eff_id").notNull(),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-});
+export const netOc = mysqlTable(
+  "NET_OC",
+  {
+    netOcId: int("net_oc_id").autoincrement().notNull(),
+    openTime: datetime("open_time", { mode: "string" }).notNull(),
+    closeTime: datetime("close_time", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+    originalId: int("original_id"),
+    netEffId: int("net_eff_id").notNull(),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      netOcNetOcId: primaryKey(table.netOcId),
+    };
+  }
+);
 
 export const netRegister = mysqlTable(
   "NET_REGISTER",
   {
-    netId: int("net_id").autoincrement().primaryKey().notNull(),
+    netId: int("net_id").autoincrement().notNull(),
     netNumber: varchar("net_number", { length: 45 }).notNull(),
     netLat: int("net_lat").notNull(),
     netLong: int("net_long").notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
-    stationId: int("station_id")
-      .notNull()
-      .references(() => stationRegister.stationId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    stationId: int("station_id").notNull(),
     updatedAt: datetime("updated_at", { mode: "string" }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => {
     return {
-      stationId: index("station_id").on(table.stationId),
+      netRegisterNetId: primaryKey(table.netId),
     };
   }
 );
 
-export const protocolRegister = mysqlTable("PROTOCOL_REGISTER", {
-  protocolId: int("protocol_id").autoincrement().primaryKey().notNull(),
-  protocolCode: varchar("protocol_code", { length: 45 }).notNull(),
-  protocolDescription: text("protocol_description").notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-});
+export const protocolRegister = mysqlTable(
+  "PROTOCOL_REGISTER",
+  {
+    protocolId: int("protocol_id").autoincrement().notNull(),
+    protocolCode: varchar("protocol_code", { length: 45 }).notNull(),
+    protocolDescription: text("protocol_description").notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    hasChanged: tinyint("has_changed").notNull(),
+    originalId: int("original_id"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      protocolRegisterProtocolId: primaryKey(table.protocolId),
+    };
+  }
+);
 
 export const protocolVars = mysqlTable(
   "PROTOCOL_VARS",
   {
-    protocolParamId: int("protocol_param_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    protocolId: int("protocol_id")
-      .notNull()
-      .references(() => protocolRegister.protocolId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    protocolParamId: int("protocol_param_id").autoincrement().notNull(),
+    protocolId: int("protocol_id").notNull(),
     mandatory: tinyint("mandatory").notNull(),
     order: int("order").default(0).notNull(),
     hasChanged: tinyint("has_changed").notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    captureVariableId: int("capture_variable_id").notNull(),
   },
   (table) => {
     return {
-      protocolId: index("protocol_id").on(table.protocolId),
-      variableId: index("variable_id").on(table.captureVariableId),
+      protocolVarsProtocolParamId: primaryKey(table.protocolParamId),
+    };
+  }
+);
+
+export const sppRegister = mysqlTable(
+  "SPP_REGISTER",
+  {
+    sppId: int("spp_id").autoincrement().notNull(),
+    order: varchar("order", { length: 45 }).notNull(),
+    family: varchar("family", { length: 45 }).notNull(),
+    genus: varchar("genus", { length: 45 }).notNull(),
+    species: varchar("species", { length: 45 }).notNull(),
+    ptName: varchar("pt_name", { length: 45 }).notNull(),
+    enName: varchar("en_name", { length: 45 }).notNull(),
+    sciCode: varchar("sci_code", { length: 6 }).notNull(),
+    hasChanged: tinyint("has_changed").notNull(),
+    originalId: int("original_id"),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      sppRegisterSppId: primaryKey(table.sppId),
+    };
+  }
+);
+
+export const stationRegister = mysqlTable(
+  "STATION_REGISTER",
+  {
+    stationId: int("station_id").autoincrement().notNull(),
+    stationCode: varchar("station_code", { length: 6 }).notNull(),
+    stationName: varchar("station_name", { length: 45 }).notNull(),
+    city: varchar("city", { length: 45 }).notNull(),
+    state: varchar("state", { length: 45 }).notNull(),
+    centerLat: decimal("center_lat", { precision: 10, scale: 0 }).notNull(),
+    centerLong: decimal("center_long", { precision: 10, scale: 0 }).notNull(),
+    hasChanged: tinyint("has_changed").notNull(),
+    originalId: int("original_id"),
+    createdAt: datetime("created_at", { mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+  },
+  (table) => {
+    return {
+      stationRegisterStationId: primaryKey(table.stationId),
     };
   }
 );
@@ -572,40 +639,11 @@ export const protocolVars = mysqlTable(
 export const sequelizeMeta = mysqlTable(
   "SequelizeMeta",
   {
-    name: varchar("name", { length: 255 }).primaryKey().notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
   },
   (table) => {
     return {
-      name: uniqueIndex("name").on(table.name),
+      sequelizeMetaName: primaryKey(table.name),
     };
   }
 );
-
-export const sppRegister = mysqlTable("SPP_REGISTER", {
-  sppId: int("spp_id").autoincrement().primaryKey().notNull(),
-  order: varchar("order", { length: 45 }).notNull(),
-  family: varchar("family", { length: 45 }).notNull(),
-  genus: varchar("genus", { length: 45 }).notNull(),
-  species: varchar("species", { length: 45 }).notNull(),
-  ptName: varchar("pt_name", { length: 45 }).notNull(),
-  enName: varchar("en_name", { length: 45 }).notNull(),
-  sciCode: varchar("sci_code", { length: 6 }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-});
-
-export const stationRegister = mysqlTable("STATION_REGISTER", {
-  stationId: int("station_id").autoincrement().primaryKey().notNull(),
-  stationCode: varchar("station_code", { length: 6 }).notNull(),
-  stationName: varchar("station_name", { length: 45 }).notNull(),
-  city: varchar("city", { length: 45 }).notNull(),
-  state: varchar("state", { length: 45 }).notNull(),
-  centerLat: decimal("center_lat", { precision: 10, scale: 0 }).notNull(),
-  centerLong: decimal("center_long", { precision: 10, scale: 0 }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-});
