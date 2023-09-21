@@ -118,7 +118,8 @@ const FormControl = React.forwardRef<
           : `${formDescriptionId} ${formMessageId}`
       }
       className={cn(
-        error && "border-destructive text-destructive focus:ring-destructive",
+        error &&
+          "border-destructive text-destructive placeholder:text-destructive focus:ring-destructive",
         props.className
       )}
       aria-invalid={!!error}
@@ -160,7 +161,7 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
+      className={cn("text-sm font-medium text-destructive ", className)}
       {...props}
     >
       {body}
