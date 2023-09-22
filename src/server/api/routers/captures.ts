@@ -26,12 +26,12 @@ export const capturesRouter = createTRPCRouter({
   getCaptures: publicProcedure.query(async ({ ctx }) => {
     const captures = await db
       .select({
+        captureId: capture.captureId,
         station: stationRegister.stationCode,
         date: effort.dateEffort,
         netNumber: netRegister.netNumber,
         captureTime: capture.captureTime,
         captureCode: capture.captureCode,
-        captureId: capture.captureId,
         bandSize: bandStringRegister.size,
         bandNumber: bands.bandNumber,
         sppCode: sppRegister.sciCode,
