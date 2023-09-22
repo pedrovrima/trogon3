@@ -50,6 +50,9 @@ dependencies:
   '@trpc/server':
     specifier: ^10.32.0
     version: 10.32.0
+  '@types/react-csv':
+    specifier: ^1.1.4
+    version: 1.1.4
   class-variance-authority:
     specifier: ^0.6.1
     version: 0.6.1
@@ -1438,6 +1441,12 @@ packages:
 
   /@types/prop-types@15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
+
+  /@types/react-csv@1.1.4:
+    resolution: {integrity: sha512-CibB6IhP61GVtLDPey93RKT95DgrDVRVCU+W/cLQ8gjYtVKXCSgt9UYq0DMjIJgnjo1oB/eNk7vNeSPT7eTN4w==}
+    dependencies:
+      '@types/react': 18.2.14
+    dev: false
 
   /@types/react-dom@18.2.6:
     resolution: {integrity: sha512-2et4PDvg6PVCyS7fuTc4gPoksV58bW0RwSxWKcPRcHZf0PRUGq03TKcD/rUHe3azfV6/5/biUBJw+HhCQjaP0A==}

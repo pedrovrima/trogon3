@@ -26,6 +26,7 @@
     "@trpc/next": "^10.32.0",
     "@trpc/react-query": "^10.32.0",
     "@trpc/server": "^10.32.0",
+    "@types/react-csv": "^1.1.4",
     "class-variance-authority": "^0.6.1",
     "clsx": "^1.2.1",
     "dotenv": "^16.3.1",
