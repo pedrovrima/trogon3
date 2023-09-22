@@ -30,6 +30,7 @@ export const capturesRouter = createTRPCRouter({
         date: effort.dateEffort,
         netNumber: netRegister.netNumber,
         captureTime: capture.captureTime,
+        captureCode: capture.captureCode,
         captureId: capture.captureId,
         bandSize: bandStringRegister.size,
         bandNumber: bands.bandNumber,
