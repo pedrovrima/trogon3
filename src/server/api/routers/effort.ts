@@ -1,9 +1,5 @@
-import { eq, sql, inArray, ne } from "drizzle-orm";
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "@/server/api/trpc";
+import { eq, sql, inArray } from "drizzle-orm";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import db from "@/db";
 import {
   effort,
