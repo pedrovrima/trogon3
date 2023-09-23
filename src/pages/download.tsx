@@ -31,7 +31,7 @@ const Captures: NextPage = () => {
             </Button>
             <CSVLink
               data={data}
-              filename={"captures.csv"}
+              filename={`captures_${Date.now()}.csv`}
               className="hidden"
               target="_blank"
               ref={downloadRef}
@@ -51,7 +51,7 @@ const Captures: NextPage = () => {
             </Button>
             <CSVLink
               data={effortData}
-              filename={"effort.csv"}
+              filename={`effort_${Date.now()}.csv`}
               className="hidden"
               target="_blank"
               ref={effortDownloadRef}
