@@ -5,6 +5,7 @@ import { bandsRouter } from "@/server/api/routers/bands";
 import { bandersRouter } from "@/server/api/routers/banders";
 import { sppRouter } from "@/server/api/routers/spp";
 import { capturesRouter } from "@/server/api/routers/captures";
+import { effortRouter } from "./routers/effort";
 /**
  * This is the primary router for your server.
  *
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   banders: bandersRouter,
   spp: sppRouter,
   captures: capturesRouter,
+  efforts: effortRouter,
 });
 
 // export type definition of API
