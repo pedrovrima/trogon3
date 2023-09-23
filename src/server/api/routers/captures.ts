@@ -20,6 +20,7 @@ import {
   netEffort,
   netRegister,
   sppRegister,
+  banderRegister,
 } from "drizzle/schema";
 
 export const capturesRouter = createTRPCRouter({
@@ -28,9 +29,10 @@ export const capturesRouter = createTRPCRouter({
       .select({
         captureId: capture.captureId,
         station: stationRegister.stationCode,
-        date: effort.dateEffort,
+        data: sql`DATE_FORMAT(${effort.dateEffort}, '%Y-%m-%d')`,
         netNumber: netRegister.netNumber,
         captureTime: capture.captureTime,
+        bander: banderRegister.code,
         captureCode: capture.captureCode,
         bandSize: bandStringRegister.size,
         bandNumber: bands.bandNumber,
@@ -45,6 +47,7 @@ export const capturesRouter = createTRPCRouter({
         stationRegister,
         eq(effort.stationId, stationRegister.stationId)
       )
+      .leftJoin(banderRegister, eq(capture.banderId, banderRegister.banderId))
       .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
       .leftJoin(bands, eq(capture.bandId, bands.bandId))
       .leftJoin(
