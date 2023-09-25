@@ -103,7 +103,16 @@ export const capturesRouter = createTRPCRouter({
           } else {
             const capture = acc[captureIndex];
             if (capture) {
-              capture.variables[variableName] = value;
+              if (capture.variables[variableName] === undefined) {
+                capture.variables[variableName] = value;
+              } else {
+                const sameVariableValues = Object.keys(
+                  capture.variables
+                ).filter((key) => key.includes(variableName));
+                capture.variables[
+                  `${variableName}_${sameVariableValues.length + 1}`
+                ] = value;
+              }
               acc[captureIndex] = capture;
             }
           }
@@ -143,7 +152,16 @@ export const capturesRouter = createTRPCRouter({
           } else {
             const capture = acc[captureIndex];
             if (capture) {
-              capture.variables[variableName] = value;
+              if (capture.variables[variableName] === undefined) {
+                capture.variables[variableName] = value;
+              } else {
+                const sameVariableValues = Object.keys(
+                  capture.variables
+                ).filter((key) => key.includes(variableName));
+                capture.variables[
+                  `${variableName}_${sameVariableValues.length + 1}`
+                ] = value;
+              }
               acc[captureIndex] = capture;
             }
           }
