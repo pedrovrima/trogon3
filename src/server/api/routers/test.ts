@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, desc } from "drizzle-orm";
 
 import {
   createTRPCRouter,
@@ -25,7 +25,7 @@ export const testRouter = createTRPCRouter({
     .input(z.object({ bandNumber: z.string() }))
     .query(async ({ input }) => {
       const _bandNumber = input.bandNumber;
-      const [bandSize, bandNumber] = _bandNumber.split(/(\d+)/);
+      const { bandSize, bandNumber } = splitBand(_bandNumber);
 
       const band_captures = await db
         .select({
@@ -54,7 +54,8 @@ export const testRouter = createTRPCRouter({
             eq(bands.bandNumber, bandNumber as string),
             eq(bandStringRegister.size, bandSize as string)
           )
-        );
+        )
+        .orderBy(desc(effort.dateEffort));
 
       if (band_captures.length === 0) {
         const bands_info = await db
@@ -70,6 +71,7 @@ export const testRouter = createTRPCRouter({
               eq(bandStringRegister.size, bandSize as string)
             )
           );
+
         if (bands_info.length === 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -89,3 +91,25 @@ export const testRouter = createTRPCRouter({
     return "you can now see this secret message!";
   }),
 });
+
+interface SplitResult {
+  bandSize: string | undefined;
+  bandNumber: string | undefined;
+}
+
+function splitBand(input: string): SplitResult {
+  const regex = /^([0-9]*[a-zA-Z])([0-9]+)$/;
+  const match = input.match(regex);
+
+  if (match) {
+    return {
+      bandSize: match[1],
+      bandNumber: match[2],
+    };
+  } else {
+    return {
+      bandSize: undefined,
+      bandNumber: undefined,
+    };
+  }
+}
