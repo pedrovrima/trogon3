@@ -74,7 +74,7 @@ export const capture = mysqlTable(
     captureId: int("capture_id").autoincrement().primaryKey().notNull(),
     captureTime: varchar("capture_time", { length: 3 }),
     captureCode: varchar("capture_code", { length: 1 }).notNull(),
-    notes: varchar("notes", { length: 250 }),
+    notes: varchar("notes", { length: 1500 }),
     netEffId: int("net_eff_id")
       .notNull()
       .references(() => netEffort.netEffId, {
