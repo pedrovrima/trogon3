@@ -3,14 +3,9 @@ import { type NextPage } from "next";
 import { api } from "@/utils/api";
 import Loader from "@/components/organisms/loader";
 import { BandersTable, columns } from "@/components/organisms/banders_table";
+import { useSession } from "next-auth/react";
 
 const SppDetails: NextPage = () => {
-  const spp = api.spp.getSppSummary.useQuery(undefined, {
-    retry: 0,
-    refetchOnWindowFocus: false,
-  });
-
-  console.log(spp);
   return (
     <>SPP</>
     // <>
