@@ -19,6 +19,7 @@ import {
   captureVariableRegister,
   effort,
   netEffort,
+  netRegister,
   sppRegister,
   stationRegister,
 } from "drizzle/schema";
@@ -40,6 +41,7 @@ export const testRouter = createTRPCRouter({
           date: effort.dateEffort,
           station: stationRegister.stationCode,
           age: captureCategoricalOptions.valueOama,
+          netNumber: netRegister.netNumber,
         })
         .from(bands)
         .leftJoin(capture, eq(bands.bandId, capture.bandId))
@@ -49,6 +51,7 @@ export const testRouter = createTRPCRouter({
         )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
+        .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
         .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
         .leftJoin(
           stationRegister,
@@ -81,6 +84,7 @@ export const testRouter = createTRPCRouter({
         )
         .orderBy(desc(effort.dateEffort));
 
+      console.log(band_captures[0]);
       if (band_captures.length === 0) {
         const bands_info = await db
           .select()

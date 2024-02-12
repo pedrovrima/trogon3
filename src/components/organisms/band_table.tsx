@@ -43,13 +43,18 @@ export const columns: ColumnDef<BandData>[] = [
   },
 
   {
-    accessorKey: "date",
     header: "Data",
+    accessorFn: (data) => {
+      if (data.date) {
+        return new Date(data.date).toLocaleDateString("pt-BR");
+      }
+    },
   },
   {
     accessorKey: "station",
     header: "Estação",
   },
+  { accessorKey: "netNumber", header: "Rede" },
 ];
 
 export function DataTable<TData, TValue>({
