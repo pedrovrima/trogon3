@@ -13,9 +13,10 @@ const BandDetails: NextPage = () => {
   const router = useRouter();
 
   const { bandNumber } = router.query as Query;
+
   const hello = api.test.hello.useQuery(
     { bandNumber },
-    { retry: 0, refetchOnWindowFocus: false }
+    { retry: 2, refetchOnWindowFocus: false }
   );
 
   return (

@@ -14,6 +14,9 @@ import {
   bandStringRegister,
   bands,
   capture,
+  captureCategoricalOptions,
+  captureCategoricalValues,
+  captureVariableRegister,
   effort,
   netEffort,
   sppRegister,
@@ -24,6 +27,7 @@ export const testRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ bandNumber: z.string() }))
     .query(async ({ input }) => {
+      console.log(input);
       const _bandNumber = input.bandNumber;
       const { bandSize, bandNumber } = splitBand(_bandNumber);
 
@@ -35,6 +39,7 @@ export const testRouter = createTRPCRouter({
           >`concat(${sppRegister.genus}," ",${sppRegister.species})`,
           date: effort.dateEffort,
           station: stationRegister.stationCode,
+          age: captureCategoricalOptions.valueOama,
         })
         .from(bands)
         .leftJoin(capture, eq(bands.bandId, capture.bandId))
@@ -49,10 +54,29 @@ export const testRouter = createTRPCRouter({
           stationRegister,
           eq(effort.stationId, stationRegister.stationId)
         )
+        .leftJoin(
+          captureCategoricalValues,
+          eq(capture.captureId, captureCategoricalValues.captureId)
+        )
+        .leftJoin(
+          captureCategoricalOptions,
+          eq(
+            captureCategoricalValues.captureCategoricalOptionId,
+            captureCategoricalOptions.captureCategoricalOptionId
+          )
+        )
+        .leftJoin(
+          captureVariableRegister,
+          eq(
+            captureCategoricalOptions.captureVariableId,
+            captureVariableRegister.captureVariableId
+          )
+        )
         .where(
           and(
             eq(bands.bandNumber, bandNumber as string),
-            eq(bandStringRegister.size, bandSize as string)
+            eq(bandStringRegister.size, bandSize as string),
+            eq(captureVariableRegister.name, "age_wrp")
           )
         )
         .orderBy(desc(effort.dateEffort));

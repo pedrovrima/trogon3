@@ -37,6 +37,10 @@ export const columns: ColumnDef<BandData>[] = [
     accessorKey: "speciesName",
     header: "Espécie",
   },
+  {
+    accessorKey: "age",
+    header: "Idade",
+  },
 
   {
     accessorKey: "date",
