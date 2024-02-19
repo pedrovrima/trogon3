@@ -187,4 +187,96 @@ export const capturesRouter = createTRPCRouter({
 
     return capturesWithVariables;
   }),
+  getCaptureById: publicProcedure
+    .input(
+      z.object({
+        captureId: z.number(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { captureId } = input;
+      const captureData = await db
+        .select({
+          captureId: capture.captureId,
+          station: stationRegister.stationCode,
+          data: sql`DATE_FORMAT(${effort.dateEffort}, '%Y-%m-%d')`,
+          netNumber: netRegister.netNumber,
+          captureTime: capture.captureTime,
+          bander: banderRegister.code,
+          captureCode: capture.captureCode,
+          bandSize: bandStringRegister.size,
+          bandNumber: bands.bandNumber,
+          sppCode: sppRegister.sciCode,
+          sppName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
+          notes: capture.notes,
+        })
+        .from(capture)
+        .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
+        .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
+        .leftJoin(
+          stationRegister,
+          eq(effort.stationId, stationRegister.stationId)
+        )
+        .leftJoin(banderRegister, eq(capture.banderId, banderRegister.banderId))
+        .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
+        .leftJoin(bands, eq(capture.bandId, bands.bandId))
+        .leftJoin(
+          bandStringRegister,
+          eq(bands.stringId, bandStringRegister.stringId)
+        )
+        .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
+        .where(eq(capture.captureId, captureId));
+
+      const categoricalValues = await db
+        .select({
+          id: captureCategoricalValues.captureCategoricalValuesId,
+          captureId: captureCategoricalValues.captureId,
+          value: captureCategoricalOptions.valueOama,
+          variableName: captureVariableRegister.name,
+          variableType: captureVariableRegister.type,
+          label: captureVariableRegister.portugueseLabel,
+        })
+        .from(captureCategoricalValues)
+        .leftJoin(
+          captureCategoricalOptions,
+          eq(
+            captureCategoricalValues.captureCategoricalOptionId,
+            captureCategoricalOptions.captureCategoricalOptionId
+          )
+        )
+        .leftJoin(
+          captureVariableRegister,
+          eq(
+            captureCategoricalValues.captureVariableId,
+            captureVariableRegister.captureVariableId
+          )
+        )
+        .where(eq(captureCategoricalValues.captureId, captureId));
+
+      const continuousValues = await db
+        .select({
+          id: captureContinuousValues.captureContinuousValuesId,
+          captureId: captureContinuousValues.captureId,
+          variableId: captureVariableRegister.captureVariableId,
+          variableName: captureVariableRegister.name,
+          variableType: captureVariableRegister.type,
+          value: captureContinuousValues.value,
+          label: captureVariableRegister.portugueseLabel,
+        })
+        .from(captureContinuousValues)
+        .leftJoin(
+          captureVariableRegister,
+          eq(
+            captureContinuousValues.captureVariableId,
+            captureVariableRegister.captureVariableId
+          )
+        )
+        .where(eq(captureContinuousValues.captureId, captureId));
+
+      return {
+        ...captureData[0],
+        categoricalValues,
+        continuousValues,
+      };
+    }),
 });

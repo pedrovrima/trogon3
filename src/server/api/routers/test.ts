@@ -34,6 +34,7 @@ export const testRouter = createTRPCRouter({
 
       const band_captures = await db
         .select({
+          id: capture.captureId,
           bandNumber: bands.bandNumber,
           speciesName: sql<
             string | null

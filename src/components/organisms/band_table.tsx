@@ -6,6 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useRouter } from "next/router";
 
 import {
   Table,
@@ -15,24 +16,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  clickableRow?: boolean;
 }
 
 export type BandData = {
+  id: number | null;
   bandNumber: string | null;
   speciesName: string | null;
   date: string | null;
+  age: string | null;
   station: string | null;
 };
 
 export const columns: ColumnDef<BandData>[] = [
-  // {
-  //   accessorKey: "bandNumber",
-  //   header: "Numero da Anilha",
-  // },
+  {
+    accessorKey: "id",
+    header: "",
+  },
   {
     accessorKey: "speciesName",
     header: "Espécie",
@@ -67,6 +72,8 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const router = useRouter();
+
   return (
     <div className="w-full rounded-md border">
       <Table>
@@ -92,6 +99,11 @@ export function DataTable<TData, TValue>({
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
+                className="cursor-pointer hover:bg-gray-800"
+                onClick={() => {
+                  // @ts-ignore
+                  router.push(`/captures/${row.original.id}`);
+                }}
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
               >

@@ -14,7 +14,7 @@ const BandDetails: NextPage = () => {
 
   const { bandNumber } = router.query as Query;
 
-  const hello = api.test.hello.useQuery(
+  const query = api.test.hello.useQuery(
     { bandNumber },
     { retry: 2, refetchOnWindowFocus: false }
   );
@@ -27,20 +27,20 @@ const BandDetails: NextPage = () => {
         </h1>
 
         <div className="flex w-full max-w-2xl flex-col items-center gap-2">
-          {hello.isLoading && <Loader />}
-          {hello.isError && (
+          {query.isLoading && <Loader />}
+          {query.isError && (
             <>
               <h2 className="text-2xl text-destructive">Erro!</h2>
-              <p>{hello.error?.message}</p>
+              <p>{query.error?.message}</p>
             </>
           )}
 
-          {hello?.data && "band_captures" in hello.data && (
+          {query?.data && "band_captures" in query.data && (
             <>
-              {!hello?.data?.band_captures[0]?.speciesName ? (
+              {!query?.data?.band_captures[0]?.speciesName ? (
                 <p className="text-white">Anilha ainda nao utilizada</p>
               ) : (
-                <DataTable columns={columns} data={hello.data.band_captures} />
+                <DataTable columns={columns} data={query.data.band_captures} />
               )}
             </>
           )}
