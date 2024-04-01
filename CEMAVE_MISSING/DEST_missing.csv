@@ -1,0 +1,10 @@
+station,location,captureCode,bandSize,bandNumber,sppName,age_wrp,sex,IDADE.CEMAVE,datanew,CBRO,Código da Anilha,Número da Anilha,Espécies,Código da Idade,Código do Sexo,Data,Diâmetro do Tarso,Observações
+BOA1,BOA,D,F,88897,Anilhus destruidus,NA,NA,NA,01/06/2022,NA,F,88897,Anilhus destruidus,NA,NA,01/06/2022,,
+BOA3,BOA,D,D,132375,Anilhus destruidus,NA,NA,NA,04/07/2023,NA,D,132375,Anilhus destruidus,NA,NA,04/07/2023,,
+BOA3,BOA,D,H,112499,Anilhus destruidus,NA,NA,NA,04/07/2023,NA,H,112499,Anilhus destruidus,NA,NA,04/07/2023,,
+TOPC,TOP,D,H,112414,Anilhus destruidus,NA,NA,NA,20/09/2019,NA,H,112414,Anilhus destruidus,NA,NA,20/09/2019,,
+BOA1,BOA,D,E,187621,Anilhus destruidus,NA,NA,NA,11/07/2023,NA,E,187621,Anilhus destruidus,NA,NA,11/07/2023,,
+IAM1,IAM,D,H,93946,Anilhus destruidus,NA,NA,NA,29/08/2023,NA,H,93946,Anilhus destruidus,NA,NA,29/08/2023,,
+IAM1,IAM,D,D,169865,Anilhus destruidus,NA,NA,NA,29/08/2023,NA,D,169865,Anilhus destruidus,NA,NA,29/08/2023,,
+BOA1,BOA,D,G,55674,Anilhus destruidus,NA,NA,NA,05/09/2023,NA,G,55674,Anilhus destruidus,NA,NA,05/09/2023,,
+BOA1,BOA,D,C,117383,Anilhus destruidus,NA,NA,NA,06/12/2023,NA,C,117383,Anilhus destruidus,NA,NA,06/12/2023,,

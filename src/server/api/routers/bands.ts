@@ -15,6 +15,22 @@ interface LastInsertIdResult {
 }
 
 export const bandsRouter = createTRPCRouter({
+  getBandReport: publicProcedure.query(async () => {
+    const bandReport = await db
+      .select({
+        bandNumber: sql`CONCAT(${bandStringRegister.size},${bands.bandNumber})`,
+        captures: sql<number | string>`count(${capture.captureId})`,
+      })
+      .from(bands)
+      .leftJoin(
+        bandStringRegister,
+        eq(bands.stringId, bandStringRegister.stringId)
+      )
+      .leftJoin(capture, eq(bands.bandId, capture.bandId))
+      .groupBy(bands.bandId)
+      .execute();
+    return bandReport;
+  }),
   getBandCount: publicProcedure.query(async () => {
     const totalBands = await db
 
@@ -23,7 +39,6 @@ export const bandsRouter = createTRPCRouter({
       })
       .from(bands);
 
-    console.log(totalBands);
     const _bandCount = await db
       .select({
         bandSize: bandStringRegister.size,

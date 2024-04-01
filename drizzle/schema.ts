@@ -506,6 +506,8 @@ export const netRegister = mysqlTable(
     netId: int("net_id").autoincrement().primaryKey().notNull(),
     netNumber: varchar("net_number", { length: 45 }).notNull(),
     netLat: int("net_lat").notNull(),
+    meshSize: int("mesh_size"),
+    netLength: int("net_length"),
     netLong: int("net_long").notNull(),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
