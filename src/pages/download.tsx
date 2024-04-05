@@ -4,7 +4,6 @@ import { api } from "@/utils/api";
 import Loader from "@/components/organisms/loader";
 import { Button } from "@/components/ui/button";
 import { CSVLink } from "react-csv";
-import { U } from "drizzle-orm/select.types.d-b947a018";
 
 const Captures: NextPage = () => {
   const { data } = api.captures.getCaptures.useQuery();

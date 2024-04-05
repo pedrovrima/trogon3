@@ -46,6 +46,7 @@ export const effortRouter = createTRPCRouter({
         protocolRegister,
         eq(effort.protocolId, protocolRegister.protocolId)
       )
+
       .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
       .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
       .groupBy(effort.effortId, effortSummaries.effortSummaryId);
@@ -57,11 +58,15 @@ export const effortRouter = createTRPCRouter({
         effortId: netEffort.effortId,
         totalNets: sql`COUNT(${netEffort.netId})`,
         netHours: sql<number>`SUM(TO_SECONDS(${netOc.closeTime})- TO_SECONDS(${netOc.openTime}))/3600`,
+        openTime: sql`MIN(${netOc.openTime})`,
+        closeTime: sql`MAX(${netOc.closeTime})`,
       })
       .from(netEffort)
       .rightJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
       .where(inArray(netEffort.effortId, effortIds))
       .groupBy(netEffort.effortId);
+
+    console.log(netEfforts);
 
     const categoricalValues = await db
       .select({
@@ -176,7 +181,15 @@ export const effortRouter = createTRPCRouter({
 
       return {
         ...effort,
+
         ...netEffort,
+        openTime: new Date(netEffort?.openTime as string).toLocaleTimeString(
+          "pt-BR"
+        ),
+        closeTime: new Date(netEffort?.closeTime as string).toLocaleTimeString(
+          "pt-BR"
+        ),
+
         ...effortCategoricalValues?.variables,
         ...effortContinuousValues?.variables,
       };
