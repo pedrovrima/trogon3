@@ -25,7 +25,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 export type BandData = {
-  id: number | null;
+  id: bigint | null;
   bandNumber: string | null;
   speciesName: string | null;
   date: string | null;
