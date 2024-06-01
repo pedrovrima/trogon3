@@ -1,0 +1,9 @@
+{
+  "dialect": "postgresql",
+  "schema": "./drizzle/schema.ts",
+  "out": "./drizzle",
+  "driver": "pg",
+  "dbCredentials": {
+    "connectionString": "postgres://postgres.lzgbswhoyoslqmowcivl:P1ng0de0ureo@aws-0-sa-east-1.pooler.supabase.com:5432/postgres"
+  }
+}

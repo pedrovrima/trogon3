@@ -31,7 +31,7 @@ export const effortRouter = createTRPCRouter({
         effortId: effort.effortId,
         station: stationRegister.stationCode,
         notes: effort.notes,
-        date: sql`DATE_FORMAT(${effort.dateEffort}, '%Y-%m-%d')`,
+        date: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
         protocol: protocolRegister.protocolCode,
         newCaptures: effortSummaries.newBands,
         recaptures: effortSummaries.recapture,
@@ -49,7 +49,7 @@ export const effortRouter = createTRPCRouter({
 
       .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
       .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
-      .groupBy(effort.effortId, effortSummaries.effortSummaryId);
+      .groupBy(effort.effortId, effortSummaries.effortSummaryId, stationRegister.stationCode, protocolRegister.protocolCode);
 
     const effortIds = efforts.map((effort) => effort.effortId);
 
@@ -57,7 +57,7 @@ export const effortRouter = createTRPCRouter({
       .select({
         effortId: netEffort.effortId,
         totalNets: sql`COUNT(${netEffort.netId})`,
-        netHours: sql<number>`SUM(TO_SECONDS(${netOc.closeTime})- TO_SECONDS(${netOc.openTime}))/3600`,
+        netHours: sql<number>`SUM(age(${netOc.closeTime},${netOc.openTime}))`,
         openTime: sql`MIN(${netOc.openTime})`,
         closeTime: sql`MAX(${netOc.closeTime})`,
       })

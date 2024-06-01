@@ -27,18 +27,13 @@ export const bandsRouter = createTRPCRouter({
         eq(bands.stringId, bandStringRegister.stringId)
       )
       .leftJoin(capture, eq(bands.bandId, capture.bandId))
-      .groupBy(bands.bandId)
+      .groupBy(bands.bandId, bandStringRegister.size, bands.bandNumber)
       .execute();
     return bandReport;
   }),
   getBandCount: publicProcedure.query(async () => {
-    const totalBands = await db
-
-      .select({
-        totalBands: sql<number>`count(${bands.bandId})`,
-      })
-      .from(bands);
-
+   
+    console.log('starting')
     const _bandCount = await db
       .select({
         bandSize: bandStringRegister.size,
@@ -48,6 +43,8 @@ export const bandsRouter = createTRPCRouter({
       .leftJoin(bands, eq(bandStringRegister.stringId, bands.stringId))
       .leftJoin(capture, eq(bands.bandId, capture.bandId))
       .groupBy(bands.bandId, bandStringRegister.size);
+
+      console.log(_bandCount)
 
     const bandCount = _bandCount.map((band) => {
       let size = band.bandSize;

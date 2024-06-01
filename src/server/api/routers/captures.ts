@@ -29,7 +29,7 @@ export const capturesRouter = createTRPCRouter({
       .select({
         captureId: capture.captureId,
         station: stationRegister.stationCode,
-        data: sql`DATE_FORMAT(${effort.dateEffort}, '%Y-%m-%d')`,
+        data: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
         netNumber: netRegister.netNumber,
         captureTime: capture.captureTime,
         bander: banderRegister.code,
@@ -56,7 +56,7 @@ export const capturesRouter = createTRPCRouter({
       )
       .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId));
 
-    const captureIds = captures.map((capture) => capture.captureId);
+      const captureIds = captures.map((capture) => Number(capture.captureId));
 
     const categoricalValues = await db
       .select({
@@ -173,10 +173,10 @@ export const capturesRouter = createTRPCRouter({
 
     const capturesWithVariables = captures.map((capture) => {
       const categoricalVariables = normalizedCategoricalValue.find(
-        (variable) => variable.captureId === capture.captureId
+        (variable) => variable.captureId === Number(capture.captureId)
       );
       const continuousVariables = normalizedContinuousValue.find(
-        (variable) => variable.captureId === capture.captureId
+        (variable) => variable.captureId === Number(capture.captureId)
       );
       return {
         ...capture,

@@ -38,7 +38,7 @@ export const testRouter = createTRPCRouter({
           bandNumber: bands.bandNumber,
           speciesName: sql<
             string | null
-          >`concat(${sppRegister.genus}," ",${sppRegister.species})`,
+          >`concat(${sppRegister.genus},' ',${sppRegister.species})`,
           date: effort.dateEffort,
           station: stationRegister.stationCode,
           age: captureCategoricalOptions.valueOama,

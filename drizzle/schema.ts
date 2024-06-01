@@ -1,613 +1,446 @@
-import {
-  mysqlTable,
-  mysqlSchema,
-  AnyMySqlColumn,
-  varchar,
-  datetime,
-  tinyint,
-  index,
-  foreignKey,
-  text,
-  binary,
-  uniqueIndex,
-  decimal,
-  int,
-} from "drizzle-orm/mysql-core";
-import { sql } from "drizzle-orm";
+import { pgTable, pgEnum, serial, text, boolean, integer, timestamp, bigserial, varchar, bigint, index, foreignKey, smallint, numeric, uniqueIndex } from "drizzle-orm/pg-core"
 
-export const banderRegister = mysqlTable("BANDER_REGISTER", {
-  banderId: int("bander_id").autoincrement().primaryKey().notNull(),
-  name: varchar("name", { length: 45 }).notNull(),
-  code: varchar("code", { length: 3 }).notNull(),
-  email: varchar("email", { length: 45 }).notNull(),
-  phone: varchar("phone", { length: 14 }).notNull(),
-  notes: varchar("notes", { length: 250 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" })
-    .default("current_timestamp()")
-    .notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
+import { sql } from "drizzle-orm"
+export const keyStatus = pgEnum("key_status", ['default', 'valid', 'invalid', 'expired'])
+export const keyType = pgEnum("key_type", ['aead-ietf', 'aead-det', 'hmacsha512', 'hmacsha256', 'auth', 'shorthash', 'generichash', 'kdf', 'secretbox', 'secretstream', 'stream_xchacha20'])
+export const aalLevel = pgEnum("aal_level", ['aal1', 'aal2', 'aal3'])
+export const codeChallengeMethod = pgEnum("code_challenge_method", ['s256', 'plain'])
+export const factorStatus = pgEnum("factor_status", ['unverified', 'verified'])
+export const factorType = pgEnum("factor_type", ['totp', 'webauthn'])
+export const action = pgEnum("action", ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'ERROR'])
+export const equalityOp = pgEnum("equality_op", ['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'in'])
+export const oneTimeTokenType = pgEnum("one_time_token_type", ['confirmation_token', 'reauthentication_token', 'recovery_token', 'email_change_token_new', 'email_change_token_current', 'phone_change_token'])
+
+
+export const effortFlag = pgTable("effort_flag", {
+	effortFlagId: serial("effort_flag_id").primaryKey().notNull(),
+	notes: text("notes").notNull(),
+	hasChanged: boolean("has_changed").default(false),
+	originalId: integer("original_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).notNull(),
 });
 
-export const bands = mysqlTable(
-  "BANDS",
-  {
-    bandId: int("band_id").autoincrement().primaryKey().notNull(),
-    stringId: int("string_id")
-      .notNull()
-      .references(() => bandStringRegister.stringId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    bandNumber: varchar("band_number", { length: 45 }).notNull(),
-    used: int("used").notNull().default(0),
-    createdAt: datetime("created_at", { mode: "string" })
-      .notNull()
-      .default("current_timestamp()"),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-  },
-  (table) => {
-    return {
-      stringId: index("string_id").on(table.stringId),
-    };
-  }
-);
-
-export const bandStringRegister = mysqlTable("BAND_STRING_REGISTER", {
-  stringId: int("string_id").autoincrement().primaryKey().notNull(),
-  size: varchar("size", { length: 2 }).notNull(),
-  firstBand: varchar("first_band", { length: 10 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" })
-    .notNull()
-    .default("current_timestamp()"),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
+export const bandStringRegister = pgTable("band_string_register", {
+	stringId: bigserial("string_id", { mode: "bigint" }).primaryKey().notNull(),
+	size: varchar("size", { length: 2 }).notNull(),
+	firstBand: varchar("first_band", { length: 10 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").default(false).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 });
 
-export const capture = mysqlTable(
-  "CAPTURE",
-  {
-    captureId: int("capture_id").autoincrement().primaryKey().notNull(),
-    captureTime: varchar("capture_time", { length: 3 }),
-    captureCode: varchar("capture_code", { length: 1 }).notNull(),
-    notes: varchar("notes", { length: 1500 }),
-    netEffId: int("net_eff_id")
-      .notNull()
-      .references(() => netEffort.netEffId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    banderId: int("bander_id")
-      .notNull()
-      .references(() => banderRegister.banderId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    bandId: int("band_id")
-      .notNull()
-      .references(() => bands.bandId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    sppId: int("spp_id")
-      .notNull()
-      .references(() => sppRegister.sppId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    originalId: int("original_id"),
-  },
-  (table) => {
-    return {
-      netEffId: index("net_eff_id").on(table.netEffId),
-      banderId: index("bander_id").on(table.banderId),
-      bandId: index("band_id").on(table.bandId),
-      sppId: index("spp_id").on(table.sppId),
-    };
-  }
-);
-
-export const captureCategoricalOptions = mysqlTable(
-  "CAPTURE_CATEGORICAL_OPTIONS",
-  {
-    captureCategoricalOptionId: int("capture_categorical_option_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    description: text("description").notNull(),
-    valueOama: varchar("value_oama", { length: 45 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-  },
-  (table) => {
-    return {
-      captureVariableId: index("capture_variable_id").on(
-        table.captureVariableId
-      ),
-    };
-  }
-);
-
-export const captureCategoricalValues = mysqlTable(
-  "CAPTURE_CATEGORICAL_VALUES",
-  {
-    captureCategoricalValuesId: int("capture_categorical_values_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    captureId: int("capture_id")
-      .notNull()
-      .references(() => capture.captureId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    captureCategoricalOptionId: int("capture_categorical_option_id")
-      .notNull()
-      .references(() => captureCategoricalOptions.captureCategoricalOptionId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-  },
-  (table) => {
-    return {
-      captureId: index("capture_id").on(table.captureId),
-      captureCategoricalOptionId: index("capture_categorical_option_id").on(
-        table.captureCategoricalOptionId
-      ),
-      captureVariableIdForeignIdx: index(
-        "CAPTURE_CATEGORICAL_VALUES_capture_variable_id_foreign_idx"
-      ).on(table.captureVariableId),
-    };
-  }
-);
-
-export const captureContinuousValues = mysqlTable(
-  "CAPTURE_CONTINUOUS_VALUES",
-  {
-    captureContinuousValuesId: int("capture_continuous_values_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    captureId: int("capture_id")
-      .notNull()
-      .references(() => capture.captureId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    value: varchar("value", { length: 50 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-  },
-  (table) => {
-    return {
-      captureId: index("capture_id").on(table.captureId),
-      captureVariableIdForeignIdx: index(
-        "CAPTURE_CONTINUOUS_VALUES_capture_variable_id_foreign_idx"
-      ).on(table.captureVariableId),
-    };
-  }
-);
-
-export const captureFlag = mysqlTable(
-  "CAPTURE_FLAG",
-  {
-    flagId: int("flag_id").autoincrement().primaryKey().notNull(),
-    captureId: int("capture_id")
-      .notNull()
-      .references(() => capture.captureId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    note: text("note"),
-  },
-  (table) => {
-    return {
-      captureId: index("capture_id").on(table.captureId),
-    };
-  }
-);
-
-export const captureVariableRegister = mysqlTable("CAPTURE_VARIABLE_REGISTER", {
-  captureVariableId: int("capture_variable_id").primaryKey().notNull(),
-  name: varchar("name", { length: 45 }).notNull(),
-  description: text("description").notNull(),
-  portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-  fieldSize: varchar("field_size", { length: 45 }).notNull(),
-  duplicable: tinyint("duplicable").notNull(),
-  type: varchar("type", { length: 45 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-  special: tinyint("special"),
-  unit: varchar("unit", { length: 10 }),
-  precision: tinyint("precision"),
+export const banderRegister = pgTable("bander_register", {
+	banderId: bigserial("bander_id", { mode: "bigint" }).primaryKey().notNull(),
+	name: varchar("name", { length: 45 }).notNull(),
+	code: varchar("code", { length: 3 }).notNull(),
+	email: varchar("email", { length: 45 }).notNull(),
+	phone: varchar("phone", { length: 14 }).notNull(),
+	notes: varchar("notes", { length: 250 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	hasChanged: boolean("has_changed").default(false).notNull(),
 });
 
-export const effort = mysqlTable(
-  "EFFORT",
-  {
-    effortId: int("effort_id").autoincrement().primaryKey().notNull(),
-    dateEffort: datetime("date_effort", { mode: "string" }).notNull(),
-    notes: varchar("notes", { length: 250 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: binary("has_changed", { length: 1 }).notNull(),
-    originalId: int("original_id"),
-    stationId: int("station_id")
-      .notNull()
-      .references(() => stationRegister.stationId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    protocolId: int("protocol_id")
-      .notNull()
-      .references(() => protocolRegister.protocolId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-  },
-  (table) => {
-    return {
-      stationId: index("station_id").on(table.stationId),
-      protocolId: index("protocol_id").on(table.protocolId),
-    };
-  }
-);
-
-export const effortCategoricalOptions = mysqlTable(
-  "EFFORT_CATEGORICAL_OPTIONS",
-  {
-    effortCategoricalOptionId: int("effort_categorical_option_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    description: text("description").notNull(),
-    valueOama: varchar("value_oama", { length: 45 }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    effortVariableId: int("effort_variable_id")
-      .notNull()
-      .references(() => effortVariableRegister.effortVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-  },
-  (table) => {
-    return {
-      effortVariableId: index("effort_variable_id").on(table.effortVariableId),
-    };
-  }
-);
-
-export const effortCategoricalValues = mysqlTable(
-  "EFFORT_CATEGORICAL_VALUES",
-  {
-    effortCategoricalValueId: int("effort_categorical_value_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    effortCategoricalOptionId: int("effort_categorical_option_id")
-      .notNull()
-      .references(() => effortCategoricalOptions.effortCategoricalOptionId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    effortTimeId: int("effort_time_id")
-      .notNull()
-      .references(() => effortTime.effortTimeId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    effortVariableId: int("effort_variable_id")
-      .notNull()
-      .references(() => effortVariableRegister.effortVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-  },
-  (table) => {
-    return {
-      effortId: index("effort_id").on(table.effortId),
-      effortCategoricalOptionId: index("effort_categorical_option_id").on(
-        table.effortCategoricalOptionId
-      ),
-      effortTimeId: index("effort_time_id").on(table.effortTimeId),
-      effortVariableIdForeignIdx: index(
-        "EFFORT_CATEGORICAL_VALUES_effort_variable_id_foreign_idx"
-      ).on(table.effortVariableId),
-    };
-  }
-);
-
-export const effortContinuousValues = mysqlTable(
-  "EFFORT_CONTINUOUS_VALUES",
-  {
-    effortContinuousValueId: int("effort_continuous_value_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    value: varchar("value", { length: 6 }).notNull(),
-    effortTimeId: int("effort_time_id")
-      .notNull()
-      .references(() => effortTime.effortTimeId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    effortVariableId: int("effort_variable_id")
-      .notNull()
-      .references(() => effortVariableRegister.effortVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-  },
-  (table) => {
-    return {
-      effortId: index("effort_id").on(table.effortId),
-      effortTimeId: index("effort_time_id").on(table.effortTimeId),
-      effortVariableIdForeignIdx: index(
-        "EFFORT_CONTINUOUS_VALUES_effort_variable_id_foreign_idx"
-      ).on(table.effortVariableId),
-    };
-  }
-);
-
-export const effortSummaries = mysqlTable(
-  "EFFORT_SUMMARIES",
-  {
-    effortSummaryId: int("effort_summary_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    newBands: int("new_bands").notNull(),
-    recapture: int("recapture").notNull(),
-    unbanded: int("unbanded").notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-  },
-  (table) => {
-    return {
-      effortId: index("effort_id").on(table.effortId),
-    };
-  }
-);
-
-export const effortTime = mysqlTable("EFFORT_TIME", {
-  effortTimeId: int("effort_time_id").autoincrement().primaryKey().notNull(),
-  description: text("description").notNull(),
-  portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
+export const bands = pgTable("bands", {
+	bandId: bigserial("band_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	stringId: bigint("string_id", { mode: "number" }).notNull().references(() => bandStringRegister.stringId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	bandNumber: varchar("band_number", { length: 45 }).notNull(),
+	used: integer("used").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: smallint("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+},
+(table) => {
+	return {
+		idx18171StringId: index("idx_18171_string_id").on(table.stringId),
+	}
 });
 
-export const effortVariableRegister = mysqlTable("EFFORT_VARIABLE_REGISTER", {
-  effortVariableId: int("effort_variable_id").primaryKey().notNull(),
-  name: varchar("name", { length: 45 }).notNull(),
-  description: text("description").notNull(),
-  portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-  fieldSize: varchar("field_size", { length: 45 }).notNull(),
-  type: varchar("type", { length: 45 }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").default(0).notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
-  unit: varchar("unit", { length: 10 }),
+export const captureCategoricalValues = pgTable("capture_categorical_values", {
+	captureCategoricalValuesId: bigserial("capture_categorical_values_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureId: bigint("capture_id", { mode: "number" }).notNull().references(() => capture.captureId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureCategoricalOptionId: bigint("capture_categorical_option_id", { mode: "number" }).notNull().references(() => captureCategoricalOptions.captureCategoricalOptionId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureVariableId: bigint("capture_variable_id", { mode: "number" }).notNull().references(() => captureVariableRegister.captureVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+},
+(table) => {
+	return {
+		idx18196CaptureCategoricalOptionId: index("idx_18196_capture_categorical_option_id").on(table.captureCategoricalOptionId),
+		idx18196CaptureCategoricalValuesCaptureVariableIdForeig: index("idx_18196_capture_categorical_values_capture_variable_id_foreig").on(table.captureVariableId),
+		idx18196CaptureId: index("idx_18196_capture_id").on(table.captureId),
+	}
 });
 
-export const netEffort = mysqlTable(
-  "NET_EFFORT",
-  {
-    netEffId: int("net_eff_id").autoincrement().primaryKey().notNull(),
-    effortId: int("effort_id")
-      .notNull()
-      .references(() => effort.effortId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    netId: int("net_id")
-      .notNull()
-      .references(() => netRegister.netId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    redeId: varchar("REDE.ID", { length: 2 }),
-  },
-  (table) => {
-    return {
-      effortId: index("effort_id").on(table.effortId),
-      netId: index("net_id").on(table.netId),
-    };
-  }
-);
-
-export const netOc = mysqlTable("NET_OC", {
-  netOcId: int("net_oc_id").autoincrement().primaryKey().notNull(),
-  openTime: datetime("open_time", { mode: "string" }).notNull(),
-  closeTime: datetime("close_time", { mode: "string" }).notNull(),
-  createdAt: datetime("created_at", { mode: "string" }),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  netEffId: int("net_eff_id").notNull(),
-  updatedAt: datetime("updated_at", { mode: "string" }),
+export const captureCategoricalOptions = pgTable("capture_categorical_options", {
+	captureCategoricalOptionId: bigserial("capture_categorical_option_id", { mode: "bigint" }).primaryKey().notNull(),
+	description: text("description").notNull(),
+	valueOama: varchar("value_oama", { length: 45 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureVariableId: bigint("capture_variable_id", { mode: "number" }).notNull().references(() => captureVariableRegister.captureVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+},
+(table) => {
+	return {
+		idx18189CaptureVariableId: index("idx_18189_capture_variable_id").on(table.captureVariableId),
+	}
 });
 
-export const netRegister = mysqlTable(
-  "NET_REGISTER",
-  {
-    netId: int("net_id").autoincrement().primaryKey().notNull(),
-    netNumber: varchar("net_number", { length: 45 }).notNull(),
-    netLat: int("net_lat").notNull(),
-    meshSize: int("mesh_size"),
-    netLength: int("net_length"),
-    netLong: int("net_long").notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    originalId: int("original_id"),
-    stationId: int("station_id")
-      .notNull()
-      .references(() => stationRegister.stationId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    updatedAt: datetime("updated_at", { mode: "string" }).notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  },
-  (table) => {
-    return {
-      stationId: index("station_id").on(table.stationId),
-    };
-  }
-);
-
-export const protocolRegister = mysqlTable("PROTOCOL_REGISTER", {
-  protocolId: int("protocol_id").autoincrement().primaryKey().notNull(),
-  protocolCode: varchar("protocol_code", { length: 45 }).notNull(),
-  protocolDescription: text("protocol_description").notNull(),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  updatedAt: datetime("updated_at", { mode: "string" }),
+export const capture = pgTable("capture", {
+	captureId: bigserial("capture_id", { mode: "bigint" }).primaryKey().notNull(),
+	captureTime: varchar("capture_time", { length: 3 }).default(sql`NULL::character varying`),
+	captureCode: varchar("capture_code", { length: 1 }).notNull(),
+	notes: text("notes").default(sql`NULL::character varying`),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	netEffId: bigint("net_eff_id", { mode: "number" }).notNull().references(() => netEffort.netEffId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	banderId: bigint("bander_id", { mode: "number" }).notNull().references(() => banderRegister.banderId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	bandId: bigint("band_id", { mode: "number" }).notNull().references(() => bands.bandId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	sppId: bigint("spp_id", { mode: "number" }).notNull().references(() => sppRegister.sppId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+},
+(table) => {
+	return {
+		idx18182BandId: index("idx_18182_band_id").on(table.bandId),
+		idx18182BanderId: index("idx_18182_bander_id").on(table.banderId),
+		idx18182NetEffId: index("idx_18182_net_eff_id").on(table.netEffId),
+		idx18182SppId: index("idx_18182_spp_id").on(table.sppId),
+	}
 });
 
-export const protocolVars = mysqlTable(
-  "PROTOCOL_VARS",
-  {
-    protocolParamId: int("protocol_param_id")
-      .autoincrement()
-      .primaryKey()
-      .notNull(),
-    protocolId: int("protocol_id")
-      .notNull()
-      .references(() => protocolRegister.protocolId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-    mandatory: tinyint("mandatory").notNull(),
-    order: int("order").default(0).notNull(),
-    hasChanged: tinyint("has_changed").notNull(),
-    createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    originalId: int("original_id"),
-    updatedAt: datetime("updated_at", { mode: "string" }),
-    captureVariableId: int("capture_variable_id")
-      .notNull()
-      .references(() => captureVariableRegister.captureVariableId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
-  },
-  (table) => {
-    return {
-      protocolId: index("protocol_id").on(table.protocolId),
-      variableId: index("variable_id").on(table.captureVariableId),
-    };
-  }
-);
-
-export const sequelizeMeta = mysqlTable(
-  "SequelizeMeta",
-  {
-    name: varchar("name", { length: 255 }).primaryKey().notNull(),
-  },
-  (table) => {
-    return {
-      name: uniqueIndex("name").on(table.name),
-    };
-  }
-);
-
-export const sppRegister = mysqlTable("SPP_REGISTER", {
-  sppId: int("spp_id").autoincrement().primaryKey().notNull(),
-  order: varchar("order", { length: 45 }).notNull(),
-  family: varchar("family", { length: 45 }).notNull(),
-  genus: varchar("genus", { length: 45 }).notNull(),
-  species: varchar("species", { length: 45 }).notNull(),
-  ptName: varchar("pt_name", { length: 45 }).notNull(),
-  enName: varchar("en_name", { length: 45 }).notNull(),
-  sciCode: varchar("sci_code", { length: 6 }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  updatedAt: datetime("updated_at", { mode: "string" }),
+export const captureVariableRegister = pgTable("capture_variable_register", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureVariableId: bigint("capture_variable_id", { mode: "number" }).primaryKey().notNull(),
+	name: varchar("name", { length: 45 }).notNull(),
+	description: text("description").notNull(),
+	portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
+	fieldSize: varchar("field_size", { length: 45 }).notNull(),
+	duplicable: boolean("duplicable").notNull(),
+	type: varchar("type", { length: 45 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").default(false).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	special: boolean("special"),
+	unit: varchar("unit", { length: 10 }).default(sql`NULL::character varying`),
+	precision: smallint("precision"),
 });
 
-export const stationRegister = mysqlTable("STATION_REGISTER", {
-  stationId: int("station_id").autoincrement().primaryKey().notNull(),
-  stationCode: varchar("station_code", { length: 6 }).notNull(),
-  stationName: varchar("station_name", { length: 45 }).notNull(),
-  city: varchar("city", { length: 45 }).notNull(),
-  state: varchar("state", { length: 45 }).notNull(),
-  centerLat: decimal("center_lat", { precision: 10, scale: 0 }).notNull(),
-  centerLong: decimal("center_long", { precision: 10, scale: 0 }).notNull(),
-  hasChanged: tinyint("has_changed").notNull(),
-  originalId: int("original_id"),
-  createdAt: datetime("created_at", { mode: "string" }).notNull(),
-  updatedAt: datetime("updated_at", { mode: "string" }),
+export const effortTime = pgTable("effort_time", {
+	effortTimeId: bigserial("effort_time_id", { mode: "bigint" }).primaryKey().notNull(),
+	description: text("description").notNull(),
+	portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+});
+
+export const netEffort = pgTable("net_effort", {
+	netEffId: bigserial("net_eff_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortId: bigint("effort_id", { mode: "number" }).notNull().references(() => effort.effortId),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	netId: bigint("net_id", { mode: "number" }).notNull().references(() => netRegister.netId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	redeId: varchar("REDE.ID", { length: 2 }).default(sql`NULL::character varying`),
+},
+(table) => {
+	return {
+		idx18263EffortId: index("idx_18263_effort_id").on(table.effortId),
+		idx18263NetId: index("idx_18263_net_id").on(table.netId),
+	}
+});
+
+export const captureFlag = pgTable("capture_flag", {
+	flagId: bigserial("flag_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureId: bigint("capture_id", { mode: "number" }).notNull().references(() => capture.captureId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	note: text("note"),
+},
+(table) => {
+	return {
+		idx18206CaptureId: index("idx_18206_capture_id").on(table.captureId),
+	}
+});
+
+export const netOc = pgTable("net_oc", {
+	netOcId: bigserial("net_oc_id", { mode: "bigint" }).primaryKey().notNull(),
+	openTime: timestamp("open_time", { withTimezone: true, mode: 'string' }).notNull(),
+	closeTime: timestamp("close_time", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	netEffId: bigint("net_eff_id", { mode: "number" }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+});
+
+export const effortVariableRegister = pgTable("effort_variable_register", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortVariableId: bigint("effort_variable_id", { mode: "number" }).primaryKey().notNull(),
+	name: varchar("name", { length: 45 }).notNull(),
+	description: text("description").notNull(),
+	portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
+	fieldSize: varchar("field_size", { length: 45 }).notNull(),
+	type: varchar("type", { length: 45 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").default(false).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	unit: varchar("unit", { length: 10 }).default(sql`NULL::character varying`),
+});
+
+export const netRegister = pgTable("net_register", {
+	netId: bigserial("net_id", { mode: "bigint" }).primaryKey().notNull(),
+	netNumber: varchar("net_number", { length: 45 }).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	netLat: bigint("net_lat", { mode: "number" }).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	netLong: bigint("net_long", { mode: "number" }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	stationId: bigint("station_id", { mode: "number" }).notNull().references(() => stationRegister.stationId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	meshSize: numeric("mesh_size"),
+	netLength: numeric("net_length"),
+},
+(table) => {
+	return {
+		idx18274StationId: index("idx_18274_station_id").on(table.stationId),
+	}
+});
+
+export const protocolRegister = pgTable("protocol_register", {
+	protocolId: bigserial("protocol_id", { mode: "bigint" }).primaryKey().notNull(),
+	protocolCode: varchar("protocol_code", { length: 45 }).notNull(),
+	protocolDescription: text("protocol_description").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+});
+
+export const protocolVars = pgTable("protocol_vars", {
+	protocolParamId: bigserial("protocol_param_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	protocolId: bigint("protocol_id", { mode: "number" }).notNull().references(() => protocolRegister.protocolId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	mandatory: boolean("mandatory").notNull(),
+	order: integer("order").default(0).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureVariableId: bigint("capture_variable_id", { mode: "number" }).notNull().references(() => captureVariableRegister.captureVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+},
+(table) => {
+	return {
+		idx18286ProtocolId: index("idx_18286_protocol_id").on(table.protocolId),
+		idx18286VariableId: index("idx_18286_variable_id").on(table.captureVariableId),
+	}
+});
+
+export const sequelizemeta = pgTable("sequelizemeta", {
+	name: varchar("name", { length: 255 }).primaryKey().notNull(),
+},
+(table) => {
+	return {
+		idx18291Name: uniqueIndex("idx_18291_name").on(table.name),
+	}
+});
+
+export const sppRegister = pgTable("spp_register", {
+	sppId: bigserial("spp_id", { mode: "bigint" }).primaryKey().notNull(),
+	order: varchar("order", { length: 45 }).notNull(),
+	family: varchar("family", { length: 45 }).notNull(),
+	genus: varchar("genus", { length: 45 }).notNull(),
+	species: varchar("species", { length: 45 }).notNull(),
+	ptName: varchar("pt_name", { length: 45 }).notNull(),
+	enName: varchar("en_name", { length: 45 }).notNull(),
+	sciCode: varchar("sci_code", { length: 6 }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+});
+
+export const stationRegister = pgTable("station_register", {
+	stationId: bigserial("station_id", { mode: "bigint" }).primaryKey().notNull(),
+	stationCode: varchar("station_code", { length: 6 }).notNull(),
+	stationName: varchar("station_name", { length: 45 }).notNull(),
+	city: varchar("city", { length: 45 }).notNull(),
+	state: varchar("state", { length: 45 }).notNull(),
+	centerLat: numeric("center_lat", { precision: 10, scale:  0 }).notNull(),
+	centerLong: numeric("center_long", { precision: 10, scale:  0 }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+});
+
+export const effort = pgTable("effort", {
+	effortId: bigserial("effort_id", { mode: "bigint" }).primaryKey().notNull(),
+	dateEffort: timestamp("date_effort", { withTimezone: true, mode: 'string' }).notNull(),
+	notes: varchar("notes", { length: 250 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	// TODO: failed to parse database type 'bytea'
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	stationId: bigint("station_id", { mode: "number" }).notNull().references(() => stationRegister.stationId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	protocolId: bigint("protocol_id", { mode: "number" }).notNull().references(() => protocolRegister.protocolId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+},
+(table) => {
+	return {
+		idx18220ProtocolId: index("idx_18220_protocol_id").on(table.protocolId),
+		idx18220StationId: index("idx_18220_station_id").on(table.stationId),
+	}
+});
+
+export const effortCategoricalOptions = pgTable("effort_categorical_options", {
+	effortCategoricalOptionId: bigserial("effort_categorical_option_id", { mode: "bigint" }).primaryKey().notNull(),
+	description: text("description").notNull(),
+	valueOama: varchar("value_oama", { length: 45 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortVariableId: bigint("effort_variable_id", { mode: "number" }).notNull().references(() => effortVariableRegister.effortVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+},
+(table) => {
+	return {
+		idx18227EffortVariableId: index("idx_18227_effort_variable_id").on(table.effortVariableId),
+	}
+});
+
+export const captureContinuousValues = pgTable("capture_continuous_values", {
+	captureContinuousValuesId: bigserial("capture_continuous_values_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureId: bigint("capture_id", { mode: "number" }).notNull().references(() => capture.captureId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	value: varchar("value", { length: 100 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	captureVariableId: bigint("capture_variable_id", { mode: "number" }).notNull().references(() => captureVariableRegister.captureVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+},
+(table) => {
+	return {
+		idx18201CaptureContinuousValuesCaptureVariableIdForeign: index("idx_18201_capture_continuous_values_capture_variable_id_foreign").on(table.captureVariableId),
+		idx18201CaptureId: index("idx_18201_capture_id").on(table.captureId),
+	}
+});
+
+export const effortCategoricalValues = pgTable("effort_categorical_values", {
+	effortCategoricalValueId: bigserial("effort_categorical_value_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortId: bigint("effort_id", { mode: "number" }).notNull().references(() => effort.effortId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortCategoricalOptionId: bigint("effort_categorical_option_id", { mode: "number" }).notNull().references(() => effortCategoricalOptions.effortCategoricalOptionId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortTimeId: bigint("effort_time_id", { mode: "number" }).notNull().references(() => effortTime.effortTimeId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortVariableId: bigint("effort_variable_id", { mode: "number" }).notNull().references(() => effortVariableRegister.effortVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+},
+(table) => {
+	return {
+		idx18234EffortCategoricalOptionId: index("idx_18234_effort_categorical_option_id").on(table.effortCategoricalOptionId),
+		idx18234EffortCategoricalValuesEffortVariableIdForeign: index("idx_18234_effort_categorical_values_effort_variable_id_foreign_").on(table.effortVariableId),
+		idx18234EffortId: index("idx_18234_effort_id").on(table.effortId),
+		idx18234EffortTimeId: index("idx_18234_effort_time_id").on(table.effortTimeId),
+	}
+});
+
+export const effortContinuousValues = pgTable("effort_continuous_values", {
+	effortContinuousValueId: bigserial("effort_continuous_value_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortId: bigint("effort_id", { mode: "number" }).notNull().references(() => effort.effortId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	value: varchar("value", { length: 6 }).notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortTimeId: bigint("effort_time_id", { mode: "number" }).notNull().references(() => effortTime.effortTimeId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortVariableId: bigint("effort_variable_id", { mode: "number" }).notNull().references(() => effortVariableRegister.effortVariableId, { onDelete: "restrict", onUpdate: "restrict" } ),
+},
+(table) => {
+	return {
+		idx18239EffortContinuousValuesEffortVariableIdForeignI: index("idx_18239_effort_continuous_values_effort_variable_id_foreign_i").on(table.effortVariableId),
+		idx18239EffortId: index("idx_18239_effort_id").on(table.effortId),
+		idx18239EffortTimeId: index("idx_18239_effort_time_id").on(table.effortTimeId),
+	}
+});
+
+export const effortSummaries = pgTable("effort_summaries", {
+	effortSummaryId: bigserial("effort_summary_id", { mode: "bigint" }).primaryKey().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	effortId: bigint("effort_id", { mode: "number" }).notNull().references(() => effort.effortId, { onDelete: "restrict", onUpdate: "restrict" } ),
+	newBands: integer("new_bands").notNull(),
+	recapture: integer("recapture").notNull(),
+	unbanded: integer("unbanded").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	hasChanged: boolean("has_changed").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	originalId: bigint("original_id", { mode: "number" }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+},
+(table) => {
+	return {
+		idx18244EffortId: index("idx_18244_effort_id").on(table.effortId),
+	}
 });
