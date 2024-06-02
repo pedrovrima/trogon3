@@ -17,7 +17,7 @@ export const effortFlag = pgTable("effort_flag", {
 	notes: text("notes").notNull(),
 	hasChanged: boolean("has_changed").default(false),
 	originalId: integer("original_id"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).notNull(),
 });
 
@@ -25,7 +25,7 @@ export const bandStringRegister = pgTable("band_string_register", {
 	stringId: bigserial("string_id", { mode: "bigint" }).primaryKey().notNull(),
 	size: varchar("size", { length: 2 }).notNull(),
 	firstBand: varchar("first_band", { length: 10 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").default(false).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -39,7 +39,7 @@ export const banderRegister = pgTable("bander_register", {
 	email: varchar("email", { length: 45 }).notNull(),
 	phone: varchar("phone", { length: 14 }).notNull(),
 	notes: varchar("notes", { length: 250 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull().defaultNow(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
@@ -52,7 +52,7 @@ export const bands = pgTable("bands", {
 	stringId: bigint("string_id", { mode: "number" }).notNull().references(() => bandStringRegister.stringId, { onDelete: "restrict", onUpdate: "restrict" } ),
 	bandNumber: varchar("band_number", { length: 45 }).notNull(),
 	used: integer("used").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: smallint("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -70,7 +70,7 @@ export const captureCategoricalValues = pgTable("capture_categorical_values", {
 	captureId: bigint("capture_id", { mode: "number" }).notNull().references(() => capture.captureId, { onDelete: "restrict", onUpdate: "restrict" } ),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	captureCategoricalOptionId: bigint("capture_categorical_option_id", { mode: "number" }).notNull().references(() => captureCategoricalOptions.captureCategoricalOptionId, { onDelete: "restrict", onUpdate: "restrict" } ),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -90,7 +90,7 @@ export const captureCategoricalOptions = pgTable("capture_categorical_options", 
 	captureCategoricalOptionId: bigserial("capture_categorical_option_id", { mode: "bigint" }).primaryKey().notNull(),
 	description: text("description").notNull(),
 	valueOama: varchar("value_oama", { length: 45 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -117,7 +117,7 @@ export const capture = pgTable("capture", {
 	bandId: bigint("band_id", { mode: "number" }).notNull().references(() => bands.bandId, { onDelete: "restrict", onUpdate: "restrict" } ),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	sppId: bigint("spp_id", { mode: "number" }).notNull().references(() => sppRegister.sppId, { onDelete: "restrict", onUpdate: "restrict" } ),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -141,7 +141,7 @@ export const captureVariableRegister = pgTable("capture_variable_register", {
 	fieldSize: varchar("field_size", { length: 45 }).notNull(),
 	duplicable: boolean("duplicable").notNull(),
 	type: varchar("type", { length: 45 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").default(false).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -155,7 +155,7 @@ export const effortTime = pgTable("effort_time", {
 	effortTimeId: bigserial("effort_time_id", { mode: "bigint" }).primaryKey().notNull(),
 	description: text("description").notNull(),
 	portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -168,7 +168,7 @@ export const netEffort = pgTable("net_effort", {
 	effortId: bigint("effort_id", { mode: "number" }).notNull().references(() => effort.effortId),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	netId: bigint("net_id", { mode: "number" }).notNull().references(() => netRegister.netId, { onDelete: "restrict", onUpdate: "restrict" } ),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -198,7 +198,7 @@ export const netOc = pgTable("net_oc", {
 	netOcId: bigserial("net_oc_id", { mode: "bigint" }).primaryKey().notNull(),
 	openTime: timestamp("open_time", { withTimezone: true, mode: 'string' }).notNull(),
 	closeTime: timestamp("close_time", { withTimezone: true, mode: 'string' }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -215,7 +215,7 @@ export const effortVariableRegister = pgTable("effort_variable_register", {
 	portugueseLabel: varchar("portuguese_label", { length: 45 }).notNull(),
 	fieldSize: varchar("field_size", { length: 45 }).notNull(),
 	type: varchar("type", { length: 45 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").default(false).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -236,7 +236,7 @@ export const netRegister = pgTable("net_register", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	stationId: bigint("station_id", { mode: "number" }).notNull().references(() => stationRegister.stationId, { onDelete: "restrict", onUpdate: "restrict" } ),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	meshSize: numeric("mesh_size"),
 	netLength: numeric("net_length"),
 },
@@ -250,7 +250,7 @@ export const protocolRegister = pgTable("protocol_register", {
 	protocolId: bigserial("protocol_id", { mode: "bigint" }).primaryKey().notNull(),
 	protocolCode: varchar("protocol_code", { length: 45 }).notNull(),
 	protocolDescription: text("protocol_description").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -264,7 +264,7 @@ export const protocolVars = pgTable("protocol_vars", {
 	mandatory: boolean("mandatory").notNull(),
 	order: integer("order").default(0).notNull(),
 	hasChanged: boolean("has_changed").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
@@ -299,7 +299,7 @@ export const sppRegister = pgTable("spp_register", {
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 });
 
@@ -314,7 +314,7 @@ export const stationRegister = pgTable("station_register", {
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 });
 
@@ -322,7 +322,7 @@ export const effort = pgTable("effort", {
 	effortId: bigserial("effort_id", { mode: "bigint" }).primaryKey().notNull(),
 	dateEffort: timestamp("date_effort", { withTimezone: true, mode: 'string' }).notNull(),
 	notes: varchar("notes", { length: 250 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	// TODO: failed to parse database type 'bytea'
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -344,7 +344,7 @@ export const effortCategoricalOptions = pgTable("effort_categorical_options", {
 	effortCategoricalOptionId: bigserial("effort_categorical_option_id", { mode: "bigint" }).primaryKey().notNull(),
 	description: text("description").notNull(),
 	valueOama: varchar("value_oama", { length: 45 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -363,7 +363,7 @@ export const captureContinuousValues = pgTable("capture_continuous_values", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	captureId: bigint("capture_id", { mode: "number" }).notNull().references(() => capture.captureId, { onDelete: "restrict", onUpdate: "restrict" } ),
 	value: varchar("value", { length: 100 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -386,7 +386,7 @@ export const effortCategoricalValues = pgTable("effort_categorical_values", {
 	effortCategoricalOptionId: bigint("effort_categorical_option_id", { mode: "number" }).notNull().references(() => effortCategoricalOptions.effortCategoricalOptionId, { onDelete: "restrict", onUpdate: "restrict" } ),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	effortTimeId: bigint("effort_time_id", { mode: "number" }).notNull().references(() => effortTime.effortTimeId, { onDelete: "restrict", onUpdate: "restrict" } ),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -410,7 +410,7 @@ export const effortContinuousValues = pgTable("effort_continuous_values", {
 	value: varchar("value", { length: 6 }).notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	effortTimeId: bigint("effort_time_id", { mode: "number" }).notNull().references(() => effortTime.effortTimeId, { onDelete: "restrict", onUpdate: "restrict" } ),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),
@@ -433,7 +433,7 @@ export const effortSummaries = pgTable("effort_summaries", {
 	newBands: integer("new_bands").notNull(),
 	recapture: integer("recapture").notNull(),
 	unbanded: integer("unbanded").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 	hasChanged: boolean("has_changed").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	originalId: bigint("original_id", { mode: "number" }),

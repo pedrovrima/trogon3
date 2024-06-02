@@ -225,6 +225,7 @@ export const capturesRouter = createTRPCRouter({
           eq(bands.stringId, bandStringRegister.stringId)
         )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
+        //@ts-expect-error
         .where(eq(capture.captureId, captureId));
 
       const categoricalValues = await db

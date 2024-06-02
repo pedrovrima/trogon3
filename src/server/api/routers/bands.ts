@@ -163,31 +163,23 @@ export const bandsRouter = createTRPCRouter({
       }
       await db.transaction(async (trx) => {
         //eslint-disable-next-line
-        const bandRegister = await trx.execute(
-          sql`insert into ${bandStringRegister} (size, first_band) values (${bandSize}, ${initialBandNumber});`
-        );
+        const stringRegister = await trx.insert(bandStringRegister).values({
+          size: bandSize,
+          firstBand: initialBandNumber,
+        }).returning(
+          {insertId:bandStringRegister.stringId}
+        )
+        
 
-        const lastIdQuery = await trx.execute(
-          sql`SELECT LAST_INSERT_ID() as lastId;`
-        );
-
-        const result = lastIdQuery.rows as LastInsertIdResult[];
-
-        //eslint-disable-next-line
-        let id: number;
-        if (result[0]) {
-          id = result[0].lastId;
-        }
-
+      
         const bandsArray = _bands.map((bandNumber) => {
           return {
-            stringId: id,
+            stringId: Number(stringRegister[0]?.insertId),
             bandNumber,
             used: 0,
             hasChanged: 0,
           };
         });
-        console.log(bandsArray);
 
         await trx.insert(bands).values(bandsArray);
       });

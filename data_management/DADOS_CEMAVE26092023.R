@@ -25,9 +25,9 @@ onTrogonNotInCemave = band_report%>%left_join(cemave_report, by=c('bandNumber'='
 CBRO2011 <- read_csv("./data_management/CBRO2011.csv")%>%mutate(NOME.CIENTIFICO=Taxon, CBRO=T)%>%select(NOME.CIENTIFICO,CBRO)
 
 ## Formating data to report
-DATA <- read_csv("./data_management/captures_1708434809095.csv") %>% mutate(datanew = format(as.Date(data, format = "%Y-%m-%d"), format = "%d/%m/%Y"))
+aDATA <- read_csv("./data_management/captures_1716860217956.csv") %>% mutate(datanew = format(as.Date(data, format = "%Y-%m-%d"), format = "%d/%m/%Y"))
 
-
+DATA=aDATA%>%filter(data>mdy('02/28/2024'))
 
 
 
@@ -37,7 +37,7 @@ colnames(CBRO2011)[colnames(CBRO2011) == "NOME.CIENTIFICO"] <- "sppName"
 
 
 ## Put data in CEMAVE shape
-DCEMAVE<-DATA%>%filter(paste0(bandSize,bandNumber) %in% notReportedWithCaptures)%>%mutate(IDADE.CEMAVE=ifelse(grepl("FC",age_wrp)|grepl("FP",age_wrp),"J",ifelse(grepl("UC",age_wrp)|grepl("UP",age_wrp)|is.na(age_wrp),"D","A")), location=substr(station,1,3)) %>% 
+DCEMAVE<-DATA%>%mutate(IDADE.CEMAVE=ifelse(grepl("FC",age_wrp)|grepl("FP",age_wrp),"J",ifelse(grepl("UC",age_wrp)|grepl("UP",age_wrp)|is.na(age_wrp),"D","A")), location=substr(station,1,3)) %>% 
   select(station, location,captureCode,bandSize, bandNumber, sppName, age_wrp, sex, IDADE.CEMAVE,datanew) %>% left_join(CBRO2011)
 
 
@@ -64,17 +64,20 @@ DCEMAVE_NOVO[which(DCEMAVE_NOVO$sppName=="Rhopias gularis"), "sppName"] <- "Myrm
 DCEMAVE_NOVO[which(DCEMAVE_NOVO$sppName=="Myiothlypis leucoblephara"), "sppName"] <- "Basileuterus leucoblepharus" 
 DCEMAVE_NOVO[which(DCEMAVE_NOVO$sppName=="Trichothraupis melanops"), "sppName"] <- "Lanio melanops" 
 
+
+DCEMAVE_NOVO%>%mtate(location=ifelse(location=='BBF', 'BOA', location))
 ## Create folder
-dirName = paste0("./CEMAVE_MISSING")
+dirName = paste0("./RELATORIO_MAR2024-JUN2024")
 dir.create(dirName)
 dir.create(paste0(dirName,"/N"))
 
 ## Saving tables
 DCEMAVE_NOVO %>%
-  group_split(.$bandSize,.$location) %>% map(~ select(.x,c("Código da Anilha", "Número da Anilha", "Espécies", "Código da Idade", "Código do Sexo", "Data", "Diâmetro do Tarso",  "Observações", location, bandSize)))%>%
-  map(~ write_csv(.x, paste0(dirName,"/N/",.x$location[1],"_",.x$bandSize[1],"_missing.csv")))
+  group_split(.$location) %>% map(~ select(.x,c("Código da Anilha", "Número da Anilha", "Espécies", "Código da Idade", "Código do Sexo", "Data", "Diâmetro do Tarso",  "Observações", location, bandSize)))%>%
+  map(~ write_csv(.x, paste0(dirName,"/N/",.x$location[1],"_","_missing.csv")))
 
 write_csv(DCEMAVE_DEST, paste0(dirName,"/DEST_missing.csv"))
 write_csv(DCEMAVE_PERD, paste0(dirName,"/PERD_missing.csv"))
 write_csv(DCEMAVE_RECAP, paste0(dirName,"/RECAP_missing.csv"))
 
+DCEMAVE_NOVO

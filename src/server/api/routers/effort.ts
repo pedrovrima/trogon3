@@ -51,7 +51,7 @@ export const effortRouter = createTRPCRouter({
       .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
       .groupBy(effort.effortId, effortSummaries.effortSummaryId, stationRegister.stationCode, protocolRegister.protocolCode);
 
-    const effortIds = efforts.map((effort) => effort.effortId);
+    const effortIds = efforts.map((effort) => effort.effortId) as bigint[];
 
     const netEfforts = await db
       .select({
@@ -63,6 +63,7 @@ export const effortRouter = createTRPCRouter({
       })
       .from(netEffort)
       .rightJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
+      //@ts-expect-error
       .where(inArray(netEffort.effortId, effortIds))
       .groupBy(netEffort.effortId);
 
@@ -76,6 +77,7 @@ export const effortRouter = createTRPCRouter({
         time: effortTime.portugueseLabel,
       })
       .from(effortCategoricalValues)
+      //@ts-expect-error
       .where(inArray(effortCategoricalValues.effortId, effortIds))
       .leftJoin(
         effortCategoricalOptions,
@@ -104,6 +106,7 @@ export const effortRouter = createTRPCRouter({
         time: effortTime.portugueseLabel,
       })
       .from(effortContinuousValues)
+      //@ts-expect-error
       .where(inArray(effortContinuousValues.effortId, effortIds))
       .leftJoin(
         effortVariableRegister,
@@ -169,13 +172,17 @@ export const effortRouter = createTRPCRouter({
 
     const effortWithVariables = efforts.map((effort) => {
       const effortIndex = netEfforts.findIndex(
+        //@ts-expect-error
         (netEffort) => netEffort.effortId === effort.effortId
       );
       const netEffort = netEfforts[effortIndex];
+
       const effortCategoricalValues = normalizedCategoricalValue.find(
+        //@ts-expect-error
         (value) => value.effortId === effort.effortId
       );
       const effortContinuousValues = normalizedContinuousValue.find(
+        //@ts-expect-error
         (value) => value.effortId === effort.effortId
       );
 
