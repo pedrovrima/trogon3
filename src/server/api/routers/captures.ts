@@ -199,7 +199,7 @@ export const capturesRouter = createTRPCRouter({
         .select({
           captureId: capture.captureId,
           station: stationRegister.stationCode,
-          data: sql`DATE_FORMAT(${effort.dateEffort}, '%Y-%m-%d')`,
+          data: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
           netNumber: netRegister.netNumber,
           captureTime: capture.captureTime,
           bander: banderRegister.code,
