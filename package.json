@@ -34,7 +34,6 @@
     "lucide-react": "^0.244.0",
     "mysql2": "^3.4.2",
     "next": "^13.4.7",
-    "next-auth": "^4.22.1",
     "postgres": "^3.4.4",
     "react": "18.2.0",
     "react-csv": "^2.2.2",
