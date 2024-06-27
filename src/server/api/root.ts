@@ -3,7 +3,7 @@ import { exampleRouter } from "@/server/api/routers/example";
 import { testRouter } from "@/server/api/routers/test";
 import { bandsRouter } from "@/server/api/routers/bands";
 import { bandersRouter } from "@/server/api/routers/banders";
-import { sppRouter } from "@/server/api/routers/spp";
+import { speciesRouter } from "@/server/api/routers/species";
 import { capturesRouter } from "@/server/api/routers/captures";
 import { effortRouter } from "./routers/effort";
 /**
@@ -16,9 +16,9 @@ export const appRouter = createTRPCRouter({
   test: testRouter,
   bands: bandsRouter,
   banders: bandersRouter,
-  spp: sppRouter,
   captures: capturesRouter,
   efforts: effortRouter,
+  species: speciesRouter,
 });
 
 // export type definition of API
