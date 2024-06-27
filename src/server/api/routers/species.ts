@@ -104,7 +104,7 @@ export const speciesRouter = createTRPCRouter({
         )
         .where(
           and(
-            eq(capture.sppId as string, input.speciesId as string),
+            eq(capture.sppId as unknown as string, input.speciesId as string),
             eq(captureVariableRegister.name, "age_wrp")
           )
         )

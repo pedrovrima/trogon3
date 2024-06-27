@@ -23,7 +23,7 @@ const SpeciesCaptures: NextPage = () => {
   const router = useRouter();
 
   const { sppId } = router.query as Query;
-  const [sortColumn, setSortColumn] = useState("total");
+  const [sortColumn, setSortColumn] = useState<string>("total");
   const [sortDirection, setSortDirection] = useState("desc");
 
   const query = api.species.getSpeciesDataById.useQuery(
@@ -34,7 +34,11 @@ const SpeciesCaptures: NextPage = () => {
   const groupedData =
     query.data &&
     Object.keys(
-      groupBy(query.data, (val) => val.bandSize + val.bandNumber)
+      groupBy(
+        query.data,
+        (val: { bandSize: number; bandNumber: number }) =>
+          val.bandSize + val.bandNumber
+      )
     ).map((key) => ({
       bandNumber: key,
       total: query.data.filter((val) => val.bandSize + val.bandNumber === key)
@@ -50,14 +54,16 @@ const SpeciesCaptures: NextPage = () => {
       if (sortColumn === "total" && sortDirection === "desc") {
         return b.total - a.total;
       }
+      //@ts-expect-error
       if (a[sortColumn] < b[sortColumn])
         return sortDirection === "asc" ? -1 : 1;
+      //@ts-expect-error
       if (a[sortColumn] > b[sortColumn])
         return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
   }, [groupedData, sortColumn, sortDirection]);
-
+  //@ts-expect-error
   const handleSort = (column) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -75,6 +81,7 @@ const SpeciesCaptures: NextPage = () => {
     <>
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
         <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+          {/* @ts-expect-error */}
           {query.data[0].speciesName}
         </h1>
 
