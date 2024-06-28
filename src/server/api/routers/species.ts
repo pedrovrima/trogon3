@@ -12,10 +12,13 @@ import {
   netEffort,
   netRegister,
   stationRegister,
+  netOc,
 } from "drizzle/schema";
 import { eq, sql, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { bandsRouter } from "./bands";
+import { nodeHTTPRequestHandler } from "@trpc/server/dist/adapters/node-http";
+import { groupBy } from "lodash";
 
 export const speciesRouter = createTRPCRouter({
   getSpeciesSummary: publicProcedure.query(async () => {
@@ -111,5 +114,75 @@ export const speciesRouter = createTRPCRouter({
         )
         .orderBy(desc(effort.dateEffort));
       return speciesCap;
+    }),
+  getSpeciesCountByMonthNH: publicProcedure
+    .input(
+      z.object({
+        speciesId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const nh = await db
+        .select({
+          month: sql`extract(month from ${effort.dateEffort})`,
+          year: sql`extract(year from ${effort.dateEffort})`,
+          netHours: sql<number>`SUM(age(${netOc.closeTime},${netOc.openTime}))`,
+        })
+        .from(netOc)
+        .leftJoin(netEffort, eq(netOc.netEffId, netEffort.netEffId))
+        .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
+        .groupBy(
+          sql`extract(month from ${effort.dateEffort})`,
+          effort.dateEffort
+        )
+        .orderBy(sql`extract(month from ${effort.dateEffort})`)
+        .where(eq(effort.stationId, 2));
+
+      const transformedNH = nh.map((item) => {
+        //@ts-expect-error
+        const hours = item.netHours.split(":");
+        const totalHours =
+          parseInt(hours[0]) +
+          parseInt(hours[1]) / 60 +
+          parseInt(hours[2]) / 3600;
+        return { ...item, netHours: totalHours };
+      });
+
+      const summedNH = transformedNH.reduce((acc, curr) => {
+        //@ts-expect-error
+        if (!acc[curr.month]) {
+          //@ts-expect-error
+          acc[curr.month] = 0;
+        }
+        //@ts-expect-error
+        acc[curr.month] += curr.netHours;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const speciesCount = await db
+        .select({
+          month: sql`extract(month from ${effort.dateEffort})`,
+
+          total: sql<number>`count(${capture.captureId})`,
+        })
+        .from(capture)
+        .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
+        .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
+        //@ts-expect-error
+        .where(and(eq(capture.sppId, input.speciesId), eq(effort.stationId, 2)))
+        .groupBy(sql`extract(month from ${effort.dateEffort})`)
+        .orderBy(sql`extract(month from ${effort.dateEffort})`);
+
+      const countByNH = speciesCount.map((item) => {
+        //@ts-expect-error
+        const nh = summedNH[item.month];
+        return {
+          ...item,
+          netHours: nh,
+          capturePerHour: (1000 * item.total) / nh,
+        };
+      });
+
+      return countByNH;
     }),
 });

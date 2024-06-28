@@ -18,7 +18,9 @@ const Captures: NextPage = () => {
 
   return (
     <>
-      <h1 className="m-8 text-center text-2xl font-bold">Download de dados</h1>
+      <h1 className="m-8 text-center text-2xl font-bold italic">
+        Download de dados
+      </h1>
       {data && effortData && bandsData ? (
         <div className=" flex flex-col items-center justify-center gap-8">
           <>

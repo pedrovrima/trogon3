@@ -14,6 +14,7 @@ import { useState, useMemo } from "react";
 import { api } from "@/utils/api";
 import { DataTable, columns } from "@/components/organisms/band_table";
 import Loader from "@/components/organisms/loader";
+import Barplot from "@/components/organisms/barplot";
 
 type Query = {
   sppId: string;
@@ -27,6 +28,11 @@ const SpeciesCaptures: NextPage = () => {
   const [sortDirection, setSortDirection] = useState("desc");
 
   const query = api.species.getSpeciesDataById.useQuery(
+    { speciesId: sppId },
+    { retry: 2, refetchOnWindowFocus: false }
+  );
+
+  const query2 = api.species.getSpeciesCountByMonthNH.useQuery(
     { speciesId: sppId },
     { retry: 2, refetchOnWindowFocus: false }
   );
@@ -80,11 +86,34 @@ const SpeciesCaptures: NextPage = () => {
   return (
     <>
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+        <h1 className="text-center text-5xl font-extrabold italic tracking-tight text-white sm:text-[5rem]">
           {/* @ts-expect-error */}
           {query.data[0].speciesName}
         </h1>
 
+        {query2.data && (
+          <div className="container flex max-w-[800px] flex-col items-center justify-center gap-12 px-4 py-16">
+            <Barplot
+              xVariable={"month"}
+              yVariable={"capturePerHour"}
+              data={query2.data}
+              xDomain={[
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+              ]}
+            />
+          </div>
+        )}
         {groupedData && (
           <>
             <div className="overflow-x-auto">
