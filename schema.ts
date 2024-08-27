@@ -42,9 +42,9 @@ export const bands = mysqlTable(
       }),
     bandNumber: varchar("band_number", { length: 45 }).notNull(),
     used: int("used").notNull().default(0),
-    createdAt: datetime("created_at", { mode: "string" })
-      .notNull()
-      .default("current_timestamp()"),
+    createdAt: datetime("created_at", { mode: "string" }).default(
+      "current_timestamp()"
+    ),
     hasChanged: tinyint("has_changed").notNull(),
     originalId: int("original_id"),
     updatedAt: datetime("updated_at", { mode: "string" }),

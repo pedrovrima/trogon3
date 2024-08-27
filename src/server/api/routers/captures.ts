@@ -21,9 +21,76 @@ import {
   netRegister,
   sppRegister,
   banderRegister,
+  netOc,
 } from "drizzle/schema";
 
 export const capturesRouter = createTRPCRouter({
+  getTopCapturedSpeciesNumbers: publicProcedure.query(async () => {
+    const spp = await db
+      .select({
+        id: sppRegister.sppId,
+        total: sql<number>`count(${capture.captureId}) `,
+        speciesName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
+        speciesCode: sppRegister.sciCode,
+      })
+      .from(sppRegister)
+      .orderBy(sql`count(${capture.captureId}) desc`)
+      .rightJoin(capture, eq(sppRegister.sppId, capture.sppId))
+      .groupBy(sppRegister.sppId)
+      .limit(7);
+
+    // const netEfforts = await db
+    //   .select({
+    //     effortId: netEffort.effortId,
+    //     totalNets: sql`COUNT(${netEffort.netId})`,
+    //     netHours: sql<number>`SUM(age(${netOc.closeTime},${netOc.openTime}))`,
+    //     openTime: sql`MIN(${netOc.openTime})`,
+    //     closeTime: sql`MAX(${netOc.closeTime})`,
+    //   })
+    //   .from(netEffort)
+    //   .rightJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
+    //   //@ts-expect-error
+    //   .where(inArray(netEffort.effortId, effortIds))
+    //   .groupBy(netEffort.effortId);
+
+    const monthlyCapturesOfTopSpecies = await db
+      .select({
+        speciesId: sppRegister.sppId,
+        speciesName: sppRegister.sciCode,
+        // sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
+        total: sql<number>`count(${capture.captureId})`,
+        month: sql`to_char(${effort.dateEffort}, 'MM')`,
+        year: sql`to_char(${effort.dateEffort}, 'YYYY')`,
+      })
+      .from(capture)
+      .leftJoin(netEffort, eq(netEffort.netEffId, capture.netEffId))
+      .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
+      .leftJoin(
+        stationRegister,
+        eq(stationRegister.stationId, effort.stationId)
+      )
+      .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
+      .groupBy(
+        sppRegister.sppId,
+        sql`to_char(${effort.dateEffort}, 'MM')`,
+        sql`to_char(${effort.dateEffort}, 'YYYY')`
+      )
+      .orderBy(sql`count(${capture.captureId}) desc`)
+      .where(
+        and(
+          inArray(
+            sppRegister.sppId,
+            spp.map((s) => s.id)
+          ),
+          eq(stationRegister.stationCode, "BOA1")
+        )
+      );
+
+    console.log(
+      monthlyCapturesOfTopSpecies.filter((s) => s.speciesName === "HAPUNI")
+    );
+    return { data: monthlyCapturesOfTopSpecies, count: spp };
+  }),
   getCaptures: publicProcedure.query(async ({ ctx }) => {
     const captures = await db
       .select({
@@ -56,7 +123,7 @@ export const capturesRouter = createTRPCRouter({
       )
       .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId));
 
-      const captureIds = captures.map((capture) => Number(capture.captureId));
+    const captureIds = captures.map((capture) => Number(capture.captureId));
 
     const categoricalValues = await db
       .select({

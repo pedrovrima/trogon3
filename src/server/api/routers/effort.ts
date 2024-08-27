@@ -49,7 +49,12 @@ export const effortRouter = createTRPCRouter({
 
       .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
       .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
-      .groupBy(effort.effortId, effortSummaries.effortSummaryId, stationRegister.stationCode, protocolRegister.protocolCode);
+      .groupBy(
+        effort.effortId,
+        effortSummaries.effortSummaryId,
+        stationRegister.stationCode,
+        protocolRegister.protocolCode
+      );
 
     const effortIds = efforts.map((effort) => effort.effortId) as bigint[];
 
@@ -57,7 +62,7 @@ export const effortRouter = createTRPCRouter({
       .select({
         effortId: netEffort.effortId,
         totalNets: sql`COUNT(${netEffort.netId})`,
-        netHours: sql<number>`SUM(age(${netOc.closeTime},${netOc.openTime}))`,
+        netHours: sql<number>`extract(epoch from SUM(age(${netOc.closeTime},${netOc.openTime})))::integer/3600`,
         openTime: sql`MIN(${netOc.openTime})`,
         closeTime: sql`MAX(${netOc.closeTime})`,
       })
@@ -66,8 +71,6 @@ export const effortRouter = createTRPCRouter({
       //@ts-expect-error
       .where(inArray(netEffort.effortId, effortIds))
       .groupBy(netEffort.effortId);
-
-    console.log(netEfforts);
 
     const categoricalValues = await db
       .select({
@@ -170,15 +173,15 @@ export const effortRouter = createTRPCRouter({
       []
     );
 
+    console.log(netEfforts);
     const effortWithVariables = efforts.map((effort) => {
       const effortIndex = netEfforts.findIndex(
-        //@ts-expect-error
         (netEffort) => netEffort.effortId === effort.effortId
       );
+
       const netEffort = netEfforts[effortIndex];
 
       const effortCategoricalValues = normalizedCategoricalValue.find(
-        //@ts-expect-error
         (value) => value.effortId === effort.effortId
       );
       const effortContinuousValues = normalizedContinuousValue.find(
