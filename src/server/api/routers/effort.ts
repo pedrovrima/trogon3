@@ -1,4 +1,4 @@
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, sql, inArray, desc, like } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import db from "@/db";
 import {
@@ -14,6 +14,7 @@ import {
   protocolRegister,
   stationRegister,
 } from "drizzle/schema";
+import { z } from "zod";
 
 type Vars = {
   [key: string]: number | string;
@@ -56,7 +57,7 @@ export const effortRouter = createTRPCRouter({
         protocolRegister.protocolCode
       );
 
-    const effortIds = efforts.map((effort) => effort.effortId) as bigint[];
+    const effortIds = efforts.map((effort) => effort.effortId as number);
 
     const netEfforts = await db
       .select({
@@ -185,7 +186,6 @@ export const effortRouter = createTRPCRouter({
         (value) => value.effortId === effort.effortId
       );
       const effortContinuousValues = normalizedContinuousValue.find(
-        //@ts-expect-error
         (value) => value.effortId === effort.effortId
       );
 
@@ -207,4 +207,64 @@ export const effortRouter = createTRPCRouter({
 
     return effortWithVariables;
   }),
+
+  getEffortsPaginated: publicProcedure
+    .input(
+      z.object({
+        page: z.number().int().positive(),
+        searchTerm: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      console.log("called");
+      const { page, searchTerm } = input;
+      const pageSize = 10;
+      const offset = (page - 1) * pageSize;
+
+      const baseQuery = db
+        .select({
+          effortId: effort.effortId,
+          date: sql<string>`TO_CHAR(${effort.dateEffort}, 'DD/MM/YYYY')`,
+          stationCode: stationRegister.stationCode,
+          totalNetHours: sql<number>`ROUND(EXTRACT(EPOCH FROM SUM(age(${netOc.closeTime},${netOc.openTime}))) / 3600.0, 2)`,
+          newBands: effortSummaries.newBands,
+          recapture: effortSummaries.recapture,
+          unbanded: effortSummaries.unbanded,
+        })
+        .from(effort)
+        .leftJoin(
+          stationRegister,
+          eq(effort.stationId, stationRegister.stationId)
+        )
+        .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
+        .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
+        .leftJoin(
+          effortSummaries,
+          eq(effort.effortId, effortSummaries.effortId)
+        )
+        .groupBy(
+          effort.effortId,
+          stationRegister.stationCode,
+          effortSummaries.effortSummaryId
+        );
+
+      if (searchTerm) {
+        baseQuery.where(like(stationRegister.stationName, `%${searchTerm}%`));
+      }
+
+      const totalEfforts = await baseQuery.execute();
+      const totalCount = totalEfforts.length;
+
+      const efforts = await baseQuery
+        .orderBy(desc(effort.dateEffort))
+        .limit(pageSize)
+        .offset(offset)
+        .execute();
+
+      return {
+        efforts,
+        totalPages: Math.ceil(totalCount / pageSize),
+        currentPage: page,
+      };
+    }),
 });
