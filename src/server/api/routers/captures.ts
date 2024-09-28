@@ -82,7 +82,7 @@ export const capturesRouter = createTRPCRouter({
         and(
           inArray(
             sppRegister.sppId,
-            spp.map((s) => s.id)
+            spp.map((s) => s.id).filter((id): id is bigint => id !== null)
           ),
           eq(stationRegister.stationCode, "BOA1")
         )
