@@ -14,6 +14,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <title>Trogon 3</title>
         <meta name="description" content="Trogon DataSystem - by OAMa" />
         <link rel="icon" href="/favicon.ico" />
+        <style jsx global>{`
+          @font-face {
+            font-family: "PlatoSans";
+            src: url("/StPlatoSansDisplayDemoThin-LV8DZ.otf") format("otf");
+          }
+        `}</style>
       </Head>
 
       <main className="justify-top min-h-screen flex-col  items-center bg-gradient-to-b from-background to-[#15162c] ">

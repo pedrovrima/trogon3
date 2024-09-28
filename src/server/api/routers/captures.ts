@@ -56,7 +56,9 @@ export const capturesRouter = createTRPCRouter({
     const monthlyCapturesOfTopSpecies = await db
       .select({
         speciesId: sppRegister.sppId,
-        speciesName: sppRegister.sciCode,
+        speciesCode: sppRegister.sciCode,
+        speciesName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
+
         // sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
         total: sql<number>`count(${capture.captureId})`,
         month: sql`to_char(${effort.dateEffort}, 'MM')`,
@@ -91,169 +93,186 @@ export const capturesRouter = createTRPCRouter({
     );
     return { data: monthlyCapturesOfTopSpecies, count: spp };
   }),
-  getCaptures: publicProcedure.query(async ({ ctx }) => {
-    const captures = await db
-      .select({
-        captureId: capture.captureId,
-        station: stationRegister.stationCode,
-        data: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
-        netNumber: netRegister.netNumber,
-        captureTime: capture.captureTime,
-        bander: banderRegister.code,
-        captureCode: capture.captureCode,
-        bandSize: bandStringRegister.size,
-        bandNumber: bands.bandNumber,
-        sppCode: sppRegister.sciCode,
-        sppName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
-        notes: capture.notes,
-      })
-      .from(capture)
-      .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
-      .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
-      .leftJoin(
-        stationRegister,
-        eq(effort.stationId, stationRegister.stationId)
-      )
-      .leftJoin(banderRegister, eq(capture.banderId, banderRegister.banderId))
-      .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
-      .leftJoin(bands, eq(capture.bandId, bands.bandId))
-      .leftJoin(
-        bandStringRegister,
-        eq(bands.stringId, bandStringRegister.stringId)
-      )
-      .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId));
+  getCaptures: publicProcedure
+    .input(
+      z
+        .object({
+          family: z.string().optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const { family } = input ?? {};
 
-    const captureIds = captures.map((capture) => Number(capture.captureId));
-
-    const categoricalValues = await db
-      .select({
-        captureId: captureCategoricalValues.captureId,
-        value: captureCategoricalOptions.valueOama,
-        variableName: captureVariableRegister.name,
-        variableType: captureVariableRegister.type,
-      })
-      .from(captureCategoricalValues)
-      .leftJoin(
-        captureCategoricalOptions,
-        eq(
-          captureCategoricalValues.captureCategoricalOptionId,
-          captureCategoricalOptions.captureCategoricalOptionId
+      let capturesQuery = db
+        .select({
+          captureId: capture.captureId,
+          station: stationRegister.stationCode,
+          data: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
+          netNumber: netRegister.netNumber,
+          captureTime: capture.captureTime,
+          bander: banderRegister.code,
+          captureCode: capture.captureCode,
+          bandSize: bandStringRegister.size,
+          bandNumber: bands.bandNumber,
+          sppCode: sppRegister.sciCode,
+          family: sppRegister.family,
+          sppName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
+          notes: capture.notes,
+        })
+        .from(capture)
+        .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
+        .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
+        .leftJoin(
+          stationRegister,
+          eq(effort.stationId, stationRegister.stationId)
         )
-      )
-      .leftJoin(
-        captureVariableRegister,
-        eq(
-          captureCategoricalValues.captureVariableId,
-          captureVariableRegister.captureVariableId
+        .leftJoin(banderRegister, eq(capture.banderId, banderRegister.banderId))
+        .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
+        .leftJoin(bands, eq(capture.bandId, bands.bandId))
+        .leftJoin(
+          bandStringRegister,
+          eq(bands.stringId, bandStringRegister.stringId)
         )
-      )
-      .where(inArray(captureCategoricalValues.captureId, captureIds));
+        .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId));
 
-    type Vars = {
-      [key: string]: number | string;
-    };
+      if (family) {
+        capturesQuery = capturesQuery.where(eq(sppRegister.family, family));
+      }
 
-    type Variable = {
-      captureId: number;
-      variables: Vars;
-    }[];
+      const captures = await capturesQuery;
 
-    const normalizedCategoricalValue = categoricalValues.reduce(
-      (acc: Variable, _value) => {
-        const { captureId, variableName, value } = _value;
-        if (variableName !== null && value !== null) {
-          const captureIndex = acc.findIndex(
-            (capture) => capture.captureId === captureId
-          );
-          if (captureIndex === -1) {
-            acc.push({ captureId, variables: { [variableName]: value } });
-          } else {
-            const capture = acc[captureIndex];
-            if (capture) {
-              if (capture.variables[variableName] === undefined) {
-                capture.variables[variableName] = value;
-              } else {
-                const sameVariableValues = Object.keys(
-                  capture.variables
-                ).filter((key) => key.includes(variableName));
-                capture.variables[
-                  `${variableName}_${sameVariableValues.length + 1}`
-                ] = value;
-              }
-              acc[captureIndex] = capture;
-            }
-          }
-        }
-        return acc;
-      },
-      []
-    );
+      const captureIds = captures.map((capture) => Number(capture.captureId));
 
-    const continuousValues = await db
-      .select({
-        captureId: captureContinuousValues.captureId,
-        variableId: captureVariableRegister.captureVariableId,
-        variableName: captureVariableRegister.name,
-        variableType: captureVariableRegister.type,
-        value: captureContinuousValues.value,
-      })
-      .from(captureContinuousValues)
-      .leftJoin(
-        captureVariableRegister,
-        eq(
-          captureContinuousValues.captureVariableId,
-          captureVariableRegister.captureVariableId
+      const categoricalValues = await db
+        .select({
+          captureId: captureCategoricalValues.captureId,
+          value: captureCategoricalOptions.valueOama,
+          variableName: captureVariableRegister.name,
+          variableType: captureVariableRegister.type,
+        })
+        .from(captureCategoricalValues)
+        .leftJoin(
+          captureCategoricalOptions,
+          eq(
+            captureCategoricalValues.captureCategoricalOptionId,
+            captureCategoricalOptions.captureCategoricalOptionId
+          )
         )
-      )
-      .where(inArray(captureContinuousValues.captureId, captureIds));
+        .leftJoin(
+          captureVariableRegister,
+          eq(
+            captureCategoricalValues.captureVariableId,
+            captureVariableRegister.captureVariableId
+          )
+        )
+        .where(inArray(captureCategoricalValues.captureId, captureIds));
 
-    const normalizedContinuousValue = continuousValues.reduce(
-      (acc: Variable, _value) => {
-        const { captureId, variableName, value } = _value;
-        if (variableName !== null && value !== null) {
-          const captureIndex = acc.findIndex(
-            (capture) => capture.captureId === captureId
-          );
-          if (captureIndex === -1) {
-            acc.push({ captureId, variables: { [variableName]: value } });
-          } else {
-            const capture = acc[captureIndex];
-            if (capture) {
-              if (capture.variables[variableName] === undefined) {
-                capture.variables[variableName] = value;
-              } else {
-                const sameVariableValues = Object.keys(
-                  capture.variables
-                ).filter((key) => key.includes(variableName));
-                capture.variables[
-                  `${variableName}_${sameVariableValues.length + 1}`
-                ] = value;
-              }
-              acc[captureIndex] = capture;
-            }
-          }
-        }
-        return acc;
-      },
-      []
-    );
-
-    const capturesWithVariables = captures.map((capture) => {
-      const categoricalVariables = normalizedCategoricalValue.find(
-        (variable) => variable.captureId === Number(capture.captureId)
-      );
-      const continuousVariables = normalizedContinuousValue.find(
-        (variable) => variable.captureId === Number(capture.captureId)
-      );
-      return {
-        ...capture,
-        ...categoricalVariables?.variables,
-        ...continuousVariables?.variables,
+      type Vars = {
+        [key: string]: number | string;
       };
-    });
 
-    return capturesWithVariables;
-  }),
+      type Variable = {
+        captureId: number;
+        variables: Vars;
+      }[];
+
+      const normalizedCategoricalValue = categoricalValues.reduce(
+        (acc: Variable, _value) => {
+          const { captureId, variableName, value } = _value;
+          if (variableName !== null && value !== null) {
+            const captureIndex = acc.findIndex(
+              (capture) => capture.captureId === captureId
+            );
+            if (captureIndex === -1) {
+              acc.push({ captureId, variables: { [variableName]: value } });
+            } else {
+              const capture = acc[captureIndex];
+              if (capture) {
+                if (capture.variables[variableName] === undefined) {
+                  capture.variables[variableName] = value;
+                } else {
+                  const sameVariableValues = Object.keys(
+                    capture.variables
+                  ).filter((key) => key.includes(variableName));
+                  capture.variables[
+                    `${variableName}_${sameVariableValues.length + 1}`
+                  ] = value;
+                }
+                acc[captureIndex] = capture;
+              }
+            }
+          }
+          return acc;
+        },
+        []
+      );
+
+      const continuousValues = await db
+        .select({
+          captureId: captureContinuousValues.captureId,
+          variableId: captureVariableRegister.captureVariableId,
+          variableName: captureVariableRegister.name,
+          variableType: captureVariableRegister.type,
+          value: captureContinuousValues.value,
+        })
+        .from(captureContinuousValues)
+        .leftJoin(
+          captureVariableRegister,
+          eq(
+            captureContinuousValues.captureVariableId,
+            captureVariableRegister.captureVariableId
+          )
+        )
+        .where(inArray(captureContinuousValues.captureId, captureIds));
+
+      const normalizedContinuousValue = continuousValues.reduce(
+        (acc: Variable, _value) => {
+          const { captureId, variableName, value } = _value;
+          if (variableName !== null && value !== null) {
+            const captureIndex = acc.findIndex(
+              (capture) => capture.captureId === captureId
+            );
+            if (captureIndex === -1) {
+              acc.push({ captureId, variables: { [variableName]: value } });
+            } else {
+              const capture = acc[captureIndex];
+              if (capture) {
+                if (capture.variables[variableName] === undefined) {
+                  capture.variables[variableName] = value;
+                } else {
+                  const sameVariableValues = Object.keys(
+                    capture.variables
+                  ).filter((key) => key.includes(variableName));
+                  capture.variables[
+                    `${variableName}_${sameVariableValues.length + 1}`
+                  ] = value;
+                }
+                acc[captureIndex] = capture;
+              }
+            }
+          }
+          return acc;
+        },
+        []
+      );
+
+      const capturesWithVariables = captures.map((capture) => {
+        const categoricalVariables = normalizedCategoricalValue.find(
+          (variable) => variable.captureId === Number(capture.captureId)
+        );
+        const continuousVariables = normalizedContinuousValue.find(
+          (variable) => variable.captureId === Number(capture.captureId)
+        );
+        return {
+          ...capture,
+          ...categoricalVariables?.variables,
+          ...continuousVariables?.variables,
+        };
+      });
+
+      return capturesWithVariables;
+    }),
   getCaptureById: publicProcedure
     .input(
       z.object({
