@@ -69,7 +69,7 @@ export const effortRouter = createTRPCRouter({
       })
       .from(netEffort)
       .rightJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
-      //@ts-expect-error
+
       .where(inArray(netEffort.effortId, effortIds))
       .groupBy(netEffort.effortId);
 
@@ -81,7 +81,7 @@ export const effortRouter = createTRPCRouter({
         time: effortTime.portugueseLabel,
       })
       .from(effortCategoricalValues)
-      //@ts-expect-error
+
       .where(inArray(effortCategoricalValues.effortId, effortIds))
       .leftJoin(
         effortCategoricalOptions,
@@ -110,7 +110,7 @@ export const effortRouter = createTRPCRouter({
         time: effortTime.portugueseLabel,
       })
       .from(effortContinuousValues)
-      //@ts-expect-error
+
       .where(inArray(effortContinuousValues.effortId, effortIds))
       .leftJoin(
         effortVariableRegister,
