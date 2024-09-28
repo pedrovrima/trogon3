@@ -1,3 +1,7 @@
+export default function Datalab() {
+  return <div>Datalab</div>;
+}
+
 // "use client";
 // import React, { useEffect, useRef } from "react";
 // import * as d3 from "d3";
