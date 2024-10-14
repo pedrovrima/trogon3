@@ -13,6 +13,10 @@ import {
   netOc,
   protocolRegister,
   stationRegister,
+  capture,
+  bands,
+  bandStringRegister,
+  sppRegister,
 } from "drizzle/schema";
 import { z } from "zod";
 
@@ -266,5 +270,67 @@ export const effortRouter = createTRPCRouter({
         totalPages: Math.ceil(totalCount / pageSize),
         currentPage: page,
       };
+    }),
+  getEffortById: publicProcedure
+    .input(z.object({ effortId: z.number().int().positive() }))
+    .query(async ({ input }) => {
+      const { effortId } = input;
+
+      const effortData = await db
+        .select({
+          effortId: effort.effortId,
+          date: sql<string>`TO_CHAR(${effort.dateEffort}, 'DD/MM/YYYY')`,
+          stationCode: stationRegister.stationCode,
+          protocolCode: protocolRegister.protocolCode,
+          totalNetHours: sql<number>`ROUND(EXTRACT(EPOCH FROM SUM(age(${netOc.closeTime},${netOc.openTime}))) / 3600.0, 2)`,
+          summary_new: effortSummaries.newBands,
+          summary_recapture: effortSummaries.recapture,
+          summary_unbanded: effortSummaries.unbanded,
+          notes: effort.notes,
+        })
+        .from(effort)
+        .where(eq(effort.effortId, effortId))
+        .leftJoin(
+          stationRegister,
+          eq(effort.stationId, stationRegister.stationId)
+        )
+        .leftJoin(
+          protocolRegister,
+          eq(effort.protocolId, protocolRegister.protocolId)
+        )
+        .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
+        .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
+        .leftJoin(
+          effortSummaries,
+          eq(effort.effortId, effortSummaries.effortId)
+        )
+        .groupBy(
+          effort.effortId,
+          stationRegister.stationCode,
+          protocolRegister.protocolCode,
+          effortSummaries.effortSummaryId
+        );
+
+      const effortCaptures = await db
+        .select({
+          captureId: capture.captureId,
+          captureTime: capture.captureTime,
+          bandNumber: bands.bandNumber,
+          bandSize: bandStringRegister.size,
+          captureCode: capture.captureCode,
+          sppCode: sppRegister.sciCode,
+        })
+        .from(capture)
+        .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
+        .leftJoin(bands, eq(capture.bandId, bands.bandId))
+        .leftJoin(
+          bandStringRegister,
+          eq(bands.stringId, bandStringRegister.stringId)
+        )
+        .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
+        .where(eq(netEffort.effortId, effortId));
+
+      console.log(effortCaptures);
+      return { ...effortData[0], captures: effortCaptures };
     }),
 });
