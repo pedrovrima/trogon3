@@ -5,6 +5,7 @@ export default function DataCheck() {
   const { data, isLoading } = api.datacheck.checkEffortNumbers.useQuery();
 
   if (isLoading) return <div>Loading...</div>;
+  if (!data) return <div>No data</div>;
   return (
     <div className="px-16 prose-h1:text-2xl prose-h1:font-bold prose-p:text-lg">
       <h1 className="mb-2">
@@ -15,6 +16,7 @@ export default function DataCheck() {
         esforços com problemas
       </p>
       <div className="flex justify-center">
+        {/* @ts-ignore */}
         <DataTable columns={columns} data={data?.efforts ?? []} />
       </div>
     </div>

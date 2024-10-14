@@ -126,7 +126,9 @@ export default function Effort() {
           .sort(
             (a, b) =>
               a.captureCode.localeCompare(b.captureCode) ||
-              a.captureTime - b.captureTime
+              (a.captureTime && b.captureTime
+                ? Number(a.captureTime) - Number(b.captureTime)
+                : 0)
           )
           .map((capture) => (
             <li key={capture.captureId}>
