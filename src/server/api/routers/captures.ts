@@ -22,6 +22,7 @@ import {
   sppRegister,
   banderRegister,
   netOc,
+  protocolRegister,
 } from "drizzle/schema";
 
 export const capturesRouter = createTRPCRouter({
@@ -119,6 +120,7 @@ export const capturesRouter = createTRPCRouter({
           family: sppRegister.family,
           sppName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
           notes: capture.notes,
+          protocol: protocolRegister.protocolCode,
         })
         .from(capture)
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
@@ -134,7 +136,11 @@ export const capturesRouter = createTRPCRouter({
           bandStringRegister,
           eq(bands.stringId, bandStringRegister.stringId)
         )
-        .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId));
+        .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
+        .leftJoin(
+          protocolRegister,
+          eq(effort.protocolId, protocolRegister.protocolId)
+        );
 
       if (family) {
         capturesQuery = capturesQuery.where(eq(sppRegister.family, family));
