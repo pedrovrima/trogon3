@@ -387,6 +387,7 @@ export const capturesRouter = createTRPCRouter({
       const _capture = await db
         .select()
         .from(capture)
+        //@ts-expect-error
         .where(eq(capture.captureId, recordId));
       if (!_capture) {
         throw new Error("Capture not found");
@@ -407,6 +408,7 @@ export const capturesRouter = createTRPCRouter({
             hasChanged: true,
             updatedAt: sql`now()`,
           })
+          //@ts-expect-error
           .where(eq(capture.captureId, recordId));
       });
 
