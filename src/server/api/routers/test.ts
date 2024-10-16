@@ -80,7 +80,8 @@ export const testRouter = createTRPCRouter({
           and(
             eq(bands.bandNumber, bandNumber as string),
             eq(bandStringRegister.size, bandSize as string),
-            eq(captureVariableRegister.name, "age_wrp")
+            eq(captureVariableRegister.name, "age_wrp"),
+            eq(capture.hasChanged, false)
           )
         )
         .orderBy(desc(effort.dateEffort));

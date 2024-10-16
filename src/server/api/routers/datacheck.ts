@@ -30,6 +30,7 @@ export const datacheckRouter = createTRPCRouter({
       .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
       .leftJoin(capture, eq(netEffort.netEffId, capture.netEffId))
       .where(inArray(capture.captureCode, ["N", "R", "U", "C", "E"]))
+      .where(eq(capture.hasChanged, false))
       .groupBy(effort.effortId, stationRegister.stationCode)
       .orderBy(desc(effort.dateEffort));
 

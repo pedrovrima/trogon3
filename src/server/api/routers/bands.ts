@@ -28,6 +28,7 @@ export const bandsRouter = createTRPCRouter({
       )
       .leftJoin(capture, eq(bands.bandId, capture.bandId))
       .groupBy(bands.bandId, bandStringRegister.size, bands.bandNumber)
+      .where(eq(capture.hasChanged, false))
       .execute();
     return bandReport;
   }),

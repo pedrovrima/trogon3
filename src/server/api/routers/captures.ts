@@ -140,8 +140,8 @@ export const capturesRouter = createTRPCRouter({
         .leftJoin(
           protocolRegister,
           eq(effort.protocolId, protocolRegister.protocolId)
-        );
-
+        )
+        .where(eq(capture.hasChanged, true));
       if (family) {
         capturesQuery = capturesQuery.where(eq(sppRegister.family, family));
       }
