@@ -1,0 +1,2313 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "id": "66f524ba-fc4d-45d1-a876-e63787e3c054",
+  "prevId": "75a88b27-bc7b-47ad-8263-c7448d9fbe3f",
+  "tables": {
+    "band_string_register": {
+      "name": "band_string_register",
+      "schema": "",
+      "columns": {
+        "string_id": {
+          "name": "string_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_band": {
+          "name": "first_band",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "bander_register": {
+      "name": "bander_register",
+      "schema": "",
+      "columns": {
+        "bander_id": {
+          "name": "bander_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(14)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "varchar(250)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "bands": {
+      "name": "bands",
+      "schema": "",
+      "columns": {
+        "band_id": {
+          "name": "band_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "string_id": {
+          "name": "string_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "band_number": {
+          "name": "band_number",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "used": {
+          "name": "used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18171_string_id": {
+          "name": "idx_18171_string_id",
+          "columns": [
+            "string_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bands_string_id_band_string_register_string_id_fk": {
+          "name": "bands_string_id_band_string_register_string_id_fk",
+          "tableFrom": "bands",
+          "tableTo": "band_string_register",
+          "columnsFrom": [
+            "string_id"
+          ],
+          "columnsTo": [
+            "string_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "capture": {
+      "name": "capture",
+      "schema": "",
+      "columns": {
+        "capture_id": {
+          "name": "capture_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "capture_time": {
+          "name": "capture_time",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL::character varying"
+        },
+        "capture_code": {
+          "name": "capture_code",
+          "type": "varchar(1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL::character varying"
+        },
+        "net_eff_id": {
+          "name": "net_eff_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bander_id": {
+          "name": "bander_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "band_id": {
+          "name": "band_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spp_id": {
+          "name": "spp_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18182_band_id": {
+          "name": "idx_18182_band_id",
+          "columns": [
+            "band_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18182_bander_id": {
+          "name": "idx_18182_bander_id",
+          "columns": [
+            "bander_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18182_net_eff_id": {
+          "name": "idx_18182_net_eff_id",
+          "columns": [
+            "net_eff_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18182_spp_id": {
+          "name": "idx_18182_spp_id",
+          "columns": [
+            "spp_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "capture_net_eff_id_net_effort_net_eff_id_fk": {
+          "name": "capture_net_eff_id_net_effort_net_eff_id_fk",
+          "tableFrom": "capture",
+          "tableTo": "net_effort",
+          "columnsFrom": [
+            "net_eff_id"
+          ],
+          "columnsTo": [
+            "net_eff_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "capture_bander_id_bander_register_bander_id_fk": {
+          "name": "capture_bander_id_bander_register_bander_id_fk",
+          "tableFrom": "capture",
+          "tableTo": "bander_register",
+          "columnsFrom": [
+            "bander_id"
+          ],
+          "columnsTo": [
+            "bander_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "capture_band_id_bands_band_id_fk": {
+          "name": "capture_band_id_bands_band_id_fk",
+          "tableFrom": "capture",
+          "tableTo": "bands",
+          "columnsFrom": [
+            "band_id"
+          ],
+          "columnsTo": [
+            "band_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "capture_spp_id_spp_register_spp_id_fk": {
+          "name": "capture_spp_id_spp_register_spp_id_fk",
+          "tableFrom": "capture",
+          "tableTo": "spp_register",
+          "columnsFrom": [
+            "spp_id"
+          ],
+          "columnsTo": [
+            "spp_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "capture_categorical_options": {
+      "name": "capture_categorical_options",
+      "schema": "",
+      "columns": {
+        "capture_categorical_option_id": {
+          "name": "capture_categorical_option_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value_oama": {
+          "name": "value_oama",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capture_variable_id": {
+          "name": "capture_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18189_capture_variable_id": {
+          "name": "idx_18189_capture_variable_id",
+          "columns": [
+            "capture_variable_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "capture_categorical_options_capture_variable_id_capture_variable_register_capture_variable_id_fk": {
+          "name": "capture_categorical_options_capture_variable_id_capture_variable_register_capture_variable_id_fk",
+          "tableFrom": "capture_categorical_options",
+          "tableTo": "capture_variable_register",
+          "columnsFrom": [
+            "capture_variable_id"
+          ],
+          "columnsTo": [
+            "capture_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "capture_categorical_values": {
+      "name": "capture_categorical_values",
+      "schema": "",
+      "columns": {
+        "capture_categorical_values_id": {
+          "name": "capture_categorical_values_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "capture_id": {
+          "name": "capture_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capture_categorical_option_id": {
+          "name": "capture_categorical_option_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capture_variable_id": {
+          "name": "capture_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_18196_capture_categorical_option_id": {
+          "name": "idx_18196_capture_categorical_option_id",
+          "columns": [
+            "capture_categorical_option_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18196_capture_categorical_values_capture_variable_id_foreig": {
+          "name": "idx_18196_capture_categorical_values_capture_variable_id_foreig",
+          "columns": [
+            "capture_variable_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18196_capture_id": {
+          "name": "idx_18196_capture_id",
+          "columns": [
+            "capture_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "capture_categorical_values_capture_id_capture_capture_id_fk": {
+          "name": "capture_categorical_values_capture_id_capture_capture_id_fk",
+          "tableFrom": "capture_categorical_values",
+          "tableTo": "capture",
+          "columnsFrom": [
+            "capture_id"
+          ],
+          "columnsTo": [
+            "capture_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "capture_categorical_values_capture_categorical_option_id_capture_categorical_options_capture_categorical_option_id_fk": {
+          "name": "capture_categorical_values_capture_categorical_option_id_capture_categorical_options_capture_categorical_option_id_fk",
+          "tableFrom": "capture_categorical_values",
+          "tableTo": "capture_categorical_options",
+          "columnsFrom": [
+            "capture_categorical_option_id"
+          ],
+          "columnsTo": [
+            "capture_categorical_option_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "capture_categorical_values_capture_variable_id_capture_variable_register_capture_variable_id_fk": {
+          "name": "capture_categorical_values_capture_variable_id_capture_variable_register_capture_variable_id_fk",
+          "tableFrom": "capture_categorical_values",
+          "tableTo": "capture_variable_register",
+          "columnsFrom": [
+            "capture_variable_id"
+          ],
+          "columnsTo": [
+            "capture_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "capture_continuous_values": {
+      "name": "capture_continuous_values",
+      "schema": "",
+      "columns": {
+        "capture_continuous_values_id": {
+          "name": "capture_continuous_values_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "capture_id": {
+          "name": "capture_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capture_variable_id": {
+          "name": "capture_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_18201_capture_continuous_values_capture_variable_id_foreign": {
+          "name": "idx_18201_capture_continuous_values_capture_variable_id_foreign",
+          "columns": [
+            "capture_variable_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18201_capture_id": {
+          "name": "idx_18201_capture_id",
+          "columns": [
+            "capture_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "capture_continuous_values_capture_id_capture_capture_id_fk": {
+          "name": "capture_continuous_values_capture_id_capture_capture_id_fk",
+          "tableFrom": "capture_continuous_values",
+          "tableTo": "capture",
+          "columnsFrom": [
+            "capture_id"
+          ],
+          "columnsTo": [
+            "capture_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "capture_continuous_values_capture_variable_id_capture_variable_register_capture_variable_id_fk": {
+          "name": "capture_continuous_values_capture_variable_id_capture_variable_register_capture_variable_id_fk",
+          "tableFrom": "capture_continuous_values",
+          "tableTo": "capture_variable_register",
+          "columnsFrom": [
+            "capture_variable_id"
+          ],
+          "columnsTo": [
+            "capture_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "capture_flag": {
+      "name": "capture_flag",
+      "schema": "",
+      "columns": {
+        "flag_id": {
+          "name": "flag_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "capture_id": {
+          "name": "capture_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18206_capture_id": {
+          "name": "idx_18206_capture_id",
+          "columns": [
+            "capture_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "capture_flag_capture_id_capture_capture_id_fk": {
+          "name": "capture_flag_capture_id_capture_capture_id_fk",
+          "tableFrom": "capture_flag",
+          "tableTo": "capture",
+          "columnsFrom": [
+            "capture_id"
+          ],
+          "columnsTo": [
+            "capture_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "capture_variable_register": {
+      "name": "capture_variable_register",
+      "schema": "",
+      "columns": {
+        "capture_variable_id": {
+          "name": "capture_variable_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "portuguese_label": {
+          "name": "portuguese_label",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field_size": {
+          "name": "field_size",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duplicable": {
+          "name": "duplicable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "special": {
+          "name": "special",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL::character varying"
+        },
+        "precision": {
+          "name": "precision",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "change_log": {
+      "name": "change_log",
+      "schema": "",
+      "columns": {
+        "change_log_id": {
+          "name": "change_log_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "table": {
+          "name": "table",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "old_record_id": {
+          "name": "old_record_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "new_record_id": {
+          "name": "new_record_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "justification": {
+          "name": "justification",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort": {
+      "name": "effort",
+      "schema": "",
+      "columns": {
+        "effort_id": {
+          "name": "effort_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "date_effort": {
+          "name": "date_effort",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "varchar(250)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "station_id": {
+          "name": "station_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "protocol_id": {
+          "name": "protocol_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18220_protocol_id": {
+          "name": "idx_18220_protocol_id",
+          "columns": [
+            "protocol_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18220_station_id": {
+          "name": "idx_18220_station_id",
+          "columns": [
+            "station_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "effort_station_id_station_register_station_id_fk": {
+          "name": "effort_station_id_station_register_station_id_fk",
+          "tableFrom": "effort",
+          "tableTo": "station_register",
+          "columnsFrom": [
+            "station_id"
+          ],
+          "columnsTo": [
+            "station_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "effort_protocol_id_protocol_register_protocol_id_fk": {
+          "name": "effort_protocol_id_protocol_register_protocol_id_fk",
+          "tableFrom": "effort",
+          "tableTo": "protocol_register",
+          "columnsFrom": [
+            "protocol_id"
+          ],
+          "columnsTo": [
+            "protocol_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_categorical_options": {
+      "name": "effort_categorical_options",
+      "schema": "",
+      "columns": {
+        "effort_categorical_option_id": {
+          "name": "effort_categorical_option_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value_oama": {
+          "name": "value_oama",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "effort_variable_id": {
+          "name": "effort_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18227_effort_variable_id": {
+          "name": "idx_18227_effort_variable_id",
+          "columns": [
+            "effort_variable_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "effort_categorical_options_effort_variable_id_effort_variable_register_effort_variable_id_fk": {
+          "name": "effort_categorical_options_effort_variable_id_effort_variable_register_effort_variable_id_fk",
+          "tableFrom": "effort_categorical_options",
+          "tableTo": "effort_variable_register",
+          "columnsFrom": [
+            "effort_variable_id"
+          ],
+          "columnsTo": [
+            "effort_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_categorical_values": {
+      "name": "effort_categorical_values",
+      "schema": "",
+      "columns": {
+        "effort_categorical_value_id": {
+          "name": "effort_categorical_value_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "effort_id": {
+          "name": "effort_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effort_categorical_option_id": {
+          "name": "effort_categorical_option_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effort_time_id": {
+          "name": "effort_time_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "effort_variable_id": {
+          "name": "effort_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_18234_effort_categorical_option_id": {
+          "name": "idx_18234_effort_categorical_option_id",
+          "columns": [
+            "effort_categorical_option_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18234_effort_categorical_values_effort_variable_id_foreign_": {
+          "name": "idx_18234_effort_categorical_values_effort_variable_id_foreign_",
+          "columns": [
+            "effort_variable_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18234_effort_id": {
+          "name": "idx_18234_effort_id",
+          "columns": [
+            "effort_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18234_effort_time_id": {
+          "name": "idx_18234_effort_time_id",
+          "columns": [
+            "effort_time_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "effort_categorical_values_effort_id_effort_effort_id_fk": {
+          "name": "effort_categorical_values_effort_id_effort_effort_id_fk",
+          "tableFrom": "effort_categorical_values",
+          "tableTo": "effort",
+          "columnsFrom": [
+            "effort_id"
+          ],
+          "columnsTo": [
+            "effort_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "effort_categorical_values_effort_categorical_option_id_effort_categorical_options_effort_categorical_option_id_fk": {
+          "name": "effort_categorical_values_effort_categorical_option_id_effort_categorical_options_effort_categorical_option_id_fk",
+          "tableFrom": "effort_categorical_values",
+          "tableTo": "effort_categorical_options",
+          "columnsFrom": [
+            "effort_categorical_option_id"
+          ],
+          "columnsTo": [
+            "effort_categorical_option_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "effort_categorical_values_effort_time_id_effort_time_effort_time_id_fk": {
+          "name": "effort_categorical_values_effort_time_id_effort_time_effort_time_id_fk",
+          "tableFrom": "effort_categorical_values",
+          "tableTo": "effort_time",
+          "columnsFrom": [
+            "effort_time_id"
+          ],
+          "columnsTo": [
+            "effort_time_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "effort_categorical_values_effort_variable_id_effort_variable_register_effort_variable_id_fk": {
+          "name": "effort_categorical_values_effort_variable_id_effort_variable_register_effort_variable_id_fk",
+          "tableFrom": "effort_categorical_values",
+          "tableTo": "effort_variable_register",
+          "columnsFrom": [
+            "effort_variable_id"
+          ],
+          "columnsTo": [
+            "effort_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_continuous_values": {
+      "name": "effort_continuous_values",
+      "schema": "",
+      "columns": {
+        "effort_continuous_value_id": {
+          "name": "effort_continuous_value_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "effort_id": {
+          "name": "effort_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effort_time_id": {
+          "name": "effort_time_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "effort_variable_id": {
+          "name": "effort_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_18239_effort_continuous_values_effort_variable_id_foreign_i": {
+          "name": "idx_18239_effort_continuous_values_effort_variable_id_foreign_i",
+          "columns": [
+            "effort_variable_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18239_effort_id": {
+          "name": "idx_18239_effort_id",
+          "columns": [
+            "effort_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18239_effort_time_id": {
+          "name": "idx_18239_effort_time_id",
+          "columns": [
+            "effort_time_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "effort_continuous_values_effort_id_effort_effort_id_fk": {
+          "name": "effort_continuous_values_effort_id_effort_effort_id_fk",
+          "tableFrom": "effort_continuous_values",
+          "tableTo": "effort",
+          "columnsFrom": [
+            "effort_id"
+          ],
+          "columnsTo": [
+            "effort_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "effort_continuous_values_effort_time_id_effort_time_effort_time_id_fk": {
+          "name": "effort_continuous_values_effort_time_id_effort_time_effort_time_id_fk",
+          "tableFrom": "effort_continuous_values",
+          "tableTo": "effort_time",
+          "columnsFrom": [
+            "effort_time_id"
+          ],
+          "columnsTo": [
+            "effort_time_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "effort_continuous_values_effort_variable_id_effort_variable_register_effort_variable_id_fk": {
+          "name": "effort_continuous_values_effort_variable_id_effort_variable_register_effort_variable_id_fk",
+          "tableFrom": "effort_continuous_values",
+          "tableTo": "effort_variable_register",
+          "columnsFrom": [
+            "effort_variable_id"
+          ],
+          "columnsTo": [
+            "effort_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_flag": {
+      "name": "effort_flag",
+      "schema": "",
+      "columns": {
+        "effort_flag_id": {
+          "name": "effort_flag_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_summaries": {
+      "name": "effort_summaries",
+      "schema": "",
+      "columns": {
+        "effort_summary_id": {
+          "name": "effort_summary_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "effort_id": {
+          "name": "effort_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "new_bands": {
+          "name": "new_bands",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recapture": {
+          "name": "recapture",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unbanded": {
+          "name": "unbanded",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18244_effort_id": {
+          "name": "idx_18244_effort_id",
+          "columns": [
+            "effort_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "effort_summaries_effort_id_effort_effort_id_fk": {
+          "name": "effort_summaries_effort_id_effort_effort_id_fk",
+          "tableFrom": "effort_summaries",
+          "tableTo": "effort",
+          "columnsFrom": [
+            "effort_id"
+          ],
+          "columnsTo": [
+            "effort_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_time": {
+      "name": "effort_time",
+      "schema": "",
+      "columns": {
+        "effort_time_id": {
+          "name": "effort_time_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "portuguese_label": {
+          "name": "portuguese_label",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "effort_variable_register": {
+      "name": "effort_variable_register",
+      "schema": "",
+      "columns": {
+        "effort_variable_id": {
+          "name": "effort_variable_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "portuguese_label": {
+          "name": "portuguese_label",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field_size": {
+          "name": "field_size",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL::character varying"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "net_effort": {
+      "name": "net_effort",
+      "schema": "",
+      "columns": {
+        "net_eff_id": {
+          "name": "net_eff_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "effort_id": {
+          "name": "effort_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "net_id": {
+          "name": "net_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "REDE.ID": {
+          "name": "REDE.ID",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL::character varying"
+        }
+      },
+      "indexes": {
+        "idx_18263_effort_id": {
+          "name": "idx_18263_effort_id",
+          "columns": [
+            "effort_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18263_net_id": {
+          "name": "idx_18263_net_id",
+          "columns": [
+            "net_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "net_effort_effort_id_effort_effort_id_fk": {
+          "name": "net_effort_effort_id_effort_effort_id_fk",
+          "tableFrom": "net_effort",
+          "tableTo": "effort",
+          "columnsFrom": [
+            "effort_id"
+          ],
+          "columnsTo": [
+            "effort_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "net_effort_net_id_net_register_net_id_fk": {
+          "name": "net_effort_net_id_net_register_net_id_fk",
+          "tableFrom": "net_effort",
+          "tableTo": "net_register",
+          "columnsFrom": [
+            "net_id"
+          ],
+          "columnsTo": [
+            "net_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "net_oc": {
+      "name": "net_oc",
+      "schema": "",
+      "columns": {
+        "net_oc_id": {
+          "name": "net_oc_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "open_time": {
+          "name": "open_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "close_time": {
+          "name": "close_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "net_eff_id": {
+          "name": "net_eff_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "net_register": {
+      "name": "net_register",
+      "schema": "",
+      "columns": {
+        "net_id": {
+          "name": "net_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "net_number": {
+          "name": "net_number",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "net_lat": {
+          "name": "net_lat",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "net_long": {
+          "name": "net_long",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "station_id": {
+          "name": "station_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "mesh_size": {
+          "name": "mesh_size",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "net_length": {
+          "name": "net_length",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_18274_station_id": {
+          "name": "idx_18274_station_id",
+          "columns": [
+            "station_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "net_register_station_id_station_register_station_id_fk": {
+          "name": "net_register_station_id_station_register_station_id_fk",
+          "tableFrom": "net_register",
+          "tableTo": "station_register",
+          "columnsFrom": [
+            "station_id"
+          ],
+          "columnsTo": [
+            "station_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "protocol_register": {
+      "name": "protocol_register",
+      "schema": "",
+      "columns": {
+        "protocol_id": {
+          "name": "protocol_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "protocol_code": {
+          "name": "protocol_code",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "protocol_description": {
+          "name": "protocol_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "protocol_vars": {
+      "name": "protocol_vars",
+      "schema": "",
+      "columns": {
+        "protocol_param_id": {
+          "name": "protocol_param_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "protocol_id": {
+          "name": "protocol_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mandatory": {
+          "name": "mandatory",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capture_variable_id": {
+          "name": "capture_variable_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_18286_protocol_id": {
+          "name": "idx_18286_protocol_id",
+          "columns": [
+            "protocol_id"
+          ],
+          "isUnique": false
+        },
+        "idx_18286_variable_id": {
+          "name": "idx_18286_variable_id",
+          "columns": [
+            "capture_variable_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "protocol_vars_protocol_id_protocol_register_protocol_id_fk": {
+          "name": "protocol_vars_protocol_id_protocol_register_protocol_id_fk",
+          "tableFrom": "protocol_vars",
+          "tableTo": "protocol_register",
+          "columnsFrom": [
+            "protocol_id"
+          ],
+          "columnsTo": [
+            "protocol_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "protocol_vars_capture_variable_id_capture_variable_register_capture_variable_id_fk": {
+          "name": "protocol_vars_capture_variable_id_capture_variable_register_capture_variable_id_fk",
+          "tableFrom": "protocol_vars",
+          "tableTo": "capture_variable_register",
+          "columnsFrom": [
+            "capture_variable_id"
+          ],
+          "columnsTo": [
+            "capture_variable_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "sequelizemeta": {
+      "name": "sequelizemeta",
+      "schema": "",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_18291_name": {
+          "name": "idx_18291_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "spp_register": {
+      "name": "spp_register",
+      "schema": "",
+      "columns": {
+        "spp_id": {
+          "name": "spp_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "family": {
+          "name": "family",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "genus": {
+          "name": "genus",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "species": {
+          "name": "species",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pt_name": {
+          "name": "pt_name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "en_name": {
+          "name": "en_name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sci_code": {
+          "name": "sci_code",
+          "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "station_register": {
+      "name": "station_register",
+      "schema": "",
+      "columns": {
+        "station_id": {
+          "name": "station_id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "station_code": {
+          "name": "station_code",
+          "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "station_name": {
+          "name": "station_name",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "name": "city",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "center_lat": {
+          "name": "center_lat",
+          "type": "numeric(10, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "center_long": {
+          "name": "center_long",
+          "type": "numeric(10, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_changed": {
+          "name": "has_changed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_id": {
+          "name": "original_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "aal_level": {
+      "name": "aal_level",
+      "values": {
+        "aal1": "aal1",
+        "aal2": "aal2",
+        "aal3": "aal3"
+      }
+    },
+    "action": {
+      "name": "action",
+      "values": {
+        "INSERT": "INSERT",
+        "UPDATE": "UPDATE",
+        "DELETE": "DELETE",
+        "TRUNCATE": "TRUNCATE",
+        "ERROR": "ERROR"
+      }
+    },
+    "code_challenge_method": {
+      "name": "code_challenge_method",
+      "values": {
+        "s256": "s256",
+        "plain": "plain"
+      }
+    },
+    "equality_op": {
+      "name": "equality_op",
+      "values": {
+        "eq": "eq",
+        "neq": "neq",
+        "lt": "lt",
+        "lte": "lte",
+        "gt": "gt",
+        "gte": "gte",
+        "in": "in"
+      }
+    },
+    "factor_status": {
+      "name": "factor_status",
+      "values": {
+        "unverified": "unverified",
+        "verified": "verified"
+      }
+    },
+    "factor_type": {
+      "name": "factor_type",
+      "values": {
+        "totp": "totp",
+        "webauthn": "webauthn"
+      }
+    },
+    "key_status": {
+      "name": "key_status",
+      "values": {
+        "default": "default",
+        "valid": "valid",
+        "invalid": "invalid",
+        "expired": "expired"
+      }
+    },
+    "key_type": {
+      "name": "key_type",
+      "values": {
+        "aead-ietf": "aead-ietf",
+        "aead-det": "aead-det",
+        "hmacsha512": "hmacsha512",
+        "hmacsha256": "hmacsha256",
+        "auth": "auth",
+        "shorthash": "shorthash",
+        "generichash": "generichash",
+        "kdf": "kdf",
+        "secretbox": "secretbox",
+        "secretstream": "secretstream",
+        "stream_xchacha20": "stream_xchacha20"
+      }
+    },
+    "one_time_token_type": {
+      "name": "one_time_token_type",
+      "values": {
+        "confirmation_token": "confirmation_token",
+        "reauthentication_token": "reauthentication_token",
+        "recovery_token": "recovery_token",
+        "email_change_token_new": "email_change_token_new",
+        "email_change_token_current": "email_change_token_current",
+        "phone_change_token": "phone_change_token"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

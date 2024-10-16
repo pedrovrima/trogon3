@@ -611,3 +611,13 @@ export const stationRegister = mysqlTable("STATION_REGISTER", {
   createdAt: datetime("created_at", { mode: "string" }).notNull(),
   updatedAt: datetime("updated_at", { mode: "string" }),
 });
+
+export const changeLog = mysqlTable("CHANGE_LOG", {
+  changeLogId: int("change_log_id").autoincrement().primaryKey().notNull(),
+  table: varchar("table", { length: 45 }).notNull(),
+  oldRecordId: int("old_record_id").notNull(),
+  newRecordId: int("new_record_id"),
+  isDeleted: tinyint("is_deleted").notNull(),
+  justification: text("justification").notNull(),
+  createdAt: datetime("created_at", { mode: "string" }).notNull(),
+});

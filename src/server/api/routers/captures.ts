@@ -23,6 +23,7 @@ import {
   banderRegister,
   netOc,
   protocolRegister,
+  changeLog,
 } from "drizzle/schema";
 
 export const capturesRouter = createTRPCRouter({
@@ -301,6 +302,7 @@ export const capturesRouter = createTRPCRouter({
           sppCode: sppRegister.sciCode,
           sppName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
           notes: capture.notes,
+          hasChanged: capture.hasChanged,
         })
         .from(capture)
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
@@ -371,5 +373,45 @@ export const capturesRouter = createTRPCRouter({
         categoricalValues,
         continuousValues,
       };
+    }),
+  deleteCapture: protectedProcedure
+    .input(
+      z.object({
+        recordId: z.number(),
+        justification: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { recordId, justification } = input;
+
+      const _capture = await db
+        .select()
+        .from(capture)
+        .where(eq(capture.captureId, recordId));
+      if (!_capture) {
+        throw new Error("Capture not found");
+      }
+      db.transaction(async (tx) => {
+        await tx.insert(changeLog).values({
+          table: "capture",
+          oldRecordId: recordId,
+          newRecordId: null,
+          isDeleted: true,
+          justification,
+          createdAt: sql`now()`,
+        });
+
+        await tx
+          .update(capture)
+          .set({
+            hasChanged: true,
+            updatedAt: sql`now()`,
+          })
+          .where(eq(capture.captureId, recordId));
+      });
+
+      console.log(changeLog);
+
+      return changeLog;
     }),
 });

@@ -815,3 +815,15 @@ export const effortSummaries = pgTable(
     };
   }
 );
+
+export const changeLog = pgTable("change_log", {
+  changeLogId: bigserial("change_log_id", { mode: "bigint" })
+    .primaryKey()
+    .notNull(),
+  table: varchar("table", { length: 45 }).notNull(),
+  oldRecordId: integer("old_record_id").notNull(),
+  newRecordId: integer("new_record_id"),
+  isDeleted: boolean("is_deleted").notNull(),
+  justification: text("justification").notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+});
