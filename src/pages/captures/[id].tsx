@@ -17,7 +17,7 @@ export default function CaptureInfo() {
         {data.hasChanged && <p className="text-red-500">EXCLUIDO</p>}
         <div className="flex justify-between">
           <h1>{data.sppCode}</h1>
-          {!data.hasChanged && (
+          {/* {!data.hasChanged && (
             <button
               className="rounded-md bg-red-500 p-2 text-white"
               onClick={async () => {
@@ -31,7 +31,7 @@ export default function CaptureInfo() {
             >
               <Trash className="h-4 w-4" />
             </button>
-          )}
+          )} */}
         </div>
         <h2>
           {data.captureCode} - {data?.bandSize}

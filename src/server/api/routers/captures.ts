@@ -86,13 +86,10 @@ export const capturesRouter = createTRPCRouter({
             sppRegister.sppId,
             spp.map((s) => s.id).filter((id): id is bigint => id !== null)
           ),
-          eq(stationRegister.stationCode, "BOA1")
+          eq(capture.hasChanged, false)
         )
       );
 
-    console.log(
-      monthlyCapturesOfTopSpecies.filter((s) => s.speciesName === "HAPUNI")
-    );
     return { data: monthlyCapturesOfTopSpecies, count: spp };
   }),
   getCaptures: publicProcedure
@@ -142,7 +139,7 @@ export const capturesRouter = createTRPCRouter({
           protocolRegister,
           eq(effort.protocolId, protocolRegister.protocolId)
         )
-        .where(eq(capture.hasChanged, true));
+        .where(eq(capture.hasChanged, false));
       if (family) {
         capturesQuery = capturesQuery.where(eq(sppRegister.family, family));
       }
@@ -411,8 +408,6 @@ export const capturesRouter = createTRPCRouter({
           //@ts-expect-error
           .where(eq(capture.captureId, recordId));
       });
-
-      console.log(changeLog);
 
       return changeLog;
     }),
