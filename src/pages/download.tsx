@@ -62,7 +62,7 @@ const Captures: NextPage = () => {
                 }
               }}
             >
-              Download Captura BOA
+              Download Contagem SPP BOA
             </Button>
             <CSVLink
               data={boaCountData}
