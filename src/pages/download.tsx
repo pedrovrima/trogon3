@@ -47,6 +47,7 @@ const Captures: NextPage = () => {
               Download Análise BOA
             </Button>
             <CSVLink
+              //@ts-expect-error: I don't know how to fix this
               data={boaAnalysisData}
               filename={`boa_analysis_${Date.now()}.csv`}
               className="hidden"
@@ -65,6 +66,7 @@ const Captures: NextPage = () => {
               Download Contagem SPP BOA
             </Button>
             <CSVLink
+              //@ts-expect-error
               data={boaCountData}
               filename={`boa_count_${Date.now()}.csv`}
               className="hidden"
@@ -75,7 +77,7 @@ const Captures: NextPage = () => {
               className="w-96"
               onClick={() => {
                 if (downloadRef?.current) {
-                  //@ts-expect-error: I don't know how to fix this
+                  //@ts-expect-error
                   downloadRef.current.link.click();
                 }
               }}
