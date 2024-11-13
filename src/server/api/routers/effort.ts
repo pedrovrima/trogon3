@@ -178,7 +178,6 @@ export const effortRouter = createTRPCRouter({
       []
     );
 
-    console.log(netEfforts);
     const effortWithVariables = efforts.map((effort) => {
       const effortIndex = netEfforts.findIndex(
         (netEffort) => netEffort.effortId === effort.effortId
@@ -220,7 +219,6 @@ export const effortRouter = createTRPCRouter({
       })
     )
     .query(async ({ input }) => {
-      console.log("called");
       const { page, searchTerm } = input;
       const pageSize = 10;
       const offset = (page - 1) * pageSize;
@@ -330,7 +328,6 @@ export const effortRouter = createTRPCRouter({
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         .where(eq(netEffort.effortId, effortId));
 
-      console.log(effortCaptures);
       return { ...effortData[0], captures: effortCaptures };
     }),
 });

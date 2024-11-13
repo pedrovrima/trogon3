@@ -12,13 +12,21 @@ const Captures: NextPage = () => {
   const { data: hummerData } = api.captures.getCaptures.useQuery({
     family: "Trochilidae",
   });
-
-  console.log(bandsData);
+  const { data: boaAnalysisData } = api.captures.getCaptures.useQuery({
+    stationString: "BOA",
+    analysis: true,
+  });
+  const { data: boaCountData } = api.species.getSpeciesSummary.useQuery({
+    stationString: "BOA",
+    analysis: true,
+  });
 
   const downloadRef = useRef(null);
   const effortDownloadRef = useRef(null);
   const bandsDownloadRef = useRef(null);
   const hummerDownloadRef = useRef(null);
+  const boaAnalysisDownloadRef = useRef(null);
+  const boaCountDownloadRef = useRef(null);
   return (
     <>
       <h1 className="m-8 text-center text-2xl font-bold italic">
@@ -27,6 +35,42 @@ const Captures: NextPage = () => {
       {data && effortData && bandsData && hummerData ? (
         <div className=" flex flex-col items-center justify-center gap-8">
           <>
+            <Button
+              className="w-96"
+              onClick={() => {
+                if (boaAnalysisDownloadRef?.current) {
+                  //@ts-expect-error: I don't know how to fix this
+                  boaAnalysisDownloadRef.current.link.click();
+                }
+              }}
+            >
+              Download Análise BOA
+            </Button>
+            <CSVLink
+              data={boaAnalysisData}
+              filename={`boa_analysis_${Date.now()}.csv`}
+              className="hidden"
+              target="_blank"
+              ref={boaAnalysisDownloadRef}
+            />
+            <Button
+              className="w-96"
+              onClick={() => {
+                if (boaCountDownloadRef?.current) {
+                  //@ts-expect-error: I don't know how to fix this
+                  boaCountDownloadRef.current.link.click();
+                }
+              }}
+            >
+              Download Captura BOA
+            </Button>
+            <CSVLink
+              data={boaCountData}
+              filename={`boa_count_${Date.now()}.csv`}
+              className="hidden"
+              target="_blank"
+              ref={boaCountDownloadRef}
+            />
             <Button
               className="w-96"
               onClick={() => {

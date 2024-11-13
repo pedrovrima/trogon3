@@ -14,29 +14,59 @@ import {
   stationRegister,
   netOc,
 } from "drizzle/schema";
-import { eq, sql, and, desc } from "drizzle-orm";
+import { eq, sql, and, desc, like, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { bandsRouter } from "./bands";
 import { nodeHTTPRequestHandler } from "@trpc/server/dist/adapters/node-http";
 import { groupBy } from "lodash";
 
 export const speciesRouter = createTRPCRouter({
-  getSpeciesSummary: publicProcedure.query(async () => {
-    console.log("running");
-    const spp = await db
-      .select({
-        id: sppRegister.sppId,
-        name: sppRegister.ptName,
-        scientificName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
-        total: sql<number>`count(${capture.captureId}) `,
-      })
-      .from(sppRegister)
-      .orderBy(sql`count(${capture.captureId}) desc`)
-      .rightJoin(capture, eq(sppRegister.sppId, capture.sppId))
-      .groupBy(sppRegister.sppId);
+  getSpeciesSummary: publicProcedure
+    .input(
+      z
+        .object({
+          stationString: z.string().optional(),
+          analysis: z.boolean().optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const { stationString, analysis } = input ?? {};
 
-    return spp;
-  }),
+      let sppQuery = db
+        .select({
+          id: sppRegister.sppId,
+          name: sppRegister.ptName,
+          scientificName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
+          total: sql<number>`count(${capture.captureId}) `,
+        })
+        .from(sppRegister)
+        .orderBy(sql`count(${capture.captureId}) desc`)
+        .rightJoin(capture, eq(sppRegister.sppId, capture.sppId))
+        .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
+        .leftJoin(effort, eq(netEffort.effortId, effort.effortId))
+        .leftJoin(
+          stationRegister,
+          eq(effort.stationId, stationRegister.stationId)
+        )
+        .groupBy(sppRegister.sppId);
+
+      let conditions = [];
+
+      if (stationString) {
+        conditions.push(
+          like(stationRegister.stationCode, `%${stationString}%`)
+        );
+      }
+      if (analysis) {
+        conditions.push(inArray(capture.captureCode, ["N", "R", "C", "U"]));
+      }
+      if (conditions.length > 0) {
+        sppQuery = sppQuery.where(and(...conditions));
+      }
+      const spp = await sppQuery.execute();
+      return spp;
+    }),
 
   getSpeciesData: publicProcedure.query(async ({ ctx }) => {
     const speciesData = await db

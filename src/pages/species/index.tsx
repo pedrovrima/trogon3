@@ -20,6 +20,7 @@ const SppDetails: NextPage = () => {
     retry: 0,
     refetchOnWindowFocus: false,
   });
+  console.log(spp.data);
 
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
