@@ -1,5 +1,9 @@
-import { eq, sql, inArray, desc, like } from "drizzle-orm";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { eq, sql, inArray, desc, like, and } from "drizzle-orm";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "@/server/api/trpc";
 import db from "@/db";
 import {
   effort,
@@ -17,6 +21,7 @@ import {
   bands,
   bandStringRegister,
   sppRegister,
+  changeLog,
 } from "drizzle/schema";
 import { z } from "zod";
 
@@ -285,6 +290,8 @@ export const effortRouter = createTRPCRouter({
           summary_recapture: effortSummaries.recapture,
           summary_unbanded: effortSummaries.unbanded,
           notes: effort.notes,
+          openTime: sql<string>`TO_CHAR(MIN(${netOc.openTime}), 'HH24:MI')`,
+          closeTime: sql<string>`TO_CHAR(MAX(${netOc.closeTime}), 'HH24:MI')`,
         })
         .from(effort)
         .where(eq(effort.effortId, effortId))
@@ -312,7 +319,10 @@ export const effortRouter = createTRPCRouter({
       const effortCaptures = await db
         .select({
           captureId: capture.captureId,
-          captureTime: capture.captureTime,
+          captureTime: sql<string>`TO_CHAR(
+            TO_TIMESTAMP(${capture.captureTime} || '0', 'HH24MI0')::TIME,
+            'HH24:MI'
+          )`,
           bandNumber: bands.bandNumber,
           bandSize: bandStringRegister.size,
           captureCode: capture.captureCode,
@@ -326,8 +336,71 @@ export const effortRouter = createTRPCRouter({
           eq(bands.stringId, bandStringRegister.stringId)
         )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
-        .where(eq(netEffort.effortId, effortId));
+        .where(
+          and(eq(netEffort.effortId, effortId), eq(capture.hasChanged, false))
+        );
 
       return { ...effortData[0], captures: effortCaptures };
+    }),
+  updateEffortSummary: protectedProcedure
+    .input(
+      z.object({
+        effortId: z.number(),
+        newSummary: z.object({
+          newBands: z.number(),
+          recapture: z.number(),
+          unbanded: z.number(),
+        }),
+        justification: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { effortId, newSummary, justification } = input;
+
+      // Get the original summary record
+      const originalSummary = await db
+        .select()
+        .from(effortSummaries)
+        .where(eq(effortSummaries.effortId, effortId));
+
+      if (!originalSummary || originalSummary.length === 0) {
+        throw new Error("Effort summary not found");
+      }
+
+      // Create backup copy with original data
+      const backupSummary = {
+        ...originalSummary[0],
+        effortSummaryId: undefined, // Let the DB assign a new ID
+        originalId: originalSummary[0].effortSummaryId, // Reference to the original record
+        hasChanged: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      return await db.transaction(async (tx) => {
+        // Insert backup record
+        await tx.insert(effortSummaries).values(backupSummary);
+
+        // Update original record
+        await tx
+          .update(effortSummaries)
+          .set({
+            newBands: newSummary.newBands,
+            recapture: newSummary.recapture,
+            unbanded: newSummary.unbanded,
+            updatedAt: sql`now()`,
+          })
+          .where(eq(effortSummaries.effortId, effortId));
+
+        // Log the change
+        await tx.insert(changeLog).values({
+          table: "effort_summaries",
+          oldRecordId: Number(originalSummary[0].effortSummaryId),
+          newRecordId: Number(originalSummary[0].effortSummaryId),
+          isDeleted: false,
+          justification,
+          createdAt: sql`now()`,
+        });
+      });
     }),
 });

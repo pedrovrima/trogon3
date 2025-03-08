@@ -4,6 +4,8 @@ import { columns, DataTable } from "@/components/organisms/data-check-table";
 export default function DataCheck() {
   const { data, isLoading } = api.datacheck.checkEffortNumbers.useQuery();
 
+  console.log(data);
+
   if (isLoading) return <div>Loading...</div>;
   if (!data) return <div>No data</div>;
   return (
@@ -13,7 +15,7 @@ export default function DataCheck() {
       </h1>
       <p className="mb-8">
         {Math.round((100 * data?.totalMismatch) / data?.totalEfforts)}% dos
-        esforços com problemas
+        esforços com problemas ({data?.totalMismatch} esforços)
       </p>
       <div className="flex justify-center">
         {/* @ts-ignore */}

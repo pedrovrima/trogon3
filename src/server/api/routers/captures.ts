@@ -181,7 +181,7 @@ export const capturesRouter = createTRPCRouter({
 
       const categoricalValues = await db
         .select({
-          captureId: captureCategoricalValues.captureId,
+          captureId: captureCategoricalValues.captureCategoricalValuesId,
           value: captureCategoricalOptions.valueOama,
           variableName: captureVariableRegister.name,
           variableType: captureVariableRegister.type,
@@ -420,7 +420,8 @@ export const capturesRouter = createTRPCRouter({
       if (!_capture) {
         throw new Error("Capture not found");
       }
-      db.transaction(async (tx) => {
+
+      await db.transaction(async (tx) => {
         await tx.insert(changeLog).values({
           table: "capture",
           oldRecordId: recordId,
@@ -440,6 +441,123 @@ export const capturesRouter = createTRPCRouter({
           .where(eq(capture.captureId, recordId));
       });
 
-      return changeLog;
+      // Return a simple success response instead of the changeLog
+      return { success: true };
+    }),
+  updateCaptureNetEffort: protectedProcedure
+    .input(
+      z.object({
+        captureId: z.number(),
+        newNetEffId: z.number(),
+        justification: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { captureId, newNetEffId, justification } = input;
+
+      // Get the original capture record
+      const originalCapture = await db
+        .select()
+        .from(capture)
+        .where(eq(capture.captureId, captureId));
+
+      console.log(originalCapture);
+
+      if (!originalCapture || originalCapture.length === 0) {
+        throw new Error("Capture not found");
+      }
+
+      // Create backup copy with original data
+      const backupCapture = {
+        ...originalCapture[0],
+        captureId: undefined, // Let the DB assign a new ID
+        originalId: captureId, // Reference to the original record
+        hasChanged: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      console.log(backupCapture);
+
+      return await db.transaction(async (tx) => {
+        // Insert backup record
+        await tx.insert(capture).values(backupCapture);
+
+        // Update original record
+        await tx
+          .update(capture)
+          .set({
+            netEffId: newNetEffId,
+            updatedAt: sql`now()`,
+          })
+          .where(eq(capture.captureId, captureId));
+
+        // Log the change
+        await tx.insert(changeLog).values({
+          table: "capture",
+          oldRecordId: captureId,
+          newRecordId: captureId,
+          isDeleted: false,
+          justification,
+          createdAt: sql`now()`,
+        });
+      });
+    }),
+
+  // Helper procedures to get data for the modal
+  getStations: publicProcedure.query(async () => {
+    return await db
+      .select({
+        stationId: stationRegister.stationId,
+        stationCode: stationRegister.stationCode,
+        stationName: stationRegister.stationName,
+      })
+      .from(stationRegister)
+      .where(eq(stationRegister.hasChanged, false));
+  }),
+
+  getEffortsByStation: publicProcedure
+    .input(
+      z.object({
+        stationId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await db
+        .select({
+          effortId: effort.effortId,
+          dateEffort: effort.dateEffort,
+          protocolCode: protocolRegister.protocolCode,
+        })
+        .from(effort)
+        .leftJoin(
+          protocolRegister,
+          eq(effort.protocolId, protocolRegister.protocolId)
+        )
+        .where(and(eq(effort.stationId, input.stationId)))
+        .orderBy(effort.dateEffort);
+    }),
+
+  getNetEffortsByEffort: publicProcedure
+    .input(
+      z.object({
+        effortId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await db
+        .select({
+          netEffId: netEffort.netEffId,
+          netNumber: netRegister.netNumber,
+        })
+        .from(netEffort)
+        .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
+        .where(
+          and(
+            eq(netEffort.effortId, input.effortId),
+            eq(netEffort.hasChanged, false)
+          )
+        )
+        .orderBy(netRegister.netNumber);
     }),
 });

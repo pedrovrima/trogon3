@@ -569,7 +569,7 @@ export const effort = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
-    // TODO: failed to parse database type 'bytea'
+    // Fix: Change the type from byt
     hasChanged: boolean("has_changed").notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     originalId: bigint("original_id", { mode: "number" }),

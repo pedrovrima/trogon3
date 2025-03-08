@@ -34,8 +34,6 @@ export const datacheckRouter = createTRPCRouter({
       .groupBy(effort.effortId, stationRegister.stationCode)
       .orderBy(desc(effort.dateEffort));
 
-    console.log(effortsCaptureCounts.filter((e) => e.effortId === 317));
-
     const effortSummariesCounts = await db
       .select({
         effortId: effortSummaries.effortId,
@@ -59,19 +57,62 @@ export const datacheckRouter = createTRPCRouter({
       return { ...effort, ...summary };
     });
 
-    console.log(effortWithSummaryCounts.filter((e) => e.effortId === 317));
-    const effortIdsWithMismatch = effortWithSummaryCounts
-      .filter(
-        (e) =>
+    const effortIdsWithMismatch = effortWithSummaryCounts.reduce(
+      (acc, e) => {
+        const capturesTotal =
+          Number(e.captures_new) +
+          Number(e.captures_recaptures) +
+          Number(e.captures_unbanded);
+        const summaryTotal =
+          Number(e.summary_new) +
+          Number(e.summary_recaptures) +
+          Number(e.summary_unbanded);
+
+        const hasMismatch =
           Number(e.captures_new) !== Number(e.summary_new) ||
           Number(e.captures_recaptures) !== Number(e.summary_recaptures) ||
-          Number(e.captures_unbanded) !== Number(e.summary_unbanded)
-      )
-      .map((e) => ({
-        effortId: e.effortId,
-        station: e.station,
-        date: e.date,
-      }));
+          Number(e.captures_unbanded) !== Number(e.summary_unbanded);
+
+        if (hasMismatch) {
+          let errorType = "";
+
+          if (capturesTotal > summaryTotal) {
+            errorType = "more_captures";
+          } else if (capturesTotal < summaryTotal) {
+            errorType = "less_captures";
+          } else {
+            errorType = "different_distribution";
+          }
+
+          acc.push({
+            effortId: e.effortId,
+            station: e.station,
+            date: e.date,
+            errorType,
+            differences: {
+              new: Number(e.captures_new) - Number(e.summary_new),
+              recaptures:
+                Number(e.captures_recaptures) - Number(e.summary_recaptures),
+              unbanded:
+                Number(e.captures_unbanded) - Number(e.summary_unbanded),
+            },
+          });
+        }
+
+        return acc;
+      },
+      [] as Array<{
+        effortId: number;
+        station: string;
+        date: Date;
+        errorType: "more_captures" | "less_captures" | "different_distribution";
+        differences: {
+          new: number;
+          recaptures: number;
+          unbanded: number;
+        };
+      }>
+    );
 
     return {
       efforts: effortIdsWithMismatch,

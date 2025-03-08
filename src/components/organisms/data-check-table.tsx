@@ -48,6 +48,10 @@ export const columns: ColumnDef<DataCheckRow>[] = [
       }
     },
   },
+  {
+    accessorKey: "errorType",
+    header: "Erro",
+  },
 ];
 
 export function DataTable<TData, TValue>({

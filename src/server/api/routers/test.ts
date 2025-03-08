@@ -32,6 +32,13 @@ export const testRouter = createTRPCRouter({
       const _bandNumber = input.bandNumber;
       const { bandSize, bandNumber } = splitBand(_bandNumber);
 
+      const thisBand = await db
+        .select()
+        .from(bands)
+        .where(and(eq(bands.bandNumber, bandNumber as string)));
+
+      console.log(thisBand);
+
       const band_captures = await db
         .select({
           id: capture.captureId,
