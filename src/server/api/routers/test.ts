@@ -37,8 +37,6 @@ export const testRouter = createTRPCRouter({
         .from(bands)
         .where(and(eq(bands.bandNumber, bandNumber as string)));
 
-      console.log(thisBand);
-
       const band_captures = await db
         .select({
           id: capture.captureId,
@@ -88,7 +86,7 @@ export const testRouter = createTRPCRouter({
           and(
             eq(bands.bandNumber, bandNumber as string),
             eq(bandStringRegister.size, bandSize as string),
-            eq(captureVariableRegister.name, "age_wrp"),
+            eq(captureVariableRegister.name, "status"),
             eq(capture.hasChanged, false)
           )
         )
