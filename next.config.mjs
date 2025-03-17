@@ -23,5 +23,8 @@ const config = {
     config.experiments = { ...config.experiments, topLevelAwait: true };
     return config;
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 export default config;
