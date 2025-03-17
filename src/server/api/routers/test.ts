@@ -50,6 +50,7 @@ export const testRouter = createTRPCRouter({
           station: stationRegister.stationCode,
           age: captureCategoricalOptions.valueOama,
           netNumber: netRegister.netNumber,
+          captureCode: capture.captureCode,
         })
         .from(bands)
         .leftJoin(capture, eq(bands.bandId, capture.bandId))
@@ -93,7 +94,6 @@ export const testRouter = createTRPCRouter({
         )
         .orderBy(desc(effort.dateEffort));
 
-      console.log(band_captures[0]);
       if (band_captures.length === 0) {
         const bands_info = await db
           .select()

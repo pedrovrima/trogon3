@@ -39,6 +39,10 @@ export const columns: ColumnDef<BandData>[] = [
     header: "",
   },
   {
+    accessorKey: "captureCode",
+    header: "Código",
+  },
+  {
     accessorKey: "speciesName",
     header: "Espécie",
   },
@@ -51,7 +55,9 @@ export const columns: ColumnDef<BandData>[] = [
     header: "Data",
     accessorFn: (data) => {
       if (data.date) {
-        return new Date(data.date).toLocaleDateString("pt-BR");
+        return new Date(data.date).toLocaleDateString("pt-BR", {
+          timeZone: "GMT",
+        });
       }
     },
   },

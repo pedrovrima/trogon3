@@ -194,7 +194,7 @@ export default function CaptureInfo() {
         </h2>
         <h2>
           {typeof data.data === "string" &&
-            new Date(data.data).toLocaleString("pt-BR", {
+            new Date(data.data).toLocaleDateString("pt-BR", {
               timeZone: "GMT",
             })}{" "}
           - {data.captureTime?.slice(0, 2)}:{data.captureTime?.slice(2, 3)}0
