@@ -178,10 +178,11 @@ export const capturesRouter = createTRPCRouter({
       }
 
       const captureIds = captures.map((capture) => Number(capture.captureId));
-
+      console.log(captures);
+      console.log(captureIds);
       const categoricalValues = await db
         .select({
-          captureId: captureCategoricalValues.captureCategoricalValuesId,
+          captureId: captureCategoricalValues.captureId,
           value: captureCategoricalOptions.valueOama,
           variableName: captureVariableRegister.name,
           variableType: captureVariableRegister.type,
@@ -203,6 +204,7 @@ export const capturesRouter = createTRPCRouter({
         )
         .where(inArray(captureCategoricalValues.captureId, captureIds));
 
+      console.log(categoricalValues);
       type Vars = {
         [key: string]: number | string;
       };
@@ -215,33 +217,29 @@ export const capturesRouter = createTRPCRouter({
       const normalizedCategoricalValue = categoricalValues.reduce(
         (acc: Variable, _value) => {
           const { captureId, variableName, value } = _value;
-          if (variableName !== null && value !== null) {
-            const captureIndex = acc.findIndex(
-              (capture) => capture.captureId === captureId
-            );
-            if (captureIndex === -1) {
-              acc.push({ captureId, variables: { [variableName]: value } });
-            } else {
-              const capture = acc[captureIndex];
-              if (capture) {
-                if (capture.variables[variableName] === undefined) {
-                  capture.variables[variableName] = value;
-                } else {
-                  const sameVariableValues = Object.keys(
-                    capture.variables
-                  ).filter((key) => key.includes(variableName));
-                  capture.variables[
-                    `${variableName}_${sameVariableValues.length + 1}`
-                  ] = value;
-                }
-                acc[captureIndex] = capture;
-              }
-            }
+          if (!variableName || value === null) return acc;
+
+          // Initialize capture object if it doesn't exist
+          if (!acc.some((c) => c.captureId === captureId)) {
+            acc.push({ captureId, variables: {} });
           }
+
+          const capture = acc.find((c) => c.captureId === captureId)!;
+          const varCount = Object.keys(capture.variables).filter(
+            (key) => key === variableName || key.startsWith(`${variableName}_`)
+          ).length;
+
+          // Add the variable with a suffix if it already exists
+          const key =
+            varCount === 0 ? variableName : `${variableName}_${varCount + 1}`;
+          capture.variables[key] = value;
+
           return acc;
         },
         []
       );
+
+      console.log(normalizedCategoricalValue);
 
       const continuousValues = await db
         .select({
