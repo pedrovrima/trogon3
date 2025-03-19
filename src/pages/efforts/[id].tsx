@@ -119,6 +119,7 @@ export default function Effort() {
   const { id } = router.query;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const addNANet = api.efforts.addNANet.useMutation();
+  console.log(id);
   const { data, isLoading } = api.efforts.getEffortById.useQuery({
     effortId: Number(id),
   });
@@ -183,7 +184,7 @@ export default function Effort() {
 
     // Count captures per hour
     captures?.forEach((capture) => {
-      const hour = capture.captureTime.split(":")[0] + ":00";
+      const hour = capture.captureTime?.split(":")[0] + ":00";
       if (hourlyBins[hour] !== undefined) {
         hourlyBins[hour]++;
       }

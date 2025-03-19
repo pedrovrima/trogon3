@@ -278,6 +278,7 @@ export const effortRouter = createTRPCRouter({
   getEffortById: publicProcedure
     .input(z.object({ effortId: z.number().int().positive() }))
     .query(async ({ input }) => {
+      console.log(input);
       const { effortId } = input;
 
       const effortData = await db
@@ -291,8 +292,16 @@ export const effortRouter = createTRPCRouter({
           summary_recapture: effortSummaries.recapture,
           summary_unbanded: effortSummaries.unbanded,
           notes: effort.notes,
-          openTime: sql<string>`TO_CHAR(MIN(${netOc.openTime}), 'HH24:MI')`,
-          closeTime: sql<string>`TO_CHAR(MAX(${netOc.closeTime}), 'HH24:MI')`,
+          openTime: sql<string>`CASE 
+            WHEN MIN(${netOc.openTime}) IS NULL OR MIN(${netOc.openTime})::text = 'NA' 
+            THEN NULL 
+            ELSE TO_CHAR(MIN(${netOc.openTime}), 'HH24:MI') 
+          END`,
+          closeTime: sql<string>`CASE 
+            WHEN MAX(${netOc.closeTime}) IS NULL OR MAX(${netOc.closeTime})::text = 'NA' 
+            THEN NULL 
+            ELSE TO_CHAR(MAX(${netOc.closeTime}), 'HH24:MI') 
+          END`,
           stationId: stationRegister.stationId,
           hasNANet: sql<boolean>`BOOL_OR(${netRegister.netNumber} = 'NA')`,
         })
@@ -324,10 +333,14 @@ export const effortRouter = createTRPCRouter({
       const effortCaptures = await db
         .select({
           captureId: capture.captureId,
-          captureTime: sql<string>`TO_CHAR(
-            TO_TIMESTAMP(${capture.captureTime} || '0', 'HH24MI0')::TIME,
-            'HH24:MI'
-          )`,
+          captureTime: sql<string>`CASE 
+            WHEN ${capture.captureTime} IS NULL OR ${capture.captureTime} = 'NA' 
+            THEN NULL 
+            ELSE TO_CHAR(
+              TO_TIMESTAMP(${capture.captureTime} || '0', 'HH24MI0')::TIME,
+              'HH24:MI'
+            ) 
+          END`,
           bandNumber: bands.bandNumber,
           bandSize: bandStringRegister.size,
           captureCode: capture.captureCode,
