@@ -15,6 +15,7 @@ import {
   effortVariableRegister,
   netEffort,
   netOc,
+  netRegister,
   protocolRegister,
   stationRegister,
   capture,
@@ -292,6 +293,8 @@ export const effortRouter = createTRPCRouter({
           notes: effort.notes,
           openTime: sql<string>`TO_CHAR(MIN(${netOc.openTime}), 'HH24:MI')`,
           closeTime: sql<string>`TO_CHAR(MAX(${netOc.closeTime}), 'HH24:MI')`,
+          stationId: stationRegister.stationId,
+          hasNANet: sql<boolean>`BOOL_OR(${netRegister.netNumber} = 'NA')`,
         })
         .from(effort)
         .where(eq(effort.effortId, effortId))
@@ -304,6 +307,7 @@ export const effortRouter = createTRPCRouter({
           eq(effort.protocolId, protocolRegister.protocolId)
         )
         .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
+        .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
         .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
         .leftJoin(
           effortSummaries,
@@ -313,7 +317,8 @@ export const effortRouter = createTRPCRouter({
           effort.effortId,
           stationRegister.stationCode,
           protocolRegister.protocolCode,
-          effortSummaries.effortSummaryId
+          effortSummaries.effortSummaryId,
+          stationRegister.stationId
         );
 
       const effortCaptures = await db
@@ -401,6 +406,40 @@ export const effortRouter = createTRPCRouter({
           justification,
           createdAt: sql`now()`,
         });
+      });
+    }),
+  addNANet: protectedProcedure
+    .input(z.object({ effortId: z.number(), stationId: z.bigint() }))
+    .mutation(async ({ input }) => {
+      const { effortId, stationId } = input;
+
+      const stationNANet = await db
+        .select({
+          netId: netRegister.netId,
+        })
+        .from(netRegister)
+        .where(
+          and(
+            eq(netRegister.stationId, stationId),
+            eq(netRegister.netNumber, "NA")
+          )
+        );
+
+      console.log(stationNANet);
+
+      if (!stationNANet) {
+        throw new Error("Net not found");
+      }
+
+      const stationNANetId = stationNANet[0].netId;
+
+      console.log(stationNANetId);
+
+      await db.insert(netEffort).values({
+        effortId,
+        netId: stationNANetId,
+        createdAt: sql`now()`,
+        hasChanged: false,
       });
     }),
 });

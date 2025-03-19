@@ -165,7 +165,9 @@ export const capturesRouter = createTRPCRouter({
         );
       }
       if (analysis) {
-        conditions.push(inArray(capture.captureCode, ["N", "R", "C", "U"]));
+        conditions.push(
+          inArray(capture.captureCode, ["N", "R", "C", "U", "E"])
+        );
       }
       if (conditions.length > 0) {
         capturesQuery = capturesQuery.where(and(...conditions));
@@ -178,8 +180,7 @@ export const capturesRouter = createTRPCRouter({
       }
 
       const captureIds = captures.map((capture) => Number(capture.captureId));
-      console.log(captures);
-      console.log(captureIds);
+
       const categoricalValues = await db
         .select({
           captureId: captureCategoricalValues.captureId,
@@ -204,7 +205,6 @@ export const capturesRouter = createTRPCRouter({
         )
         .where(inArray(captureCategoricalValues.captureId, captureIds));
 
-      console.log(categoricalValues);
       type Vars = {
         [key: string]: number | string;
       };
@@ -238,8 +238,6 @@ export const capturesRouter = createTRPCRouter({
         },
         []
       );
-
-      console.log(normalizedCategoricalValue);
 
       const continuousValues = await db
         .select({
@@ -297,6 +295,7 @@ export const capturesRouter = createTRPCRouter({
         const continuousVariables = normalizedContinuousValue.find(
           (variable) => variable.captureId === Number(capture.captureId)
         );
+
         return {
           ...capture,
           ...categoricalVariables?.variables,
@@ -304,6 +303,7 @@ export const capturesRouter = createTRPCRouter({
         };
       });
 
+      console.log(capturesWithVariables);
       return capturesWithVariables;
     }),
   getCaptureById: publicProcedure
@@ -459,8 +459,6 @@ export const capturesRouter = createTRPCRouter({
         .from(capture)
         .where(eq(capture.captureId, captureId));
 
-      console.log(originalCapture);
-
       if (!originalCapture || originalCapture.length === 0) {
         throw new Error("Capture not found");
       }
@@ -474,8 +472,6 @@ export const capturesRouter = createTRPCRouter({
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-
-      console.log(backupCapture);
 
       return await db.transaction(async (tx) => {
         // Insert backup record

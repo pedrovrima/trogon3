@@ -26,10 +26,8 @@ const Download: NextPage = () => {
           });
           break;
         case "captures":
-          data = await utils.captures.getCaptures.fetch({
-            stationString: "BOA",
-            analysis: true,
-          });
+          data = await utils.captures.getCaptures.fetch({});
+          console.log(data);
           break;
         case "effort":
           data = await utils.efforts.getEfforts.fetch();
@@ -63,11 +61,19 @@ const Download: NextPage = () => {
   const convertToCSV = (data: any[]) => {
     if (!data?.length) return "";
 
-    const headers = Object.keys(data[0]);
+    // Get all possible headers from all objects
+    const headers = Array.from(
+      new Set(
+        data.reduce((allKeys: string[], obj) => {
+          return [...allKeys, ...Object.keys(obj)];
+        }, [])
+      )
+    );
+
     const rows = data.map((row) =>
       headers
         .map((header) => {
-          const cell = row[header];
+          const cell = row[header] ?? ""; // Use empty string for missing values
           // Handle cells that might contain commas or quotes
           return typeof cell === "string" &&
             (cell.includes(",") || cell.includes('"'))

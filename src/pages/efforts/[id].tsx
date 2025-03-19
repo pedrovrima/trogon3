@@ -118,7 +118,7 @@ export default function Effort() {
   const router = useRouter();
   const { id } = router.query;
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const addNANet = api.efforts.addNANet.useMutation();
   const { data, isLoading } = api.efforts.getEffortById.useQuery({
     effortId: Number(id),
   });
@@ -209,7 +209,6 @@ export default function Effort() {
     data?.closeTime
   );
 
-  console.log(data?.openTime, data?.closeTime);
   return (
     <div className="prose-h1:text-3xl prose-h2:text-xl prose-p:text-lg">
       <div className="flex gap-4">
@@ -236,6 +235,19 @@ export default function Effort() {
               <p>{data?.notes}</p>
             </div>
           )}
+          <button
+            className="w-fit cursor-pointer rounded-md border border-slate-300 bg-slate-100 px-8 py-2 text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => {
+              addNANet.mutate({
+                effortId: Number(id),
+                stationId: data?.stationId,
+              });
+            }}
+            disabled={data?.hasNANet}
+            title={data?.hasNANet ? "Effort already has NA net" : ""}
+          >
+            Add NA Net
+          </button>
         </div>
 
         <div className="w-1/2 rounded-md bg-slate-700 px-6 py-8">
