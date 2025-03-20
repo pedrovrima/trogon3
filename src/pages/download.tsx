@@ -46,7 +46,7 @@ const Download: NextPage = () => {
 
       // Convert data to CSV
       const csvContent = convertToCSV(data);
-
+      console.log(csvContent);
       // Create blob and download
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       saveAs(blob, `${type}_${Date.now()}.csv`);
@@ -74,10 +74,11 @@ const Download: NextPage = () => {
       headers
         .map((header) => {
           const cell = row[header] ?? ""; // Use empty string for missing values
-          // Handle cells that might contain commas or quotes
-          return typeof cell === "string" &&
-            (cell.includes(",") || cell.includes('"'))
-            ? `"${cell.replace(/"/g, '""')}"`
+          // Handle cells that might contain commas, quotes or line breaks
+          return typeof cell === "string"
+            ? cell.includes(",") || cell.includes('"') || cell.includes("\n")
+              ? `"${cell.replace(/"/g, '""').replace(/\n/g, " ")}"`
+              : cell
             : cell;
         })
         .join(",")
