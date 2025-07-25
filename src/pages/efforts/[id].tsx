@@ -416,26 +416,44 @@ export default function Effort() {
           </tbody>
         </table>
       </div>
-      <ul>
-        {data?.captures
-          .sort(
-            (a, b) =>
-              a.captureCode.localeCompare(b.captureCode) ||
-              a.sppCode.localeCompare(b.sppCode) ||
-              a.bandSize.localeCompare(b.bandSize) ||
-              (a.bandNumber && b.bandNumber
-                ? Number(a.bandNumber) - Number(b.bandNumber)
-                : 0)
-          )
-          .map((capture) => (
-            <li key={capture.captureId}>
-              <Link href={`/captures/${capture.captureId}`}>
-                {capture.captureCode} {capture.bandNumber} {capture.bandSize}{" "}
-                {capture.sppCode}
-              </Link>
-            </li>
-          ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Código</th>
+            <th>Tamanho</th>
+            <th>Anilha</th>
+            <th>Espécie</th>
+            <th>Código</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data?.captures
+            .sort(
+              (a, b) =>
+                a.captureCode.localeCompare(b.captureCode) ||
+                a.sppCode.localeCompare(b.sppCode) ||
+                a.bandSize.localeCompare(b.bandSize) ||
+                (a.bandNumber && b.bandNumber
+                  ? Number(a.bandNumber) - Number(b.bandNumber)
+                  : 0)
+            )
+            .map((capture) => (
+              <tr key={capture.captureId} className="hover:bg-slate-600">
+                <td>
+                  <Link href={`/captures/${capture.captureId}`}>
+                    {`${capture.captureId}`.padStart(4, "0")}
+                  </Link>
+                </td>
+                <td>{capture.captureCode}</td>
+                <td>{capture.bandSize}</td>
+                <td>{capture.bandNumber}</td>
+                <td>{capture.sppName}</td>
+                <td>{capture.sppCode}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
 
       {/* Modal */}
       {captureTotals && data && (

@@ -326,7 +326,7 @@ export const capturesRouter = createTRPCRouter({
           bandSize: bandStringRegister.size,
           bandNumber: bands.bandNumber,
           sppCode: sppRegister.sciCode,
-          sppName: sql`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
+          sppName: sql<string>`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
           notes: capture.notes,
           hasChanged: capture.hasChanged,
         })

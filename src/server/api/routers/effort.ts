@@ -345,6 +345,7 @@ export const effortRouter = createTRPCRouter({
           bandSize: bandStringRegister.size,
           captureCode: capture.captureCode,
           sppCode: sppRegister.sciCode,
+          sppName: sql<string>`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
         })
         .from(capture)
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))

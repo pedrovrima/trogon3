@@ -163,7 +163,10 @@ export default function CaptureInfo() {
       <div>
         {data.hasChanged && <p className="text-red-500">EXCLUIDO</p>}
         <div className="flex justify-between">
-          <h1>{data.sppCode}</h1>
+          <h1>
+            {data.sppName} - {data.sppCode}
+          </h1>
+
           {!data.hasChanged && (
             <div className="flex gap-2">
               <button
