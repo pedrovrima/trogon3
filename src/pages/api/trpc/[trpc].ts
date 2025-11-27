@@ -9,7 +9,6 @@ export default createNextApiHandler({
   router: appRouter,
   // createContext: createTRPCContext,
   onError: ({ path, error }) => {
-    console.log("to aqui");
     console.error(`❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`);
   },
 });

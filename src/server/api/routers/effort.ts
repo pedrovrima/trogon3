@@ -278,9 +278,7 @@ export const effortRouter = createTRPCRouter({
   getEffortById: publicProcedure
     .input(z.object({ effortId: z.number().int().positive() }))
     .query(async ({ input }) => {
-      console.log(input);
       const { effortId } = input;
-
       const effortData = await db
         .select({
           effortId: effort.effortId,
@@ -333,13 +331,13 @@ export const effortRouter = createTRPCRouter({
       const effortCaptures = await db
         .select({
           captureId: capture.captureId,
-          captureTime: sql<string>`CASE 
-            WHEN ${capture.captureTime} IS NULL OR ${capture.captureTime} = 'NA' 
-            THEN NULL 
+          captureTime: sql<string>`CASE
+            WHEN ${capture.captureTime} IS NULL OR LENGTH(${capture.captureTime}) < 3 OR ${capture.captureTime} = 'NA'
+            THEN NULL
             ELSE TO_CHAR(
               TO_TIMESTAMP(${capture.captureTime} || '0', 'HH24MI0')::TIME,
               'HH24:MI'
-            ) 
+            )
           END`,
           bandNumber: bands.bandNumber,
           bandSize: bandStringRegister.size,
