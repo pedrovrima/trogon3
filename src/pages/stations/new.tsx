@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/utils/api";
@@ -37,7 +37,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function NewStation() {
-  const mutation = api.stations.createStation.useMutation();
+  const mutation = api.stations.createStation.useMutation({ retry: false });
+  const submittingRef = useRef(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -52,17 +53,26 @@ export default function NewStation() {
     },
   });
 
+  const isSubmitting = mutation.isLoading || form.formState.isSubmitting;
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "nets",
   });
 
   const onSubmit = async (values: FormValues) => {
+    if (submittingRef.current) {
+      return;
+    }
+
+    submittingRef.current = true;
     try {
       await mutation.mutateAsync(values);
       form.reset();
     } catch (error) {
       console.log(error);
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -174,7 +184,12 @@ export default function NewStation() {
           <div className="mt-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-semibold">Redes ({fields.length})</h2>
-              <Button type="button" variant="outline" onClick={addNet}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addNet}
+                disabled={isSubmitting}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Adicionar Rede
               </Button>
@@ -198,6 +213,7 @@ export default function NewStation() {
                         variant="ghost"
                         size="sm"
                         onClick={() => remove(index)}
+                        disabled={isSubmitting}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -247,9 +263,9 @@ export default function NewStation() {
                         name={`nets.${index}.meshSize`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Malha</FormLabel>
+                            <FormLabel>Malha (mm)</FormLabel>
                             <FormControl>
-                              <Input placeholder="36mm" {...field} />
+                              <Input placeholder="36" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -260,9 +276,9 @@ export default function NewStation() {
                         name={`nets.${index}.netLength`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Comprimento</FormLabel>
+                            <FormLabel>Comprimento (m)</FormLabel>
                             <FormControl>
-                              <Input placeholder="12m" {...field} />
+                              <Input placeholder="12" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -276,7 +292,7 @@ export default function NewStation() {
           </div>
 
           <div className="mt-8 flex items-center justify-center">
-            <Button className="w-36 bg-primary" type="submit">
+            <Button className="w-36 bg-primary" type="submit" disabled={isSubmitting}>
               Criar Estação
             </Button>
           </div>
