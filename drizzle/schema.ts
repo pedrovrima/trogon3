@@ -424,10 +424,8 @@ export const netRegister = pgTable(
   {
     netId: bigserial("net_id", { mode: "bigint" }).primaryKey().notNull(),
     netNumber: varchar("net_number", { length: 45 }).notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    netLat: bigint("net_lat", { mode: "number" }).notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    netLong: bigint("net_long", { mode: "number" }).notNull(),
+    netLat: numeric("net_lat", { precision: 10, scale: 6 }).notNull(),
+    netLong: numeric("net_long", { precision: 10, scale: 6 }).notNull(),
     hasChanged: boolean("has_changed").notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     originalId: bigint("original_id", { mode: "number" }),
@@ -546,8 +544,8 @@ export const stationRegister = pgTable("station_register", {
   stationName: varchar("station_name", { length: 45 }).notNull(),
   city: varchar("city", { length: 45 }).notNull(),
   state: varchar("state", { length: 45 }).notNull(),
-  centerLat: numeric("center_lat", { precision: 10, scale: 0 }).notNull(),
-  centerLong: numeric("center_long", { precision: 10, scale: 0 }).notNull(),
+  centerLat: numeric("center_lat", { precision: 10, scale: 6 }).notNull(),
+  centerLong: numeric("center_long", { precision: 10, scale: 6 }).notNull(),
   hasChanged: boolean("has_changed").notNull(),
   // You can use { mode: "bigint" } if numbers are exceeding js number limitations
   originalId: bigint("original_id", { mode: "number" }),
