@@ -2,6 +2,7 @@ import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import { api } from "@/utils/api";
 import Loader from "@/components/organisms/loader";
+import NetRegisterMap from "@/components/organisms/net-register-map";
 import {
   Table,
   TableHeader,
@@ -55,6 +56,8 @@ const StationDetailPage: NextPage = () => {
           Redes ({stationData.nets.length})
         </h2>
       </div>
+
+      <NetRegisterMap className="mb-8" nets={stationData.nets} />
 
       <div className="mb-8 overflow-x-auto">
         <Table>
