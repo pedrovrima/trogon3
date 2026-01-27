@@ -134,31 +134,50 @@ export const stationsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { nets, ...stationData } = input;
 
-      const [newStation] = await db
-        .insert(stationRegister)
-        .values({
-          ...stationData,
-          hasChanged: false,
-          createdAt: new Date().toISOString(),
-        })
-        .returning({ stationId: stationRegister.stationId });
+      const normalizeDecimal = (value: string) =>
+        value.trim().replace(/,/g, ".");
+      const normalizeOptionalDecimal = (value?: string) => {
+        const trimmed = value?.trim();
+        if (!trimmed) {
+          return null;
+        }
+        return normalizeDecimal(trimmed);
+      };
 
-      if (nets.length > 0 && newStation) {
-        const netsToInsert = nets.map((net) => ({
-          netNumber: net.netNumber,
-          netLat: net.netLat,
-          netLong: net.netLong,
-          meshSize: net.meshSize,
-          netLength: net.netLength,
-          stationId: Number(newStation.stationId),
-          hasChanged: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }));
+      return db.transaction(async (tx) => {
+        const now = new Date().toISOString();
+        const [newStation] = await tx
+          .insert(stationRegister)
+          .values({
+            ...stationData,
+            centerLat: normalizeDecimal(stationData.centerLat),
+            centerLong: normalizeDecimal(stationData.centerLong),
+            hasChanged: false,
+            createdAt: now,
+          })
+          .returning({ stationId: stationRegister.stationId });
 
-        await db.insert(netRegister).values(netsToInsert);
-      }
+        if (!newStation) {
+          return { stationId: null };
+        }
 
-      return { stationId: newStation?.stationId };
+        if (nets.length > 0) {
+          const netsToInsert = nets.map((net) => ({
+            netNumber: net.netNumber.trim(),
+            netLat: normalizeDecimal(net.netLat),
+            netLong: normalizeDecimal(net.netLong),
+            meshSize: normalizeOptionalDecimal(net.meshSize),
+            netLength: normalizeOptionalDecimal(net.netLength),
+            stationId: Number(newStation.stationId),
+            hasChanged: false,
+            createdAt: now,
+            updatedAt: now,
+          }));
+
+          await tx.insert(netRegister).values(netsToInsert);
+        }
+
+        return { stationId: newStation.stationId };
+      });
     }),
 });
