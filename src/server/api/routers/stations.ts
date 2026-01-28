@@ -76,7 +76,11 @@ export const stationsRouter = createTRPCRouter({
         })
         .from(netRegister)
         .where(eq(netRegister.stationId, stationId))
-        .orderBy(sql`${netRegister.netNumber}::integer`);
+        .orderBy(
+          sql<number>`CASE WHEN ${netRegister.netNumber} ~ '^[0-9]+$' THEN 0 ELSE 1 END`,
+          sql<number>`CASE WHEN ${netRegister.netNumber} ~ '^[0-9]+$' THEN ${netRegister.netNumber}::integer END`,
+          netRegister.netNumber
+        );
 
       const stationEfforts = await db
         .select({
