@@ -75,7 +75,12 @@ export const stationsRouter = createTRPCRouter({
           netLength: netRegister.netLength,
         })
         .from(netRegister)
-        .where(eq(netRegister.stationId, stationId));
+        .where(
+          and(
+            eq(netRegister.stationId, stationId),
+            eq(netRegister.hasChanged, false)
+          )
+        );
 
       stationNets.sort((a, b) => {
         const aNumber = a.netNumber ?? "";
