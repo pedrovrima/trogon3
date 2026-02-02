@@ -1,4 +1,4 @@
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import db from "@/db";
 import {
@@ -95,7 +95,13 @@ export const stationsRouter = createTRPCRouter({
         )
         .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
         .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
-        .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
+        .leftJoin(
+          effortSummaries,
+          and(
+            eq(effort.effortId, effortSummaries.effortId),
+            eq(effortSummaries.hasChanged, false)
+          )
+        )
         .where(eq(effort.stationId, Number(stationId)))
         .groupBy(
           effort.effortId,
