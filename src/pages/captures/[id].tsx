@@ -468,11 +468,29 @@ function CaptureVariableModal({
               ))}
             </select>
           ) : (
-            <input
-              className="w-full rounded border p-2"
-              value={continuousValue}
-              onChange={(e) => setContinuousValue(e.target.value)}
-            />
+            <div className="space-y-2">
+              <input
+                className="w-full rounded border p-2"
+                value={continuousValue}
+                onChange={(e) => setContinuousValue(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="rounded border px-2 py-1 text-sm"
+                  onClick={() => setContinuousValue("NA")}
+                >
+                  NA
+                </button>
+                <button
+                  type="button"
+                  className="rounded border px-2 py-1 text-sm"
+                  onClick={() => setContinuousValue("U")}
+                >
+                  UTBM (U)
+                </button>
+              </div>
+            </div>
           )}
 
           {variable.kind === "categorical" && variableOptionsQuery.isLoading && (

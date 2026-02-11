@@ -25,6 +25,78 @@ import {
   changeLog,
 } from "drizzle/schema";
 
+const NA_VALUE_VARIABLE_ID = 41;
+const UNIVERSAL_OPTION_VALUES = new Set(["NA", "U"]);
+
+type CaptureOption = {
+  optionId: number;
+  value: string;
+  description: string;
+};
+
+const normalizeOptionDescription = (value: string, description: string) => {
+  const cleanedDescription = description.replaceAll('"', "").trim();
+  if (!cleanedDescription && value === "U") {
+    return "UTBM";
+  }
+  return cleanedDescription;
+};
+
+const getUniversalNaValueOptions = async (): Promise<CaptureOption[]> => {
+  const options = await db
+    .select({
+      optionId: captureCategoricalOptions.captureCategoricalOptionId,
+      value: captureCategoricalOptions.valueOama,
+      description: captureCategoricalOptions.description,
+    })
+    .from(captureCategoricalOptions)
+    .where(
+      and(
+        eq(captureCategoricalOptions.captureVariableId, NA_VALUE_VARIABLE_ID),
+        eq(captureCategoricalOptions.hasChanged, false)
+      )
+    );
+
+  return options
+    .filter(
+      (option): option is { optionId: number; value: string; description: string } =>
+        option.optionId !== null &&
+        option.value !== null &&
+        option.description !== null &&
+        UNIVERSAL_OPTION_VALUES.has(option.value)
+    )
+    .map((option) => ({
+      optionId: Number(option.optionId),
+      value: option.value,
+      description: normalizeOptionDescription(option.value, option.description),
+    }));
+};
+
+const mergeWithUniversalOptions = async (
+  baseOptions: CaptureOption[],
+  onlySingleCharacterValues = false
+): Promise<CaptureOption[]> => {
+  const mergedByValue = new Map<string, CaptureOption>();
+
+  for (const option of baseOptions) {
+    mergedByValue.set(option.value, option);
+  }
+
+  const universalOptions = await getUniversalNaValueOptions();
+  for (const option of universalOptions) {
+    if (onlySingleCharacterValues && option.value.length !== 1) {
+      continue;
+    }
+    if (!mergedByValue.has(option.value)) {
+      mergedByValue.set(option.value, option);
+    }
+  }
+
+  return [...mergedByValue.values()].sort((a, b) =>
+    a.value.localeCompare(b.value)
+  );
+};
+
 const getResolvedCaptureCodeOptions = async () => {
   const distinctCaptureCodeRows = await db
     .select({
@@ -143,8 +215,7 @@ const getResolvedCaptureCodeOptions = async () => {
   }
 
   const selectedOptions = optionsByVariable.get(selectedVariableId)?.options ?? [];
-  selectedOptions.sort((a, b) => a.value.localeCompare(b.value));
-  return selectedOptions;
+  return await mergeWithUniversalOptions(selectedOptions, true);
 };
 
 export const capturesRouter = createTRPCRouter({
@@ -324,7 +395,12 @@ export const capturesRouter = createTRPCRouter({
             captureVariableRegister.captureVariableId
           )
         )
-        .where(inArray(captureCategoricalValues.captureId, captureIds));
+        .where(
+          and(
+            inArray(captureCategoricalValues.captureId, captureIds),
+            eq(captureCategoricalValues.hasChanged, false)
+          )
+        );
 
       type Vars = {
         [key: string]: number | string;
@@ -376,7 +452,12 @@ export const capturesRouter = createTRPCRouter({
             captureVariableRegister.captureVariableId
           )
         )
-        .where(inArray(captureContinuousValues.captureId, captureIds));
+        .where(
+          and(
+            inArray(captureContinuousValues.captureId, captureIds),
+            eq(captureContinuousValues.hasChanged, false)
+          )
+        );
 
       const normalizedContinuousValue = continuousValues.reduce(
         (acc: Variable, _value) => {
@@ -496,7 +577,12 @@ export const capturesRouter = createTRPCRouter({
             captureVariableRegister.captureVariableId
           )
         )
-        .where(eq(captureCategoricalValues.captureId, captureId));
+        .where(
+          and(
+            eq(captureCategoricalValues.captureId, captureId),
+            eq(captureCategoricalValues.hasChanged, false)
+          )
+        );
 
       const continuousValues = await db
         .select({
@@ -516,7 +602,12 @@ export const capturesRouter = createTRPCRouter({
             captureVariableRegister.captureVariableId
           )
         )
-        .where(eq(captureContinuousValues.captureId, captureId));
+        .where(
+          and(
+            eq(captureContinuousValues.captureId, captureId),
+            eq(captureContinuousValues.hasChanged, false)
+          )
+        );
 
       return {
         ...captureData[0],
@@ -569,7 +660,14 @@ export const capturesRouter = createTRPCRouter({
         };
 
         //@ts-expect-error backup row can include nullable fields from legacy records
-        await tx.insert(capture).values(backupCapture);
+        const [backupRecord] = await tx
+          .insert(capture)
+          .values(backupCapture)
+          .returning({ backupId: capture.captureId });
+
+        if (!backupRecord?.backupId) {
+          throw new Error("Failed to create capture backup record");
+        }
 
         await tx
           .update(capture)
@@ -583,7 +681,7 @@ export const capturesRouter = createTRPCRouter({
         await tx.insert(changeLog).values({
           table: "capture",
           oldRecordId: captureId,
-          newRecordId: captureId,
+          newRecordId: Number(backupRecord.backupId),
           isDeleted: false,
           justification,
           createdAt: sql`now()`,
@@ -599,7 +697,7 @@ export const capturesRouter = createTRPCRouter({
       })
     )
     .query(async ({ input }) => {
-      return await db
+      const variableOptions = await db
         .select({
           optionId: captureCategoricalOptions.captureCategoricalOptionId,
           value: captureCategoricalOptions.valueOama,
@@ -613,6 +711,21 @@ export const capturesRouter = createTRPCRouter({
           )
         )
         .orderBy(captureCategoricalOptions.valueOama);
+
+      const normalizedVariableOptions: CaptureOption[] = variableOptions
+        .filter(
+          (option): option is { optionId: number; value: string; description: string } =>
+            option.optionId !== null &&
+            option.value !== null &&
+            option.description !== null
+        )
+        .map((option) => ({
+          optionId: Number(option.optionId),
+          value: option.value,
+          description: normalizeOptionDescription(option.value, option.description),
+        }));
+
+      return await mergeWithUniversalOptions(normalizedVariableOptions, false);
     }),
   updateCaptureVariableValue: protectedProcedure
     .input(
@@ -645,6 +758,7 @@ export const capturesRouter = createTRPCRouter({
             .select({
               optionId: captureCategoricalOptions.captureCategoricalOptionId,
               variableId: captureCategoricalOptions.captureVariableId,
+              value: captureCategoricalOptions.valueOama,
             })
             .from(captureCategoricalOptions)
             //@ts-expect-error drizzle bigint typing mismatch for option id filter
@@ -672,8 +786,17 @@ export const capturesRouter = createTRPCRouter({
 
           const originalVariableId = Number(originalValue[0]?.captureVariableId);
           const selectedOptionVariableId = Number(selectedOption[0]?.variableId);
+          const selectedOptionValue = selectedOption[0]?.value;
 
-          if (originalVariableId !== selectedOptionVariableId) {
+          const isUniversalOption =
+            selectedOptionVariableId === NA_VALUE_VARIABLE_ID &&
+            typeof selectedOptionValue === "string" &&
+            UNIVERSAL_OPTION_VALUES.has(selectedOptionValue);
+
+          if (
+            originalVariableId !== selectedOptionVariableId &&
+            !isUniversalOption
+          ) {
             throw new Error("Option does not belong to the selected variable");
           }
 
@@ -687,7 +810,17 @@ export const capturesRouter = createTRPCRouter({
           };
 
           //@ts-expect-error backup row can include nullable fields from legacy records
-          await tx.insert(captureCategoricalValues).values(backupValue);
+          const [backupValueRecord] = await tx
+            .insert(captureCategoricalValues)
+            .values(backupValue)
+            .returning({
+              backupValueId:
+                captureCategoricalValues.captureCategoricalValuesId,
+            });
+
+          if (!backupValueRecord?.backupValueId) {
+            throw new Error("Failed to create categorical backup record");
+          }
 
           await tx
             .update(captureCategoricalValues)
@@ -703,7 +836,7 @@ export const capturesRouter = createTRPCRouter({
           await tx.insert(changeLog).values({
             table: "capture_categorical_values",
             oldRecordId: valueId,
-            newRecordId: valueId,
+            newRecordId: Number(backupValueRecord.backupValueId),
             isDeleted: false,
             justification,
             createdAt: sql`now()`,
@@ -742,7 +875,16 @@ export const capturesRouter = createTRPCRouter({
         };
 
         //@ts-expect-error backup row can include nullable fields from legacy records
-        await tx.insert(captureContinuousValues).values(backupValue);
+        const [backupValueRecord] = await tx
+          .insert(captureContinuousValues)
+          .values(backupValue)
+          .returning({
+            backupValueId: captureContinuousValues.captureContinuousValuesId,
+          });
+
+        if (!backupValueRecord?.backupValueId) {
+          throw new Error("Failed to create continuous backup record");
+        }
 
         await tx
           .update(captureContinuousValues)
@@ -758,7 +900,7 @@ export const capturesRouter = createTRPCRouter({
         await tx.insert(changeLog).values({
           table: "capture_continuous_values",
           oldRecordId: valueId,
-          newRecordId: valueId,
+          newRecordId: Number(backupValueRecord.backupValueId),
           isDeleted: false,
           justification,
           createdAt: sql`now()`,
@@ -825,7 +967,14 @@ export const capturesRouter = createTRPCRouter({
         };
 
         //@ts-expect-error backup row can include nullable fields from legacy records
-        await tx.insert(capture).values(backupCapture);
+        const [backupRecord] = await tx
+          .insert(capture)
+          .values(backupCapture)
+          .returning({ backupId: capture.captureId });
+
+        if (!backupRecord?.backupId) {
+          throw new Error("Failed to create capture backup record");
+        }
 
         await tx
           .update(capture)
@@ -839,7 +988,7 @@ export const capturesRouter = createTRPCRouter({
         await tx.insert(changeLog).values({
           table: "capture",
           oldRecordId: captureId,
-          newRecordId: captureId,
+          newRecordId: Number(backupRecord.backupId),
           isDeleted: false,
           justification,
           createdAt: sql`now()`,
@@ -940,8 +1089,8 @@ export const capturesRouter = createTRPCRouter({
         // Log the change
         await tx.insert(changeLog).values({
           table: "capture",
-          oldRecordId: Number(backupRecord.backupId),
-          newRecordId: captureId,
+          oldRecordId: captureId,
+          newRecordId: Number(backupRecord.backupId),
           isDeleted: false,
           justification,
           createdAt: sql`now()`,
