@@ -1,7 +1,24 @@
 import { api } from "@/utils/api";
 import { Trash, Edit } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type EditableCaptureVariable =
+  | {
+      kind: "categorical";
+      id: number;
+      variableId: number;
+      optionId: number;
+      label: string;
+      value: string;
+    }
+  | {
+      kind: "continuous";
+      id: number;
+      variableId: number;
+      label: string;
+      value: string;
+    };
 
 // Add a Modal component
 function NetEffortModal({
@@ -376,6 +393,164 @@ function CaptureSpeciesModal({
   );
 }
 
+function CaptureVariableModal({
+  isOpen,
+  onClose,
+  captureId,
+  variable,
+  onUpdated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  captureId: number;
+  variable: EditableCaptureVariable | null;
+  onUpdated: () => Promise<void>;
+}) {
+  const [selectedOptionId, setSelectedOptionId] = useState<number | undefined>(
+    undefined
+  );
+  const [continuousValue, setContinuousValue] = useState("");
+  const [justification, setJustification] = useState("");
+
+  const variableOptionsQuery = api.captures.getCategoricalVariableOptions.useQuery(
+    { variableId: variable?.variableId ?? 0 },
+    { enabled: isOpen && variable?.kind === "categorical" }
+  );
+  const updateVariableMutation =
+    api.captures.updateCaptureVariableValue.useMutation();
+
+  useEffect(() => {
+    if (!isOpen || !variable) {
+      return;
+    }
+
+    setJustification("");
+
+    if (variable.kind === "categorical") {
+      setSelectedOptionId(variable.optionId);
+      setContinuousValue("");
+      return;
+    }
+
+    setContinuousValue(variable.value);
+    setSelectedOptionId(undefined);
+  }, [isOpen, variable]);
+
+  if (!isOpen || !variable) return null;
+
+  const handleClose = () => {
+    setSelectedOptionId(undefined);
+    setContinuousValue("");
+    setJustification("");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6">
+        <h2 className="mb-4 text-xl font-bold">Editar variável</h2>
+
+        <div className="mb-4">
+          <label className="mb-2 block">{variable.label}</label>
+          {variable.kind === "categorical" ? (
+            <select
+              className="w-full rounded border p-2"
+              value={selectedOptionId ?? ""}
+              onChange={(e) => setSelectedOptionId(Number(e.target.value))}
+              disabled={variableOptionsQuery.isLoading}
+            >
+              <option value="">Selecione uma opção</option>
+              {variableOptionsQuery.data?.map((option) => (
+                <option key={option.optionId} value={Number(option.optionId)}>
+                  {option.value}
+                  {option.description ? ` - ${option.description}` : ""}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              className="w-full rounded border p-2"
+              value={continuousValue}
+              onChange={(e) => setContinuousValue(e.target.value)}
+            />
+          )}
+
+          {variable.kind === "categorical" && variableOptionsQuery.isLoading && (
+            <p className="mt-2 text-sm">Carregando opções...</p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Justificativa</label>
+          <textarea
+            className="w-full rounded border p-2"
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            placeholder="Justificativa da alteração"
+          />
+          <p className="mt-1 text-sm text-muted-foreground">
+            Justificativa obrigatória para salvar.
+          </p>
+        </div>
+
+        {updateVariableMutation.error && (
+          <p className="mb-4 text-red-500">{updateVariableMutation.error.message}</p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button className="rounded border px-4 py-2" onClick={handleClose}>
+            Cancelar
+          </button>
+          <button
+            className="rounded bg-green-600 px-4 py-2 text-white disabled:bg-green-300"
+            disabled={
+              !justification.trim() ||
+              updateVariableMutation.isLoading ||
+              (variable.kind === "categorical"
+                ? !selectedOptionId ||
+                  selectedOptionId === variable.optionId ||
+                  variableOptionsQuery.isLoading
+                : !continuousValue.trim() || continuousValue === variable.value)
+            }
+            onClick={async () => {
+              if (!justification.trim()) {
+                return;
+              }
+
+              if (variable.kind === "categorical") {
+                if (!selectedOptionId) {
+                  return;
+                }
+
+                await updateVariableMutation.mutateAsync({
+                  captureId,
+                  valueId: variable.id,
+                  variableKind: "categorical",
+                  newOptionId: selectedOptionId,
+                  justification: justification.trim(),
+                });
+              } else {
+                await updateVariableMutation.mutateAsync({
+                  captureId,
+                  valueId: variable.id,
+                  variableKind: "continuous",
+                  newValue: continuousValue,
+                  justification: justification.trim(),
+                });
+              }
+
+              handleClose();
+              await onUpdated();
+            }}
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CaptureInfo() {
   const { id } = useRouter().query;
   const captureId = Number(Array.isArray(id) ? id[0] : id);
@@ -383,6 +558,8 @@ export default function CaptureInfo() {
   const [isCaptureCodeModalOpen, setIsCaptureCodeModalOpen] = useState(false);
   const [isCaptureSpeciesModalOpen, setIsCaptureSpeciesModalOpen] =
     useState(false);
+  const [editingVariable, setEditingVariable] =
+    useState<EditableCaptureVariable | null>(null);
 
   const query = api.captures.getCaptureById.useQuery(
     { captureId: Number.isFinite(captureId) ? captureId : 0 },
@@ -466,18 +643,62 @@ export default function CaptureInfo() {
         <div>
           {data?.categoricalValues.map((value) => {
             return (
-              <p key={value.id}>
-                {value.label}: {value.value}
-              </p>
+              <div key={value.id} className="flex items-center gap-2">
+                <p>
+                  {value.label}: {value.value}
+                </p>
+                {!data.hasChanged &&
+                  value.variableId !== null &&
+                  value.optionId !== null &&
+                  value.value !== null &&
+                  value.label !== null && (
+                    <button
+                      className="rounded-md bg-blue-500 p-1 text-white"
+                      onClick={() =>
+                        setEditingVariable({
+                          kind: "categorical",
+                          id: Number(value.id),
+                          variableId: Number(value.variableId),
+                          optionId: Number(value.optionId),
+                          label: value.label,
+                          value: value.value,
+                        })
+                      }
+                    >
+                      <Edit className="h-3 w-3" />
+                    </button>
+                  )}
+              </div>
             );
           })}
         </div>
         <div>
           {data?.continuousValues.map((value) => {
             return (
-              <p key={value.id}>
-                {value.label}: {value.value}
-              </p>
+              <div key={value.id} className="flex items-center gap-2">
+                <p>
+                  {value.label}: {value.value}
+                </p>
+                {!data.hasChanged &&
+                  value.variableId !== null &&
+                  value.value !== null &&
+                  value.label !== null && (
+                    <button
+                      className="rounded-md bg-blue-500 p-1 text-white"
+                      onClick={() =>
+                        setEditingVariable({
+                          kind: "continuous",
+                          id: Number(value.id),
+                          variableId: Number(value.variableId),
+                          label: value.label,
+                          value: String(value.value),
+                        })
+                      }
+                    >
+                      <Edit className="h-3 w-3" />
+                    </button>
+                  )}
+              </div>
             );
           })}
         </div>
@@ -502,6 +723,15 @@ export default function CaptureInfo() {
           onClose={() => setIsCaptureSpeciesModalOpen(false)}
           captureId={captureId}
           currentSppId={Number(data.sppId)}
+          onUpdated={async () => {
+            await query.refetch();
+          }}
+        />
+        <CaptureVariableModal
+          isOpen={editingVariable !== null}
+          onClose={() => setEditingVariable(null)}
+          captureId={captureId}
+          variable={editingVariable}
           onUpdated={async () => {
             await query.refetch();
           }}

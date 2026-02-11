@@ -474,6 +474,8 @@ export const capturesRouter = createTRPCRouter({
         .select({
           id: captureCategoricalValues.captureCategoricalValuesId,
           captureId: captureCategoricalValues.captureId,
+          optionId: captureCategoricalValues.captureCategoricalOptionId,
+          variableId: captureVariableRegister.captureVariableId,
           value: captureCategoricalOptions.valueOama,
           variableName: captureVariableRegister.name,
           variableType: captureVariableRegister.type,
@@ -588,6 +590,181 @@ export const capturesRouter = createTRPCRouter({
         });
 
         return { captureId, captureCode: newCaptureCode };
+      });
+    }),
+  getCategoricalVariableOptions: publicProcedure
+    .input(
+      z.object({
+        variableId: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      return await db
+        .select({
+          optionId: captureCategoricalOptions.captureCategoricalOptionId,
+          value: captureCategoricalOptions.valueOama,
+          description: captureCategoricalOptions.description,
+        })
+        .from(captureCategoricalOptions)
+        .where(
+          and(
+            eq(captureCategoricalOptions.captureVariableId, input.variableId),
+            eq(captureCategoricalOptions.hasChanged, false)
+          )
+        )
+        .orderBy(captureCategoricalOptions.valueOama);
+    }),
+  updateCaptureVariableValue: protectedProcedure
+    .input(
+      z.object({
+        captureId: z.number(),
+        valueId: z.number(),
+        variableKind: z.enum(["categorical", "continuous"]),
+        newOptionId: z.number().optional(),
+        newValue: z.string().optional(),
+        justification: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const {
+        captureId,
+        valueId,
+        variableKind,
+        newOptionId,
+        newValue,
+        justification,
+      } = input;
+
+      return await db.transaction(async (tx) => {
+        if (variableKind === "categorical") {
+          if (!newOptionId) {
+            throw new Error("Missing categorical option");
+          }
+
+          const selectedOption = await tx
+            .select({
+              optionId: captureCategoricalOptions.captureCategoricalOptionId,
+              variableId: captureCategoricalOptions.captureVariableId,
+            })
+            .from(captureCategoricalOptions)
+            //@ts-expect-error drizzle bigint typing mismatch for option id filter
+            .where(eq(captureCategoricalOptions.captureCategoricalOptionId, newOptionId));
+
+          if (!selectedOption || selectedOption.length === 0) {
+            throw new Error("Invalid categorical option");
+          }
+
+          const originalValue = await tx
+            .select()
+            .from(captureCategoricalValues)
+            .where(
+              and(
+                //@ts-expect-error drizzle bigint typing mismatch for value id filter
+                eq(captureCategoricalValues.captureCategoricalValuesId, valueId),
+                //@ts-expect-error drizzle bigint typing mismatch for capture id filter
+                eq(captureCategoricalValues.captureId, captureId)
+              )
+            );
+
+          if (!originalValue || originalValue.length === 0) {
+            throw new Error("Categorical value not found");
+          }
+
+          const originalVariableId = Number(originalValue[0]?.captureVariableId);
+          const selectedOptionVariableId = Number(selectedOption[0]?.variableId);
+
+          if (originalVariableId !== selectedOptionVariableId) {
+            throw new Error("Option does not belong to the selected variable");
+          }
+
+          const backupValue = {
+            ...originalValue[0],
+            captureCategoricalValuesId: undefined,
+            originalId: valueId,
+            hasChanged: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+
+          //@ts-expect-error backup row can include nullable fields from legacy records
+          await tx.insert(captureCategoricalValues).values(backupValue);
+
+          await tx
+            .update(captureCategoricalValues)
+            .set({
+              captureCategoricalOptionId: newOptionId,
+              updatedAt: sql`now()`,
+            })
+            .where(
+              //@ts-expect-error drizzle bigint typing mismatch for value id filter
+              eq(captureCategoricalValues.captureCategoricalValuesId, valueId)
+            );
+
+          await tx.insert(changeLog).values({
+            table: "capture_categorical_values",
+            oldRecordId: valueId,
+            newRecordId: valueId,
+            isDeleted: false,
+            justification,
+            createdAt: sql`now()`,
+          });
+
+          return { captureId, valueId, variableKind };
+        }
+
+        if (newValue === undefined) {
+          throw new Error("Missing continuous value");
+        }
+
+        const originalValue = await tx
+          .select()
+          .from(captureContinuousValues)
+          .where(
+            and(
+              //@ts-expect-error drizzle bigint typing mismatch for value id filter
+              eq(captureContinuousValues.captureContinuousValuesId, valueId),
+              //@ts-expect-error drizzle bigint typing mismatch for capture id filter
+              eq(captureContinuousValues.captureId, captureId)
+            )
+          );
+
+        if (!originalValue || originalValue.length === 0) {
+          throw new Error("Continuous value not found");
+        }
+
+        const backupValue = {
+          ...originalValue[0],
+          captureContinuousValuesId: undefined,
+          originalId: valueId,
+          hasChanged: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        //@ts-expect-error backup row can include nullable fields from legacy records
+        await tx.insert(captureContinuousValues).values(backupValue);
+
+        await tx
+          .update(captureContinuousValues)
+          .set({
+            value: newValue,
+            updatedAt: sql`now()`,
+          })
+          .where(
+            //@ts-expect-error drizzle bigint typing mismatch for value id filter
+            eq(captureContinuousValues.captureContinuousValuesId, valueId)
+          );
+
+        await tx.insert(changeLog).values({
+          table: "capture_continuous_values",
+          oldRecordId: valueId,
+          newRecordId: valueId,
+          isDeleted: false,
+          justification,
+          createdAt: sql`now()`,
+        });
+
+        return { captureId, valueId, variableKind };
       });
     }),
   getSpeciesOptions: publicProcedure.query(async () => {
