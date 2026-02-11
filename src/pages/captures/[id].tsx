@@ -572,6 +572,7 @@ function CaptureVariableModal({
 export default function CaptureInfo() {
   const { id } = useRouter().query;
   const captureId = Number(Array.isArray(id) ? id[0] : id);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCaptureCodeModalOpen, setIsCaptureCodeModalOpen] = useState(false);
   const [isCaptureSpeciesModalOpen, setIsCaptureSpeciesModalOpen] =
@@ -589,15 +590,29 @@ export default function CaptureInfo() {
   const { data } = query;
 
   if (data) {
+    const canEdit = !data.hasChanged && isEditMode;
+
     return (
       <div>
         {data.hasChanged && <p className="text-red-500">EXCLUIDO</p>}
+        {!data.hasChanged && (
+          <div className="mb-4">
+            <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isEditMode}
+                onChange={(event) => setIsEditMode(event.target.checked)}
+              />
+              <span>Modo edição</span>
+            </label>
+          </div>
+        )}
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
             <h1>
               {data.sppName} - {data.sppCode}
             </h1>
-            {!data.hasChanged && (
+            {canEdit && (
               <button
                 className="rounded-md bg-blue-500 p-2 text-white"
                 onClick={() => setIsCaptureSpeciesModalOpen(true)}
@@ -607,7 +622,7 @@ export default function CaptureInfo() {
             )}
           </div>
 
-          {!data.hasChanged && (
+          {canEdit && (
             <div className="flex gap-2">
               <button
                 className="rounded-md bg-blue-500 p-2 text-white"
@@ -633,7 +648,7 @@ export default function CaptureInfo() {
         </div>
         <div className="flex items-center gap-2">
           <h2>{data.captureCode}</h2>
-          {!data.hasChanged && (
+          {canEdit && (
             <button
               className="rounded-md bg-blue-500 p-2 text-white"
               onClick={() => setIsCaptureCodeModalOpen(true)}
@@ -665,7 +680,7 @@ export default function CaptureInfo() {
                 <p>
                   {value.label}: {value.value}
                 </p>
-                {!data.hasChanged &&
+                {canEdit &&
                   value.variableId !== null &&
                   value.optionId !== null &&
                   value.value !== null &&
@@ -697,7 +712,7 @@ export default function CaptureInfo() {
                 <p>
                   {value.label}: {value.value}
                 </p>
-                {!data.hasChanged &&
+                {canEdit &&
                   value.variableId !== null &&
                   value.value !== null &&
                   value.label !== null && (
