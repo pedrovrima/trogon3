@@ -438,6 +438,7 @@ export const capturesRouter = createTRPCRouter({
       const captureData = await db
         .select({
           captureId: capture.captureId,
+          sppId: capture.sppId,
           station: stationRegister.stationCode,
           data: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
           netNumber: netRegister.netNumber,
@@ -587,6 +588,87 @@ export const capturesRouter = createTRPCRouter({
         });
 
         return { captureId, captureCode: newCaptureCode };
+      });
+    }),
+  getSpeciesOptions: publicProcedure.query(async () => {
+    return await db
+      .select({
+        sppId: sppRegister.sppId,
+        sppCode: sppRegister.sciCode,
+        sppName: sql<string>`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
+      })
+      .from(sppRegister)
+      .where(eq(sppRegister.hasChanged, false))
+      .orderBy(sppRegister.sciCode);
+  }),
+  updateCaptureSpecies: protectedProcedure
+    .input(
+      z.object({
+        captureId: z.number(),
+        newSppId: z.number(),
+        justification: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { captureId, newSppId, justification } = input;
+
+      const availableSpecies = await db
+        .select({
+          sppId: sppRegister.sppId,
+        })
+        .from(sppRegister)
+        .where(eq(sppRegister.hasChanged, false));
+
+      const isValidSpecies = availableSpecies.some(
+        (species) => Number(species.sppId) === newSppId
+      );
+
+      if (!isValidSpecies) {
+        throw new Error("Invalid species option");
+      }
+
+      return await db.transaction(async (tx) => {
+        const originalCapture = await tx
+          .select()
+          .from(capture)
+          //@ts-expect-error drizzle bigint typing mismatch for captureId filter
+          .where(eq(capture.captureId, captureId));
+
+        if (!originalCapture || originalCapture.length === 0) {
+          throw new Error("Capture not found");
+        }
+
+        const backupCapture = {
+          ...originalCapture[0],
+          captureId: undefined,
+          originalId: captureId,
+          hasChanged: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        //@ts-expect-error backup row can include nullable fields from legacy records
+        await tx.insert(capture).values(backupCapture);
+
+        await tx
+          .update(capture)
+          .set({
+            sppId: newSppId,
+            updatedAt: sql`now()`,
+          })
+          //@ts-expect-error drizzle bigint typing mismatch for captureId filter
+          .where(eq(capture.captureId, captureId));
+
+        await tx.insert(changeLog).values({
+          table: "capture",
+          oldRecordId: captureId,
+          newRecordId: captureId,
+          isDeleted: false,
+          justification,
+          createdAt: sql`now()`,
+        });
+
+        return { captureId, sppId: newSppId };
       });
     }),
   deleteCapture: protectedProcedure

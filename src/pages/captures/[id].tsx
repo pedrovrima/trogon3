@@ -262,11 +262,127 @@ function CaptureCodeModal({
   );
 }
 
+function CaptureSpeciesModal({
+  isOpen,
+  onClose,
+  captureId,
+  currentSppId,
+  onUpdated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  captureId: number;
+  currentSppId: number;
+  onUpdated: () => Promise<void>;
+}) {
+  const [selectedSppId, setSelectedSppId] = useState<number | undefined>(
+    undefined
+  );
+  const [speciesJustification, setSpeciesJustification] = useState("");
+
+  const speciesOptionsQuery = api.captures.getSpeciesOptions.useQuery(undefined, {
+    enabled: isOpen,
+  });
+  const updateSpeciesMutation = api.captures.updateCaptureSpecies.useMutation();
+
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    setSelectedSppId(undefined);
+    setSpeciesJustification("");
+    onClose();
+  };
+
+  const selectedSpeciesId = selectedSppId ?? currentSppId;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6">
+        <h2 className="mb-4 text-xl font-bold">Trocar espécie</h2>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Espécie</label>
+          <select
+            className="w-full rounded border p-2"
+            value={selectedSpeciesId}
+            onChange={(e) => setSelectedSppId(Number(e.target.value))}
+            disabled={speciesOptionsQuery.isLoading}
+          >
+            <option value="">Selecione uma espécie</option>
+            {speciesOptionsQuery.data?.map((option) => (
+              <option key={option.sppId} value={Number(option.sppId)}>
+                {option.sppCode} - {option.sppName}
+              </option>
+            ))}
+          </select>
+          {speciesOptionsQuery.isLoading && (
+            <p className="mt-2 text-sm">Carregando opções de espécie...</p>
+          )}
+          {!speciesOptionsQuery.isLoading && speciesOptionsQuery.data?.length === 0 && (
+            <p className="mt-2 text-sm">Nenhuma espécie disponível.</p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Justificativa</label>
+          <textarea
+            className="w-full rounded border p-2"
+            value={speciesJustification}
+            onChange={(e) => setSpeciesJustification(e.target.value)}
+            placeholder="Justificativa da alteração"
+          />
+          <p className="mt-1 text-sm text-muted-foreground">
+            Justificativa obrigatória para salvar.
+          </p>
+        </div>
+
+        {updateSpeciesMutation.error && (
+          <p className="mb-4 text-red-500">{updateSpeciesMutation.error.message}</p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button className="rounded border px-4 py-2" onClick={handleClose}>
+            Cancelar
+          </button>
+          <button
+            className="rounded bg-green-600 px-4 py-2 text-white disabled:bg-green-300"
+            disabled={
+              !selectedSpeciesId ||
+              selectedSpeciesId === currentSppId ||
+              !speciesJustification.trim() ||
+              updateSpeciesMutation.isLoading ||
+              speciesOptionsQuery.isLoading
+            }
+            onClick={async () => {
+              if (!selectedSpeciesId || !speciesJustification.trim()) {
+                return;
+              }
+
+              await updateSpeciesMutation.mutateAsync({
+                captureId,
+                newSppId: selectedSpeciesId,
+                justification: speciesJustification.trim(),
+              });
+
+              handleClose();
+              await onUpdated();
+            }}
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CaptureInfo() {
   const { id } = useRouter().query;
   const captureId = Number(Array.isArray(id) ? id[0] : id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCaptureCodeModalOpen, setIsCaptureCodeModalOpen] = useState(false);
+  const [isCaptureSpeciesModalOpen, setIsCaptureSpeciesModalOpen] =
+    useState(false);
 
   const query = api.captures.getCaptureById.useQuery(
     { captureId: Number.isFinite(captureId) ? captureId : 0 },
@@ -282,9 +398,19 @@ export default function CaptureInfo() {
       <div>
         {data.hasChanged && <p className="text-red-500">EXCLUIDO</p>}
         <div className="flex justify-between">
-          <h1>
-            {data.sppName} - {data.sppCode}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1>
+              {data.sppName} - {data.sppCode}
+            </h1>
+            {!data.hasChanged && (
+              <button
+                className="rounded-md bg-blue-500 p-2 text-white"
+                onClick={() => setIsCaptureSpeciesModalOpen(true)}
+              >
+                <Edit className="h-4 w-4" />
+              </button>
+            )}
+          </div>
 
           {!data.hasChanged && (
             <div className="flex gap-2">
@@ -367,6 +493,15 @@ export default function CaptureInfo() {
           onClose={() => setIsCaptureCodeModalOpen(false)}
           captureId={captureId}
           currentCaptureCode={data.captureCode ?? ""}
+          onUpdated={async () => {
+            await query.refetch();
+          }}
+        />
+        <CaptureSpeciesModal
+          isOpen={isCaptureSpeciesModalOpen}
+          onClose={() => setIsCaptureSpeciesModalOpen(false)}
+          captureId={captureId}
+          currentSppId={Number(data.sppId)}
           onUpdated={async () => {
             await query.refetch();
           }}
