@@ -34,7 +34,7 @@ type CaptureOption = {
   description: string;
 };
 
-const normalizeOptionDescription = (value: string, description: string) => {
+const normalizeOptionDescription = (_value: string, description: string) => {
   const cleanedDescription = description.replaceAll('"', "").trim();
   return cleanedDescription;
 };
