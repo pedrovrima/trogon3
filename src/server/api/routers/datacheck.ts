@@ -7,7 +7,7 @@ import {
   netEffort,
   capture,
 } from "drizzle/schema";
-import { eq, inArray, sql, desc } from "drizzle-orm";
+import { eq, inArray, sql, desc, and } from "drizzle-orm";
 import { effortCategoricalOptions } from "schema";
 
 export const datacheckRouter = createTRPCRouter({
@@ -44,9 +44,12 @@ export const datacheckRouter = createTRPCRouter({
       })
       .from(effortSummaries)
       .where(
-        inArray(
-          effortSummaries.effortId,
-          effortsCaptureCounts.map((e) => e.effortId)
+        and(
+          inArray(
+            effortSummaries.effortId,
+            effortsCaptureCounts.map((e) => e.effortId)
+          ),
+          eq(effortSummaries.hasChanged, false)
         )
       );
 

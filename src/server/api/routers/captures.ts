@@ -922,8 +922,11 @@ export const capturesRouter = createTRPCRouter({
       };
 
       return await db.transaction(async (tx) => {
-        // Insert backup record
-        await tx.insert(capture).values(backupCapture);
+        // Insert backup record and capture its ID
+        const [backupRecord] = await tx
+          .insert(capture)
+          .values(backupCapture)
+          .returning({ backupId: capture.captureId });
 
         // Update original record
         await tx
@@ -937,7 +940,7 @@ export const capturesRouter = createTRPCRouter({
         // Log the change
         await tx.insert(changeLog).values({
           table: "capture",
-          oldRecordId: captureId,
+          oldRecordId: Number(backupRecord.backupId),
           newRecordId: captureId,
           isDeleted: false,
           justification,
