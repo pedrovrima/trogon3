@@ -264,7 +264,7 @@ export const effort = mysqlTable(
     dateEffort: datetime("date_effort", { mode: "string" }).notNull(),
     notes: varchar("notes", { length: 250 }).notNull(),
     createdAt: datetime("created_at", { mode: "string" }).notNull(),
-    hasChanged: binary("has_changed", { length: 1 }).notNull(),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
     originalId: int("original_id"),
     stationId: int("station_id")
       .notNull()
