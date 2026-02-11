@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+import { z } from "zod";
 import { eq, sql, and, inArray, like } from "drizzle-orm";
 import {
   createTRPCRouter,
@@ -21,10 +21,131 @@ import {
   netRegister,
   sppRegister,
   banderRegister,
-  netOc,
   protocolRegister,
   changeLog,
 } from "drizzle/schema";
+
+const getResolvedCaptureCodeOptions = async () => {
+  const distinctCaptureCodeRows = await db
+    .select({
+      value: capture.captureCode,
+    })
+    .from(capture)
+    .where(and(eq(capture.hasChanged, false), sql`${capture.captureCode} is not null`))
+    .groupBy(capture.captureCode);
+
+  const distinctCaptureCodes = new Set(
+    distinctCaptureCodeRows
+      .map((item) => item.value)
+      .filter((item): item is string => typeof item === "string")
+  );
+
+  const activeOptions = await db
+    .select({
+      optionId: captureCategoricalOptions.captureCategoricalOptionId,
+      value: captureCategoricalOptions.valueOama,
+      description: captureCategoricalOptions.description,
+      variableId: captureVariableRegister.captureVariableId,
+      variableName: captureVariableRegister.name,
+      variableLabel: captureVariableRegister.portugueseLabel,
+    })
+    .from(captureCategoricalOptions)
+    .leftJoin(
+      captureVariableRegister,
+      eq(
+        captureCategoricalOptions.captureVariableId,
+        captureVariableRegister.captureVariableId
+      )
+    )
+    .where(
+      and(
+        eq(captureCategoricalOptions.hasChanged, false),
+        eq(captureVariableRegister.hasChanged, false)
+      )
+    );
+
+  const optionsByVariable = new Map<
+    number,
+    {
+      matchedValues: number;
+      options: Array<{
+        optionId: number;
+        value: string;
+        description: string;
+      }>;
+      variableName: string;
+      variableLabel: string;
+    }
+  >();
+
+  for (const option of activeOptions) {
+    if (
+      option.variableId === null ||
+      option.optionId === null ||
+      option.value === null ||
+      option.description === null ||
+      option.variableName === null ||
+      option.variableLabel === null
+    ) {
+      continue;
+    }
+
+    const variableId = Number(option.variableId);
+    const current = optionsByVariable.get(variableId) ?? {
+      matchedValues: 0,
+      options: [],
+      variableName: option.variableName,
+      variableLabel: option.variableLabel,
+    };
+
+    if (distinctCaptureCodes.has(option.value)) {
+      current.matchedValues += 1;
+    }
+
+    current.options.push({
+      optionId: Number(option.optionId),
+      value: option.value,
+      description: option.description,
+    });
+
+    optionsByVariable.set(variableId, current);
+  }
+
+  let selectedVariableId: number | null = null;
+  let maxMatchedValues = 0;
+
+  for (const [variableId, candidate] of optionsByVariable.entries()) {
+    if (candidate.matchedValues > maxMatchedValues) {
+      maxMatchedValues = candidate.matchedValues;
+      selectedVariableId = variableId;
+    }
+  }
+
+  if (selectedVariableId === null) {
+    const fallbackEntry = [...optionsByVariable.entries()].find(
+      ([, candidate]) => {
+        const normalizedName = candidate.variableName.toLowerCase();
+        const normalizedLabel = candidate.variableLabel.toLowerCase();
+        return (
+          normalizedName.includes("status") ||
+          normalizedName.includes("capture") ||
+          normalizedLabel.includes("status") ||
+          normalizedLabel.includes("captura")
+        );
+      }
+    );
+
+    selectedVariableId = fallbackEntry?.[0] ?? null;
+  }
+
+  if (selectedVariableId === null) {
+    return [];
+  }
+
+  const selectedOptions = optionsByVariable.get(selectedVariableId)?.options ?? [];
+  selectedOptions.sort((a, b) => a.value.localeCompare(b.value));
+  return selectedOptions;
+};
 
 export const capturesRouter = createTRPCRouter({
   getTopCapturedSpeciesNumbers: publicProcedure
@@ -155,7 +276,7 @@ export const capturesRouter = createTRPCRouter({
           eq(effort.protocolId, protocolRegister.protocolId)
         )
         .where(eq(capture.hasChanged, false));
-      let conditions = [];
+      const conditions = [];
       if (family) {
         conditions.push(eq(sppRegister.family, family));
       }
@@ -312,7 +433,7 @@ export const capturesRouter = createTRPCRouter({
         captureId: z.number(),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const { captureId } = input;
       const captureData = await db
         .select({
@@ -345,7 +466,7 @@ export const capturesRouter = createTRPCRouter({
           eq(bands.stringId, bandStringRegister.stringId)
         )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
-        //@ts-expect-error
+        //@ts-expect-error drizzle bigint typing mismatch for captureId filter
         .where(eq(capture.captureId, captureId));
 
       const categoricalValues = await db
@@ -400,6 +521,74 @@ export const capturesRouter = createTRPCRouter({
         continuousValues,
       };
     }),
+  getCaptureCodeOptions: publicProcedure.query(async () => {
+    return await getResolvedCaptureCodeOptions();
+  }),
+  updateCaptureCode: protectedProcedure
+    .input(
+      z.object({
+        captureId: z.number(),
+        newCaptureCode: z.string().min(1).max(1),
+        justification: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { captureId, newCaptureCode, justification } = input;
+
+      const availableCaptureCodes = await getResolvedCaptureCodeOptions();
+
+      const isValidCaptureCode = availableCaptureCodes.some(
+        (option) => option.value === newCaptureCode
+      );
+
+      if (!isValidCaptureCode) {
+        throw new Error("Invalid capture code option");
+      }
+
+      return await db.transaction(async (tx) => {
+        const originalCapture = await tx
+          .select()
+          .from(capture)
+          //@ts-expect-error drizzle bigint typing mismatch for captureId filter
+          .where(eq(capture.captureId, captureId));
+
+        if (!originalCapture || originalCapture.length === 0) {
+          throw new Error("Capture not found");
+        }
+
+        const backupCapture = {
+          ...originalCapture[0],
+          captureId: undefined,
+          originalId: captureId,
+          hasChanged: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        //@ts-expect-error backup row can include nullable fields from legacy records
+        await tx.insert(capture).values(backupCapture);
+
+        await tx
+          .update(capture)
+          .set({
+            captureCode: newCaptureCode,
+            updatedAt: sql`now()`,
+          })
+          //@ts-expect-error drizzle bigint typing mismatch for captureId filter
+          .where(eq(capture.captureId, captureId));
+
+        await tx.insert(changeLog).values({
+          table: "capture",
+          oldRecordId: captureId,
+          newRecordId: captureId,
+          isDeleted: false,
+          justification,
+          createdAt: sql`now()`,
+        });
+
+        return { captureId, captureCode: newCaptureCode };
+      });
+    }),
   deleteCapture: protectedProcedure
     .input(
       z.object({
@@ -407,13 +596,13 @@ export const capturesRouter = createTRPCRouter({
         justification: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { recordId, justification } = input;
 
       const _capture = await db
         .select()
         .from(capture)
-        //@ts-expect-error
+        //@ts-expect-error drizzle bigint typing mismatch for recordId filter
         .where(eq(capture.captureId, recordId));
       if (!_capture) {
         throw new Error("Capture not found");
@@ -435,7 +624,7 @@ export const capturesRouter = createTRPCRouter({
             hasChanged: true,
             updatedAt: sql`now()`,
           })
-          //@ts-expect-error
+          //@ts-expect-error drizzle bigint typing mismatch for recordId filter
           .where(eq(capture.captureId, recordId));
       });
 

@@ -148,14 +148,133 @@ function NetEffortModal({
   );
 }
 
+function CaptureCodeModal({
+  isOpen,
+  onClose,
+  captureId,
+  currentCaptureCode,
+  onUpdated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  captureId: number;
+  currentCaptureCode: string;
+  onUpdated: () => Promise<void>;
+}) {
+  const [selectedCaptureCode, setSelectedCaptureCode] = useState("");
+  const [captureCodeJustification, setCaptureCodeJustification] = useState("");
+
+  const captureCodeOptionsQuery = api.captures.getCaptureCodeOptions.useQuery(
+    undefined,
+    { enabled: isOpen }
+  );
+  const updateCaptureCodeMutation = api.captures.updateCaptureCode.useMutation();
+
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    setSelectedCaptureCode("");
+    setCaptureCodeJustification("");
+    onClose();
+  };
+
+  const selectedCode = selectedCaptureCode || currentCaptureCode;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6">
+        <h2 className="mb-4 text-xl font-bold">Editar Capture Code</h2>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Capture Code</label>
+          <select
+            className="w-full rounded border p-2"
+            value={selectedCode}
+            onChange={(e) => setSelectedCaptureCode(e.target.value)}
+            disabled={captureCodeOptionsQuery.isLoading}
+          >
+            <option value="">Selecione um código</option>
+            {captureCodeOptionsQuery.data?.map((option) => (
+              <option key={option.optionId} value={option.value}>
+                {option.value}
+                {option.description ? ` - ${option.description}` : ""}
+              </option>
+            ))}
+          </select>
+          {captureCodeOptionsQuery.isLoading && (
+            <p className="mt-2 text-sm">Carregando opções de Capture Code...</p>
+          )}
+          {!captureCodeOptionsQuery.isLoading &&
+            captureCodeOptionsQuery.data?.length === 0 && (
+              <p className="mt-2 text-sm">Nenhuma opção de Capture Code disponível.</p>
+            )}
+        </div>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Justificativa</label>
+          <textarea
+            className="w-full rounded border p-2"
+            value={captureCodeJustification}
+            onChange={(e) => setCaptureCodeJustification(e.target.value)}
+            placeholder="Justificativa da alteração"
+          />
+          <p className="mt-1 text-sm text-muted-foreground">
+            Justificativa obrigatória para salvar.
+          </p>
+        </div>
+
+        {updateCaptureCodeMutation.error && (
+          <p className="mb-4 text-red-500">{updateCaptureCodeMutation.error.message}</p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button className="rounded border px-4 py-2" onClick={handleClose}>
+            Cancelar
+          </button>
+          <button
+            className="rounded bg-green-600 px-4 py-2 text-white disabled:bg-green-300"
+            disabled={
+              !selectedCode ||
+              !captureCodeJustification.trim() ||
+              updateCaptureCodeMutation.isLoading ||
+              captureCodeOptionsQuery.isLoading
+            }
+            onClick={async () => {
+              if (!selectedCode || !captureCodeJustification.trim()) {
+                return;
+              }
+
+              await updateCaptureCodeMutation.mutateAsync({
+                captureId,
+                newCaptureCode: selectedCode,
+                justification: captureCodeJustification.trim(),
+              });
+
+              handleClose();
+              await onUpdated();
+            }}
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CaptureInfo() {
   const { id } = useRouter().query;
+  const captureId = Number(Array.isArray(id) ? id[0] : id);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCaptureCodeModalOpen, setIsCaptureCodeModalOpen] = useState(false);
 
-  const query = api.captures.getCaptureById.useQuery({ captureId: +id });
+  const query = api.captures.getCaptureById.useQuery(
+    { captureId: Number.isFinite(captureId) ? captureId : 0 },
+    { enabled: Number.isFinite(captureId) }
+  );
   const deleteMutation = api.captures.deleteCapture.useMutation();
 
-  if (query.isLoading) return <p>Loading...</p>;
+  if (!Number.isFinite(captureId) || query.isLoading) return <p>Loading...</p>;
   const { data } = query;
 
   if (data) {
@@ -182,7 +301,7 @@ export default function CaptureInfo() {
                     recordId: Number(data.captureId),
                     justification: "delete duplicated record",
                   });
-                  query.refetch();
+                  await query.refetch();
                 }}
                 disabled={deleteMutation.isLoading}
               >
@@ -191,8 +310,19 @@ export default function CaptureInfo() {
             </div>
           )}
         </div>
+        <div className="flex items-center gap-2">
+          <h2>{data.captureCode}</h2>
+          {!data.hasChanged && (
+            <button
+              className="rounded-md bg-blue-500 p-2 text-white"
+              onClick={() => setIsCaptureCodeModalOpen(true)}
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+          )}
+        </div>
         <h2>
-          {data.captureCode} - {data?.bandSize}
+          {data?.bandSize}
           {data.bandNumber}
         </h2>
         <h2>
@@ -230,9 +360,20 @@ export default function CaptureInfo() {
         <NetEffortModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          captureId={+id}
+          captureId={captureId}
+        />
+        <CaptureCodeModal
+          isOpen={isCaptureCodeModalOpen}
+          onClose={() => setIsCaptureCodeModalOpen(false)}
+          captureId={captureId}
+          currentCaptureCode={data.captureCode ?? ""}
+          onUpdated={async () => {
+            await query.refetch();
+          }}
         />
       </div>
     );
   }
+
+  return <p>Capture not found</p>;
 }
