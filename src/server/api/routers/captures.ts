@@ -36,9 +36,6 @@ type CaptureOption = {
 
 const normalizeOptionDescription = (value: string, description: string) => {
   const cleanedDescription = description.replaceAll('"', "").trim();
-  if (!cleanedDescription && value === "U") {
-    return "UTBM";
-  }
   return cleanedDescription;
 };
 

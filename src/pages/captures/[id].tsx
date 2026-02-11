@@ -487,7 +487,7 @@ function CaptureVariableModal({
                   className="rounded border px-2 py-1 text-sm"
                   onClick={() => setContinuousValue("U")}
                 >
-                  UTBM (U)
+                  U
                 </button>
               </div>
             </div>
