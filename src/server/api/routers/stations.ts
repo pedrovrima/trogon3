@@ -116,7 +116,13 @@ export const stationsRouter = createTRPCRouter({
         )
         .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
         .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
-        .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
+        .leftJoin(
+          effortSummaries,
+          and(
+            eq(effort.effortId, effortSummaries.effortId),
+            eq(effortSummaries.hasChanged, false)
+          )
+        )
         .where(eq(effort.stationId, Number(stationId)))
         .groupBy(
           effort.effortId,

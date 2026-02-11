@@ -59,7 +59,13 @@ export const effortRouter = createTRPCRouter({
       )
 
       .leftJoin(netEffort, eq(effort.effortId, netEffort.effortId))
-      .leftJoin(effortSummaries, eq(effort.effortId, effortSummaries.effortId))
+      .leftJoin(
+        effortSummaries,
+        and(
+          eq(effort.effortId, effortSummaries.effortId),
+          eq(effortSummaries.hasChanged, false)
+        )
+      )
       .groupBy(
         effort.effortId,
         effortSummaries.effortSummaryId,
@@ -248,7 +254,10 @@ export const effortRouter = createTRPCRouter({
         .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
         .leftJoin(
           effortSummaries,
-          eq(effort.effortId, effortSummaries.effortId)
+          and(
+            eq(effort.effortId, effortSummaries.effortId),
+            eq(effortSummaries.hasChanged, false)
+          )
         )
         .groupBy(
           effort.effortId,
@@ -318,7 +327,10 @@ export const effortRouter = createTRPCRouter({
         .leftJoin(netOc, eq(netEffort.netEffId, netOc.netEffId))
         .leftJoin(
           effortSummaries,
-          eq(effort.effortId, effortSummaries.effortId)
+          and(
+            eq(effort.effortId, effortSummaries.effortId),
+            eq(effortSummaries.hasChanged, false)
+          )
         )
         .groupBy(
           effort.effortId,
@@ -374,11 +386,16 @@ export const effortRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { effortId, newSummary, justification } = input;
 
-      // Get the original summary record
+      // Get the original summary record (exclude backups)
       const originalSummary = await db
         .select()
         .from(effortSummaries)
-        .where(eq(effortSummaries.effortId, effortId));
+        .where(
+          and(
+            eq(effortSummaries.effortId, effortId),
+            eq(effortSummaries.hasChanged, false)
+          )
+        );
 
       if (!originalSummary || originalSummary.length === 0) {
         throw new Error("Effort summary not found");
@@ -395,8 +412,11 @@ export const effortRouter = createTRPCRouter({
       };
 
       return await db.transaction(async (tx) => {
-        // Insert backup record
-        await tx.insert(effortSummaries).values(backupSummary);
+        // Insert backup record and capture its ID
+        const [backupRecord] = await tx
+          .insert(effortSummaries)
+          .values(backupSummary)
+          .returning({ backupId: effortSummaries.effortSummaryId });
 
         // Update original record
         await tx
@@ -407,12 +427,12 @@ export const effortRouter = createTRPCRouter({
             unbanded: newSummary.unbanded,
             updatedAt: sql`now()`,
           })
-          .where(eq(effortSummaries.effortId, effortId));
+          .where(eq(effortSummaries.effortSummaryId, originalSummary[0].effortSummaryId));
 
         // Log the change
         await tx.insert(changeLog).values({
           table: "effort_summaries",
-          oldRecordId: Number(originalSummary[0].effortSummaryId),
+          oldRecordId: Number(backupRecord.backupId),
           newRecordId: Number(originalSummary[0].effortSummaryId),
           isDeleted: false,
           justification,
