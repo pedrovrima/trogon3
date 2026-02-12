@@ -22,6 +22,7 @@ import {
   sppRegister,
   banderRegister,
   protocolRegister,
+  protocolVars,
   changeLog,
 } from "drizzle/schema";
 
@@ -56,7 +57,9 @@ const getUniversalNaValueOptions = async (): Promise<CaptureOption[]> => {
 
   return options
     .filter(
-      (option): option is { optionId: number; value: string; description: string } =>
+      (
+        option
+      ): option is { optionId: number; value: string; description: string } =>
         option.optionId !== null &&
         option.value !== null &&
         option.description !== null &&
@@ -100,7 +103,12 @@ const getResolvedCaptureCodeOptions = async () => {
       value: capture.captureCode,
     })
     .from(capture)
-    .where(and(eq(capture.hasChanged, false), sql`${capture.captureCode} is not null`))
+    .where(
+      and(
+        eq(capture.hasChanged, false),
+        sql`${capture.captureCode} is not null`
+      )
+    )
     .groupBy(capture.captureCode);
 
   const distinctCaptureCodes = new Set(
@@ -211,7 +219,8 @@ const getResolvedCaptureCodeOptions = async () => {
     return [];
   }
 
-  const selectedOptions = optionsByVariable.get(selectedVariableId)?.options ?? [];
+  const selectedOptions =
+    optionsByVariable.get(selectedVariableId)?.options ?? [];
   return await mergeWithUniversalOptions(selectedOptions, true);
 };
 
@@ -517,6 +526,7 @@ export const capturesRouter = createTRPCRouter({
         .select({
           captureId: capture.captureId,
           sppId: capture.sppId,
+          effortId: effort.effortId,
           station: stationRegister.stationCode,
           data: sql`to_char(${effort.dateEffort}, 'yyyy-mm-dd')`,
           netNumber: netRegister.netNumber,
@@ -529,6 +539,7 @@ export const capturesRouter = createTRPCRouter({
           sppName: sql<string>`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
           notes: capture.notes,
           hasChanged: capture.hasChanged,
+          protocolId: effort.protocolId,
         })
         .from(capture)
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
@@ -558,6 +569,7 @@ export const capturesRouter = createTRPCRouter({
           variableName: captureVariableRegister.name,
           variableType: captureVariableRegister.type,
           label: captureVariableRegister.portugueseLabel,
+          unit: captureVariableRegister.unit,
         })
         .from(captureCategoricalValues)
         .leftJoin(
@@ -590,6 +602,7 @@ export const capturesRouter = createTRPCRouter({
           variableType: captureVariableRegister.type,
           value: captureContinuousValues.value,
           label: captureVariableRegister.portugueseLabel,
+          unit: captureVariableRegister.unit,
         })
         .from(captureContinuousValues)
         .leftJoin(
@@ -606,10 +619,37 @@ export const capturesRouter = createTRPCRouter({
           )
         );
 
+      // Fetch protocol variable order
+      const protocolId = captureData[0]?.protocolId;
+      let varOrderMap = new Map<number, number>();
+      if (protocolId) {
+        const pvRows = await db
+          .select({
+            captureVariableId: protocolVars.captureVariableId,
+            order: protocolVars.order,
+          })
+          .from(protocolVars)
+          .where(eq(protocolVars.protocolId, protocolId));
+        varOrderMap = new Map(
+          pvRows.map((r) => [r.captureVariableId, r.order])
+        );
+      }
+
+      const addOrder = <T extends { variableId: number | null }>(items: T[]) =>
+        items
+          .map((item) => ({
+            ...item,
+            order:
+              item.variableId !== null
+                ? varOrderMap.get(item.variableId) ?? 999
+                : 999,
+          }))
+          .sort((a, b) => a.order - b.order);
+
       return {
         ...captureData[0],
-        categoricalValues,
-        continuousValues,
+        categoricalValues: addOrder(categoricalValues),
+        continuousValues: addOrder(continuousValues),
       };
     }),
   getCaptureCodeOptions: publicProcedure.query(async () => {
@@ -711,7 +751,13 @@ export const capturesRouter = createTRPCRouter({
 
       const normalizedVariableOptions: CaptureOption[] = variableOptions
         .filter(
-          (option): option is { optionId: number; value: string; description: string } =>
+          (
+            option
+          ): option is {
+            optionId: number;
+            value: string;
+            description: string;
+          } =>
             option.optionId !== null &&
             option.value !== null &&
             option.description !== null
@@ -719,7 +765,10 @@ export const capturesRouter = createTRPCRouter({
         .map((option) => ({
           optionId: Number(option.optionId),
           value: option.value,
-          description: normalizeOptionDescription(option.value, option.description),
+          description: normalizeOptionDescription(
+            option.value,
+            option.description
+          ),
         }));
 
       return await mergeWithUniversalOptions(normalizedVariableOptions, false);
@@ -759,7 +808,12 @@ export const capturesRouter = createTRPCRouter({
             })
             .from(captureCategoricalOptions)
             //@ts-expect-error drizzle bigint typing mismatch for option id filter
-            .where(eq(captureCategoricalOptions.captureCategoricalOptionId, newOptionId));
+            .where(
+              eq(
+                captureCategoricalOptions.captureCategoricalOptionId,
+                newOptionId
+              )
+            );
 
           if (!selectedOption || selectedOption.length === 0) {
             throw new Error("Invalid categorical option");
@@ -771,7 +825,10 @@ export const capturesRouter = createTRPCRouter({
             .where(
               and(
                 //@ts-expect-error drizzle bigint typing mismatch for value id filter
-                eq(captureCategoricalValues.captureCategoricalValuesId, valueId),
+                eq(
+                  captureCategoricalValues.captureCategoricalValuesId,
+                  valueId
+                ),
                 //@ts-expect-error drizzle bigint typing mismatch for capture id filter
                 eq(captureCategoricalValues.captureId, captureId)
               )
@@ -781,8 +838,12 @@ export const capturesRouter = createTRPCRouter({
             throw new Error("Categorical value not found");
           }
 
-          const originalVariableId = Number(originalValue[0]?.captureVariableId);
-          const selectedOptionVariableId = Number(selectedOption[0]?.variableId);
+          const originalVariableId = Number(
+            originalValue[0]?.captureVariableId
+          );
+          const selectedOptionVariableId = Number(
+            selectedOption[0]?.variableId
+          );
           const selectedOptionValue = selectedOption[0]?.value;
 
           const isUniversalOption =

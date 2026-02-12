@@ -1,5 +1,13 @@
 import { api } from "@/utils/api";
-import { Trash, Edit } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Trash,
+  Edit,
+  FileText,
+  AlertTriangle,
+  ExternalLink,
+} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -185,7 +193,8 @@ function CaptureCodeModal({
     undefined,
     { enabled: isOpen }
   );
-  const updateCaptureCodeMutation = api.captures.updateCaptureCode.useMutation();
+  const updateCaptureCodeMutation =
+    api.captures.updateCaptureCode.useMutation();
 
   if (!isOpen) return null;
 
@@ -223,7 +232,9 @@ function CaptureCodeModal({
           )}
           {!captureCodeOptionsQuery.isLoading &&
             captureCodeOptionsQuery.data?.length === 0 && (
-              <p className="mt-2 text-sm">Nenhuma opção de Capture Code disponível.</p>
+              <p className="mt-2 text-sm">
+                Nenhuma opção de Capture Code disponível.
+              </p>
             )}
         </div>
 
@@ -241,7 +252,9 @@ function CaptureCodeModal({
         </div>
 
         {updateCaptureCodeMutation.error && (
-          <p className="mb-4 text-red-500">{updateCaptureCodeMutation.error.message}</p>
+          <p className="mb-4 text-red-500">
+            {updateCaptureCodeMutation.error.message}
+          </p>
         )}
 
         <div className="flex justify-end gap-2">
@@ -297,9 +310,12 @@ function CaptureSpeciesModal({
   );
   const [speciesJustification, setSpeciesJustification] = useState("");
 
-  const speciesOptionsQuery = api.captures.getSpeciesOptions.useQuery(undefined, {
-    enabled: isOpen,
-  });
+  const speciesOptionsQuery = api.captures.getSpeciesOptions.useQuery(
+    undefined,
+    {
+      enabled: isOpen,
+    }
+  );
   const updateSpeciesMutation = api.captures.updateCaptureSpecies.useMutation();
 
   if (!isOpen) return null;
@@ -335,9 +351,10 @@ function CaptureSpeciesModal({
           {speciesOptionsQuery.isLoading && (
             <p className="mt-2 text-sm">Carregando opções de espécie...</p>
           )}
-          {!speciesOptionsQuery.isLoading && speciesOptionsQuery.data?.length === 0 && (
-            <p className="mt-2 text-sm">Nenhuma espécie disponível.</p>
-          )}
+          {!speciesOptionsQuery.isLoading &&
+            speciesOptionsQuery.data?.length === 0 && (
+              <p className="mt-2 text-sm">Nenhuma espécie disponível.</p>
+            )}
         </div>
 
         <div className="mb-4">
@@ -354,7 +371,9 @@ function CaptureSpeciesModal({
         </div>
 
         {updateSpeciesMutation.error && (
-          <p className="mb-4 text-red-500">{updateSpeciesMutation.error.message}</p>
+          <p className="mb-4 text-red-500">
+            {updateSpeciesMutation.error.message}
+          </p>
         )}
 
         <div className="flex justify-end gap-2">
@@ -412,10 +431,11 @@ function CaptureVariableModal({
   const [continuousValue, setContinuousValue] = useState("");
   const [justification, setJustification] = useState("");
 
-  const variableOptionsQuery = api.captures.getCategoricalVariableOptions.useQuery(
-    { variableId: variable?.variableId ?? 0 },
-    { enabled: isOpen && variable?.kind === "categorical" }
-  );
+  const variableOptionsQuery =
+    api.captures.getCategoricalVariableOptions.useQuery(
+      { variableId: variable?.variableId ?? 0 },
+      { enabled: isOpen && variable?.kind === "categorical" }
+    );
   const updateVariableMutation =
     api.captures.updateCaptureVariableValue.useMutation();
 
@@ -493,9 +513,10 @@ function CaptureVariableModal({
             </div>
           )}
 
-          {variable.kind === "categorical" && variableOptionsQuery.isLoading && (
-            <p className="mt-2 text-sm">Carregando opções...</p>
-          )}
+          {variable.kind === "categorical" &&
+            variableOptionsQuery.isLoading && (
+              <p className="mt-2 text-sm">Carregando opções...</p>
+            )}
         </div>
 
         <div className="mb-4">
@@ -512,7 +533,9 @@ function CaptureVariableModal({
         </div>
 
         {updateVariableMutation.error && (
-          <p className="mb-4 text-red-500">{updateVariableMutation.error.message}</p>
+          <p className="mb-4 text-red-500">
+            {updateVariableMutation.error.message}
+          </p>
         )}
 
         <div className="flex justify-end gap-2">
@@ -569,6 +592,197 @@ function CaptureVariableModal({
   );
 }
 
+function normalizeVariableKey(value: string | null | undefined) {
+  if (!value) return "";
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_")
+    .trim();
+}
+
+const PROMOTED_VARIABLE_ALIASES = {
+  age: ["age_wrp", "idade", "wrp", "idwrp", "idade_wrp"],
+  sex: ["sex_code", "sexo", "sex"],
+  ageCriteria: ["age_criteria", "criterio_de_idade", "criterio_idade"],
+  sexCriteria: ["sex_criteria", "criterio_de_sexo", "criterio_sexo"],
+};
+
+const EXTRA_EXCLUDED_ALIASES = [
+  ...PROMOTED_VARIABLE_ALIASES.age,
+  ...PROMOTED_VARIABLE_ALIASES.sex,
+  ...PROMOTED_VARIABLE_ALIASES.ageCriteria,
+  ...PROMOTED_VARIABLE_ALIASES.sexCriteria,
+  "status",
+  "capture_code",
+  "codigo_de_captura",
+  "cloacal_protuberance",
+  "protuberancia_cloacal",
+  "broodpatch",
+  "brood_patch",
+  "fat_score",
+  "fat",
+  "gordura",
+  "body_molt",
+  "body_moult",
+  "body_mold",
+  "muda_corporal",
+  "wing_molt",
+  "wing_moult",
+  "wing_mold",
+  "wing_mode",
+  "wing_multi",
+  "multi_wing",
+  "multiwing",
+  "muda_de_asa",
+  "muda_da_asa",
+  "flight_feather_molt",
+  "molt_limit",
+  "skull",
+  "cranio",
+  "crânio",
+  "juvenile_feather",
+  "pena_juvenil",
+  "damage",
+  "dano",
+];
+
+function matchesPromotedVariable(
+  value: { variableName: string | null; label: string | null },
+  aliases: string[]
+) {
+  const normalizedName = normalizeVariableKey(value.variableName);
+  const normalizedLabel = normalizeVariableKey(value.label);
+
+  return aliases.some((alias) => {
+    const normalizedAlias = normalizeVariableKey(alias);
+    return (
+      normalizedName === normalizedAlias ||
+      normalizedLabel === normalizedAlias ||
+      normalizedName.startsWith(`${normalizedAlias}_`) ||
+      normalizedLabel.startsWith(`${normalizedAlias}_`)
+    );
+  });
+}
+
+function getVariableOrder(order: unknown) {
+  if (typeof order === "number" && Number.isFinite(order)) {
+    return order;
+  }
+
+  if (typeof order === "string") {
+    const parsedOrder = Number(order);
+    return Number.isFinite(parsedOrder) ? parsedOrder : 999;
+  }
+
+  return 999;
+}
+
+function displayValue(value: string | null | undefined, fallback = "—") {
+  if (!value) return fallback;
+  const normalizedValue = value.trim();
+  return normalizedValue.length > 0 ? normalizedValue : fallback;
+}
+
+function formatUsageTime(captureTime: string | null | undefined) {
+  if (!captureTime) return "—";
+  const normalized = captureTime.trim();
+  if (normalized.length === 3) return `${normalized}0`;
+  if (normalized.length === 4) return normalized;
+  return normalized;
+}
+
+function findVariableValue<
+  T extends {
+    variableName: string | null;
+    label: string | null;
+    value: string | null;
+  }
+>(variables: T[], aliases: string[]): T | undefined {
+  return variables.find((variable) => {
+    const normalizedName = normalizeVariableKey(variable.variableName);
+    const normalizedLabel = normalizeVariableKey(variable.label);
+
+    return aliases.some((alias) => {
+      const normalizedAlias = normalizeVariableKey(alias);
+      return (
+        normalizedName === normalizedAlias ||
+        normalizedLabel === normalizedAlias ||
+        normalizedName.includes(normalizedAlias) ||
+        normalizedLabel.includes(normalizedAlias)
+      );
+    });
+  });
+}
+
+function isGreaterThanOne(value: string | null | undefined) {
+  if (!value) return false;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) && parsed > 1;
+}
+
+function isGreaterThan(value: string | null | undefined, threshold: number) {
+  if (!value) return false;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) && parsed > threshold;
+}
+
+function variableDisplayLabel(
+  variable:
+    | {
+        label: string | null;
+        variableName: string | null;
+      }
+    | undefined
+    | null,
+  fallback: string
+) {
+  return variable?.label ?? variable?.variableName ?? fallback;
+}
+
+function isMeasurementVariable(variable: {
+  variableName: string | null;
+  label: string | null;
+}) {
+  const normalizedName = normalizeVariableKey(variable.variableName);
+  const normalizedLabel = normalizeVariableKey(variable.label);
+  const target = `${normalizedName}_${normalizedLabel}`;
+  const measurementKeywords = [
+    "peso",
+    "weight",
+    "massa",
+    "comprimento",
+    "length",
+    "wing_length",
+    "asa",
+    "tail",
+    "cauda",
+    "tarsus",
+    "tarso",
+    "bill",
+    "bico",
+    "culmen",
+    "envergadura",
+  ];
+
+  return measurementKeywords.some((keyword) => target.includes(keyword));
+}
+
+function formatValueWithUnit(
+  value: string | null | undefined,
+  unit: string | null | undefined
+) {
+  const displayedValue = displayValue(value);
+  const displayedUnit = displayValue(unit, "");
+  return displayedUnit ? `${displayedValue} ${displayedUnit}` : displayedValue;
+}
+
+function formatDate(dateStr: unknown) {
+  if (typeof dateStr !== "string") return "";
+  return new Date(dateStr).toLocaleDateString("pt-BR", { timeZone: "GMT" });
+}
+
 export default function CaptureInfo() {
   const { id } = useRouter().query;
   const captureId = Number(Array.isArray(id) ? id[0] : id);
@@ -592,151 +806,768 @@ export default function CaptureInfo() {
   if (data) {
     const canEdit = !data.hasChanged && isEditMode;
 
+    const ageValue = data.categoricalValues.find((value) =>
+      matchesPromotedVariable(value, PROMOTED_VARIABLE_ALIASES.age)
+    );
+    const sexValue = data.categoricalValues.find((value) =>
+      matchesPromotedVariable(value, PROMOTED_VARIABLE_ALIASES.sex)
+    );
+    const ageCriteriaValues = data.categoricalValues.filter((value) =>
+      matchesPromotedVariable(value, PROMOTED_VARIABLE_ALIASES.ageCriteria)
+    );
+    const sexCriteriaValues = data.categoricalValues.filter((value) =>
+      matchesPromotedVariable(value, PROMOTED_VARIABLE_ALIASES.sexCriteria)
+    );
+
+    const allVariables = [
+      ...data.categoricalValues.map((value) => ({
+        ...value,
+        kind: "categorical" as const,
+      })),
+      ...data.continuousValues.map((value) => ({
+        ...value,
+        kind: "continuous" as const,
+      })),
+    ].sort((first, second) => {
+      const orderDiff =
+        getVariableOrder(first.order) - getVariableOrder(second.order);
+
+      if (orderDiff !== 0) return orderDiff;
+
+      const firstLabel =
+        normalizeVariableKey(first.label) ||
+        normalizeVariableKey(first.variableName);
+      const secondLabel =
+        normalizeVariableKey(second.label) ||
+        normalizeVariableKey(second.variableName);
+
+      return firstLabel.localeCompare(secondLabel);
+    });
+
+    const cloacalProtuberanceValue = findVariableValue(allVariables, [
+      "cloacal_protuberance",
+      "protuberancia_cloacal",
+      "protuberância_cloacal",
+      "cloical_protuberance",
+    ]);
+    const broodPatchValue = findVariableValue(allVariables, [
+      "broodpatch",
+      "brood_patch",
+      "placa_de_incubacao",
+      "placa_de_incubação",
+      "brutepatch",
+    ]);
+    const fatScoreValue = findVariableValue(allVariables, [
+      "fat_score",
+      "fat",
+      "gordura",
+      "fet",
+    ]);
+    const bodyMoltValue = findVariableValue(allVariables, [
+      "body_molt",
+      "body_moult",
+      "body_mold",
+      "muda_corporal",
+    ]);
+    const wingMoltValue = findVariableValue(allVariables, [
+      "wing_molt",
+      "wing_moult",
+      "wing_mold",
+      "wing_mode",
+      "wing_multi",
+      "multi_wing",
+      "multiwing",
+      "muda_de_asa",
+      "muda_da_asa",
+      "muda_asa",
+      "flight_feather_molt",
+    ]);
+    const moltLimitValue = findVariableValue(allVariables, [
+      "molt_limit",
+      "limite_de_muda",
+      "limite_muda",
+    ]);
+    const skullValue = findVariableValue(allVariables, [
+      "skull",
+      "cranio",
+      "crânio",
+      "skull_ossification",
+      "cranial_ossification",
+    ]);
+    const damageValue = findVariableValue(allVariables, [
+      "damage",
+      "dano",
+      "feather_damage",
+      "plumage_damage",
+    ]);
+    const juvenileFeatherValue = findVariableValue(allVariables, [
+      "juvenile_feather",
+      "juvenile_plumage",
+      "pena_juvenil",
+      "plumagem_juvenil",
+    ]);
+    const measureContinuousVariables = data.continuousValues.filter((value) =>
+      isMeasurementVariable(value)
+    );
+
+    const listedVariableIds = new Set(
+      [
+        ageValue,
+        sexValue,
+        ...ageCriteriaValues,
+        ...sexCriteriaValues,
+        cloacalProtuberanceValue,
+        broodPatchValue,
+        fatScoreValue,
+        bodyMoltValue,
+        wingMoltValue,
+        moltLimitValue,
+        skullValue,
+        damageValue,
+        juvenileFeatherValue,
+      ]
+        .filter((value) => value && value.kind === "categorical")
+        .map((value) => Number(value?.id))
+    );
+
+    const extraCategoricalVariables = data.categoricalValues.filter(
+      (value) =>
+        !listedVariableIds.has(Number(value.id)) &&
+        !matchesPromotedVariable(value, EXTRA_EXCLUDED_ALIASES)
+    );
+
+    const openCategoricalEditor = (
+      value: (typeof data.categoricalValues)[number] | undefined
+    ) => {
+      if (!canEdit || !value || value.optionId === null) return;
+
+      setEditingVariable({
+        kind: "categorical",
+        id: Number(value.id),
+        variableId: Number(value.variableId),
+        optionId: Number(value.optionId),
+        label: value.label ?? value.variableName ?? "Variável categórica",
+        value: value.value ?? "",
+      });
+    };
+
+    const openContinuousEditor = (
+      value: (typeof data.continuousValues)[number] | undefined
+    ) => {
+      if (!canEdit || !value) return;
+
+      setEditingVariable({
+        kind: "continuous",
+        id: Number(value.id),
+        variableId: Number(value.variableId),
+        label: value.label ?? value.variableName ?? "Variável contínua",
+        value: value.value ?? "",
+      });
+    };
+
+    const openAnyVariableEditor = (value: (typeof allVariables)[number]) => {
+      if (value.kind === "categorical") {
+        openCategoricalEditor(value);
+        return;
+      }
+
+      openContinuousEditor(value);
+    };
+
     return (
-      <div>
-        {data.hasChanged && <p className="text-red-500">EXCLUIDO</p>}
-        {!data.hasChanged && (
-          <div className="mb-4">
-            <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={isEditMode}
-                onChange={(event) => setIsEditMode(event.target.checked)}
-              />
-              <span>Modo edição</span>
-            </label>
+      <div className="mx-auto max-w-6xl space-y-3 px-4 py-6">
+        {/* Deleted banner */}
+        {data.hasChanged && (
+          <div className="flex items-center gap-2 border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">
+            <AlertTriangle size={18} />
+            <span className="font-medium">Este registro foi excluído</span>
           </div>
         )}
-        <div className="flex justify-between">
-          <div className="flex items-center gap-2">
-            <h1>
-              {data.sppName} - {data.sppCode}
-            </h1>
-            {canEdit && (
-              <button
-                className="rounded-md bg-blue-500 p-2 text-white"
-                onClick={() => setIsCaptureSpeciesModalOpen(true)}
-              >
-                <Edit className="h-4 w-4" />
-              </button>
-            )}
-          </div>
 
-          {canEdit && (
-            <div className="flex gap-2">
-              <button
-                className="rounded-md bg-blue-500 p-2 text-white"
-                onClick={() => setIsModalOpen(true)}
-              >
-                <Edit className="h-4 w-4" />
-              </button>
-              <button
-                className="rounded-md bg-red-500 p-2 text-white"
-                onClick={async () => {
-                  await deleteMutation.mutateAsync({
-                    recordId: Number(data.captureId),
-                    justification: "delete duplicated record",
-                  });
-                  await query.refetch();
-                }}
-                disabled={deleteMutation.isLoading}
-              >
-                <Trash className="h-4 w-4" />
-              </button>
+        {/* Hero Card */}
+        <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+          <CardContent className="p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              {!data.hasChanged && (
+                <label className="inline-flex cursor-pointer items-center gap-2 text-xs uppercase tracking-wider text-slate-400">
+                  <input
+                    type="checkbox"
+                    checked={isEditMode}
+                    onChange={(event) => setIsEditMode(event.target.checked)}
+                    className="rounded-none border-slate-500 bg-[#0a1224]"
+                  />
+                  <span>Modo edição</span>
+                </label>
+              )}
+
+              {canEdit && (
+                <button
+                  className="border border-transparent p-1.5 text-red-300 transition-colors hover:border-red-400/40 hover:bg-red-500/10 hover:text-red-200"
+                  onClick={async () => {
+                    await deleteMutation.mutateAsync({
+                      recordId: Number(data.captureId),
+                      justification: "delete duplicated record",
+                    });
+                    await query.refetch();
+                  }}
+                  disabled={deleteMutation.isLoading}
+                >
+                  <Trash className="h-4 w-4" />
+                </button>
+              )}
             </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <h2>{data.captureCode}</h2>
-          {canEdit && (
-            <button
-              className="rounded-md bg-blue-500 p-2 text-white"
-              onClick={() => setIsCaptureCodeModalOpen(true)}
-            >
-              <Edit className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <h2>
-          {data?.bandSize}
-          {data.bandNumber}
-        </h2>
-        <h2>
-          {typeof data.data === "string" &&
-            new Date(data.data).toLocaleDateString("pt-BR", {
-              timeZone: "GMT",
-            })}{" "}
-          - {data.captureTime?.slice(0, 2)}:{data.captureTime?.slice(2, 3)}0
-        </h2>
-        <h2>
-          {data.station} - Rede {data.netNumber}
-        </h2>
-        <h2>{data.bander}</h2>
-        {data.notes && <p>Notas: {data.notes}</p>}
-        <div>
-          {data?.categoricalValues.map((value) => {
-            return (
-              <div key={value.id} className="flex items-center gap-2">
-                <p>
-                  {value.label}: {value.value}
+
+            <div className="flex items-center justify-center gap-2">
+              <span className="font-mono text-3xl font-semibold text-cyan-200">
+                {displayValue(data.captureCode)}
+              </span>
+              <span className="text-slate-500">-</span>
+              {data.bandNumber ? (
+                <Link
+                  href={`/bands/${data.bandNumber}`}
+                  className="text-center font-mono text-3xl font-semibold tracking-widest text-cyan-200 transition-colors hover:text-cyan-100 hover:underline"
+                >
+                  {`${data.bandSize ?? ""}${data.bandNumber}`}
+                </Link>
+              ) : (
+                <span className="text-center font-mono text-3xl font-semibold text-slate-500">
+                  Sem anilha
+                </span>
+              )}
+              {canEdit && (
+                <button
+                  className="border border-transparent p-0.5 text-slate-400 transition-colors hover:border-cyan-300/40 hover:text-cyan-200"
+                  onClick={() => setIsCaptureCodeModalOpen(true)}
+                  title="Editar capture code"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <h1 className="text-2xl font-semibold italic text-cyan-100">
+                {data.sppName}
+              </h1>
+              {canEdit && (
+                <button
+                  className="border border-transparent p-1 text-slate-300 transition-colors hover:border-cyan-300/40 hover:text-cyan-200"
+                  onClick={() => setIsCaptureSpeciesModalOpen(true)}
+                  title="Editar espécie"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            <p className="mt-1 text-center text-xs uppercase tracking-widest text-cyan-300/80">
+              {data.sppCode}
+            </p>
+          </CardContent>
+        </Card>
+
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
+          <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+            <CardContent className="p-4">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  esforço
                 </p>
-                {canEdit &&
-                  value.variableId !== null &&
-                  value.optionId !== null &&
-                  value.value !== null &&
-                  value.label !== null && (
-                    <button
-                      className="rounded-md bg-blue-500 p-1 text-white"
-                      onClick={() =>
-                        setEditingVariable({
-                          kind: "categorical",
-                          id: Number(value.id),
-                          variableId: Number(value.variableId),
-                          optionId: Number(value.optionId),
-                          label: value.label,
-                          value: value.value,
-                        })
-                      }
+                <div className="flex items-center gap-2">
+                  {data.effortId && (
+                    <Link
+                      href={`/efforts/${data.effortId}`}
+                      className="flex items-center gap-1 text-xs font-medium text-cyan-200 transition-colors hover:text-cyan-100 hover:underline"
                     >
-                      <Edit className="h-3 w-3" />
+                      Ver esforço
+                      <ExternalLink size={12} />
+                    </Link>
+                  )}
+                  {canEdit && (
+                    <button
+                      className="border border-transparent p-1 text-slate-300 transition-colors hover:border-cyan-300/40 hover:text-cyan-200"
+                      onClick={() => setIsModalOpen(true)}
+                      title="Editar esforço/rede"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
                     </button>
                   )}
+                </div>
               </div>
-            );
-          })}
-        </div>
-        <div>
-          {data?.continuousValues.map((value) => {
-            return (
-              <div key={value.id} className="flex items-center gap-2">
-                <p>
-                  {value.label}: {value.value}
-                </p>
-                {canEdit &&
-                  value.variableId !== null &&
-                  value.value !== null &&
-                  value.label !== null && (
-                    <button
-                      className="rounded-md bg-blue-500 p-1 text-white"
-                      onClick={() =>
-                        setEditingVariable({
-                          kind: "continuous",
-                          id: Number(value.id),
-                          variableId: Number(value.variableId),
-                          label: value.label,
-                          value: String(value.value),
-                        })
-                      }
-                    >
-                      <Edit className="h-3 w-3" />
-                    </button>
-                  )}
+
+              <p className="text-lg font-semibold text-cyan-100">
+                {formatDate(data.data)} - {displayValue(data.station)}
+              </p>
+              <p className="mt-1 text-base text-slate-300">
+                Rede {displayValue(data.netNumber)}
+              </p>
+              <p className="mt-3 text-sm text-slate-300">
+                Anilhador: {displayValue(data.bander, "—")}
+              </p>
+              <p className="text-sm text-slate-300">
+                Horário de captura: {formatUsageTime(data.captureTime)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="text-center">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Idade
+                  </p>
+                  <button
+                    type="button"
+                    className={`relative mt-1 inline-flex items-center justify-center px-1 text-3xl font-semibold text-cyan-100 ${
+                      canEdit && ageValue
+                        ? "cursor-pointer transition hover:text-cyan-50"
+                        : ""
+                    }`}
+                    onClick={
+                      canEdit && ageValue
+                        ? () => openCategoricalEditor(ageValue)
+                        : undefined
+                    }
+                  >
+                    {displayValue(ageValue?.value)}
+                    {canEdit && ageValue && (
+                      <Edit className="pointer-events-none absolute -right-3 -top-1 h-3 w-3 text-cyan-300/70" />
+                    )}
+                  </button>
+                  <p className="mt-1 text-sm text-slate-300">
+                    critério:{" "}
+                    {ageCriteriaValues.length > 0
+                      ? ageCriteriaValues.map((value, index) => (
+                          <span key={`age-criteria-${value.id}`}>
+                            <button
+                              type="button"
+                              className={`${
+                                canEdit
+                                  ? "cursor-pointer underline decoration-dotted underline-offset-2 hover:text-cyan-100"
+                                  : ""
+                              }`}
+                              onClick={
+                                canEdit
+                                  ? () => openCategoricalEditor(value)
+                                  : undefined
+                              }
+                            >
+                              {displayValue(value.value)}
+                            </button>
+                            {index < ageCriteriaValues.length - 1 ? ", " : ""}
+                          </span>
+                        ))
+                      : "—"}
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Sexo
+                  </p>
+                  <button
+                    type="button"
+                    className={`relative mt-1 inline-flex items-center justify-center px-1 text-3xl font-semibold text-cyan-100 ${
+                      canEdit && sexValue
+                        ? "cursor-pointer transition hover:text-cyan-50"
+                        : ""
+                    }`}
+                    onClick={
+                      canEdit && sexValue
+                        ? () => openCategoricalEditor(sexValue)
+                        : undefined
+                    }
+                  >
+                    {displayValue(sexValue?.value)}
+                    {canEdit && sexValue && (
+                      <Edit className="pointer-events-none absolute -right-3 -top-1 h-3 w-3 text-cyan-300/70" />
+                    )}
+                  </button>
+                  <p className="mt-1 text-sm text-slate-300">
+                    critério:{" "}
+                    {sexCriteriaValues.length > 0
+                      ? sexCriteriaValues.map((value, index) => (
+                          <span key={`sex-criteria-${value.id}`}>
+                            <button
+                              type="button"
+                              className={`${
+                                canEdit
+                                  ? "cursor-pointer underline decoration-dotted underline-offset-2 hover:text-cyan-100"
+                                  : ""
+                              }`}
+                              onClick={
+                                canEdit
+                                  ? () => openCategoricalEditor(value)
+                                  : undefined
+                              }
+                            >
+                              {displayValue(value.value)}
+                            </button>
+                            {index < sexCriteriaValues.length - 1 ? ", " : ""}
+                          </span>
+                        ))
+                      : "—"}
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Status
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(data.captureCode)}
+                  </p>
+                </div>
               </div>
-            );
-          })}
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Modal */}
+        {/* Data Cards */}
+        <div className="space-y-3">
+          <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+            <CardContent className="p-5">
+              <p className="mb-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+                Características reprodutivas
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border px-3 py-2 text-center ${
+                    isGreaterThanOne(cloacalProtuberanceValue?.value)
+                      ? "border-amber-300/60 bg-amber-500/10"
+                      : "border-[#2d3f64] bg-[#0d1830]"
+                  } ${
+                    canEdit && cloacalProtuberanceValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && cloacalProtuberanceValue
+                      ? () => openAnyVariableEditor(cloacalProtuberanceValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && cloacalProtuberanceValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                    {variableDisplayLabel(
+                      cloacalProtuberanceValue,
+                      "Cloacal protuberance"
+                    )}
+                  </p>
+                  <p className="mt-1 text-3xl font-semibold text-cyan-100">
+                    {displayValue(cloacalProtuberanceValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border px-3 py-2 text-center ${
+                    isGreaterThanOne(broodPatchValue?.value)
+                      ? "border-amber-300/60 bg-amber-500/10"
+                      : "border-[#2d3f64] bg-[#0d1830]"
+                  } ${
+                    canEdit && broodPatchValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && broodPatchValue
+                      ? () => openAnyVariableEditor(broodPatchValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && broodPatchValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                    {variableDisplayLabel(broodPatchValue, "Brood patch")}
+                  </p>
+                  <p className="mt-1 text-3xl font-semibold text-cyan-100">
+                    {displayValue(broodPatchValue?.value)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+            <CardContent className="p-5">
+              <p className="mb-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+                Outras características
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border px-3 py-2 ${
+                    isGreaterThan(fatScoreValue?.value, 2)
+                      ? "border-amber-300/60 bg-amber-500/10"
+                      : "border-[#2d3f64] bg-[#0d1830]"
+                  } ${
+                    canEdit && fatScoreValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && fatScoreValue
+                      ? () => openAnyVariableEditor(fatScoreValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && fatScoreValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(fatScoreValue, "FAT score")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(fatScoreValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border px-3 py-2 ${
+                    isGreaterThan(bodyMoltValue?.value, 1)
+                      ? "border-amber-300/60 bg-amber-500/10"
+                      : "border-[#2d3f64] bg-[#0d1830]"
+                  } ${
+                    canEdit && bodyMoltValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && bodyMoltValue
+                      ? () => openAnyVariableEditor(bodyMoltValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && bodyMoltValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(bodyMoltValue, "Body molt")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(bodyMoltValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border px-3 py-2 ${
+                    isGreaterThan(wingMoltValue?.value, 2)
+                      ? "border-amber-300/60 bg-amber-500/10"
+                      : "border-[#2d3f64] bg-[#0d1830]"
+                  } ${
+                    canEdit && wingMoltValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && wingMoltValue
+                      ? () => openAnyVariableEditor(wingMoltValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && wingMoltValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(wingMoltValue, "Wing molt")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(wingMoltValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border border-[#2d3f64] bg-[#0d1830] px-3 py-2 ${
+                    canEdit && moltLimitValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && moltLimitValue
+                      ? () => openAnyVariableEditor(moltLimitValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && moltLimitValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(moltLimitValue, "Limite de muda")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(moltLimitValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border border-[#2d3f64] bg-[#0d1830] px-3 py-2 ${
+                    canEdit && skullValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && skullValue
+                      ? () => openAnyVariableEditor(skullValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && skullValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(skullValue, "Crânio")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(skullValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border border-[#2d3f64] bg-[#0d1830] px-3 py-2 ${
+                    canEdit && juvenileFeatherValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && juvenileFeatherValue
+                      ? () => openAnyVariableEditor(juvenileFeatherValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && juvenileFeatherValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(juvenileFeatherValue, "Pena juvenil")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(juvenileFeatherValue?.value)}
+                  </p>
+                </div>
+
+                <div
+                  className={`relative w-fit min-w-[8.5rem] border border-[#2d3f64] bg-[#0d1830] px-3 py-2 ${
+                    canEdit && damageValue
+                      ? "cursor-pointer transition hover:border-cyan-300/60"
+                      : ""
+                  }`}
+                  onClick={
+                    canEdit && damageValue
+                      ? () => openAnyVariableEditor(damageValue)
+                      : undefined
+                  }
+                >
+                  {canEdit && damageValue && (
+                    <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                  )}
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {variableDisplayLabel(damageValue, "Dano")}
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                    {displayValue(damageValue?.value)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+            <CardContent className="p-5">
+              <p className="mb-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+                Medidas
+              </p>
+              {measureContinuousVariables.length === 0 ? (
+                <p className="text-sm text-slate-400">
+                  Sem variáveis contínuas para esta captura.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {measureContinuousVariables.map((value) => (
+                    <div
+                      key={`measure-${value.id}`}
+                      className={`relative w-fit min-w-[8.5rem] border border-[#2d3f64] bg-[#0d1830] px-3 py-2 ${
+                        canEdit
+                          ? "cursor-pointer transition hover:border-cyan-300/60"
+                          : ""
+                      }`}
+                      onClick={
+                        canEdit ? () => openContinuousEditor(value) : undefined
+                      }
+                    >
+                      {canEdit && (
+                        <Edit className="pointer-events-none absolute right-1 top-1 h-3 w-3 text-cyan-300/70" />
+                      )}
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                        {value.label ??
+                          value.variableName ??
+                          "Variável contínua"}
+                      </p>
+                      <p className="mt-1 text-2xl font-semibold text-cyan-100">
+                        {formatValueWithUnit(value.value, value.unit)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {extraCategoricalVariables.length > 0 && (
+            <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+              <CardContent className="p-5">
+                <p className="mb-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Dados extras
+                </p>
+                <div className="divide-y divide-[#2d3f64]">
+                  {extraCategoricalVariables.map((value) => (
+                    <div
+                      key={`extra-${value.id}`}
+                      className={`flex items-center justify-between py-2 ${
+                        canEdit
+                          ? "cursor-pointer transition hover:text-cyan-100"
+                          : ""
+                      }`}
+                      onClick={
+                        canEdit ? () => openCategoricalEditor(value) : undefined
+                      }
+                    >
+                      <span className="text-xs text-slate-300">
+                        {value.label ??
+                          value.variableName ??
+                          "Variável categórica"}
+                      </span>
+                      <span className="text-sm font-medium text-cyan-100">
+                        {displayValue(value.value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Notes Card */}
+        {data.notes && (
+          <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-2">
+                <FileText size={16} className="mt-0.5 text-cyan-300/70" />
+                <div>
+                  <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400">
+                    Notas
+                  </p>
+                  <p className="text-slate-200/90">{data.notes}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Modals */}
         <NetEffortModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
