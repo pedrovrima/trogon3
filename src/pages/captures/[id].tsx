@@ -1117,15 +1117,47 @@ export default function CaptureInfo() {
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
                     Idade
                   </p>
-                  <p className="mt-1 text-3xl font-semibold text-cyan-100">
+                  <button
+                    type="button"
+                    className={`relative mt-1 inline-flex items-center justify-center px-1 text-3xl font-semibold text-cyan-100 ${
+                      canEdit && ageValue
+                        ? "cursor-pointer transition hover:text-cyan-50"
+                        : ""
+                    }`}
+                    onClick={
+                      canEdit && ageValue
+                        ? () => openCategoricalEditor(ageValue)
+                        : undefined
+                    }
+                  >
                     {displayValue(ageValue?.value)}
-                  </p>
+                    {canEdit && ageValue && (
+                      <Edit className="pointer-events-none absolute -right-3 -top-1 h-3 w-3 text-cyan-300/70" />
+                    )}
+                  </button>
                   <p className="mt-1 text-sm text-slate-300">
                     critério:{" "}
                     {ageCriteriaValues.length > 0
-                      ? ageCriteriaValues
-                          .map((value) => displayValue(value.value))
-                          .join(", ")
+                      ? ageCriteriaValues.map((value, index) => (
+                          <span key={`age-criteria-${value.id}`}>
+                            <button
+                              type="button"
+                              className={`${
+                                canEdit
+                                  ? "cursor-pointer underline decoration-dotted underline-offset-2 hover:text-cyan-100"
+                                  : ""
+                              }`}
+                              onClick={
+                                canEdit
+                                  ? () => openCategoricalEditor(value)
+                                  : undefined
+                              }
+                            >
+                              {displayValue(value.value)}
+                            </button>
+                            {index < ageCriteriaValues.length - 1 ? ", " : ""}
+                          </span>
+                        ))
                       : "—"}
                   </p>
                 </div>
@@ -1134,15 +1166,47 @@ export default function CaptureInfo() {
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
                     Sexo
                   </p>
-                  <p className="mt-1 text-3xl font-semibold text-cyan-100">
+                  <button
+                    type="button"
+                    className={`relative mt-1 inline-flex items-center justify-center px-1 text-3xl font-semibold text-cyan-100 ${
+                      canEdit && sexValue
+                        ? "cursor-pointer transition hover:text-cyan-50"
+                        : ""
+                    }`}
+                    onClick={
+                      canEdit && sexValue
+                        ? () => openCategoricalEditor(sexValue)
+                        : undefined
+                    }
+                  >
                     {displayValue(sexValue?.value)}
-                  </p>
+                    {canEdit && sexValue && (
+                      <Edit className="pointer-events-none absolute -right-3 -top-1 h-3 w-3 text-cyan-300/70" />
+                    )}
+                  </button>
                   <p className="mt-1 text-sm text-slate-300">
                     critério:{" "}
                     {sexCriteriaValues.length > 0
-                      ? sexCriteriaValues
-                          .map((value) => displayValue(value.value))
-                          .join(", ")
+                      ? sexCriteriaValues.map((value, index) => (
+                          <span key={`sex-criteria-${value.id}`}>
+                            <button
+                              type="button"
+                              className={`${
+                                canEdit
+                                  ? "cursor-pointer underline decoration-dotted underline-offset-2 hover:text-cyan-100"
+                                  : ""
+                              }`}
+                              onClick={
+                                canEdit
+                                  ? () => openCategoricalEditor(value)
+                                  : undefined
+                              }
+                            >
+                              {displayValue(value.value)}
+                            </button>
+                            {index < sexCriteriaValues.length - 1 ? ", " : ""}
+                          </span>
+                        ))
                       : "—"}
                   </p>
                 </div>
