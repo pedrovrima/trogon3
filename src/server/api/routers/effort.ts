@@ -346,6 +346,9 @@ export const effortRouter = createTRPCRouter({
           captureTime: sql<string>`CASE
             WHEN ${capture.captureTime} IS NULL OR LENGTH(${capture.captureTime}) < 3 OR ${capture.captureTime} = 'NA'
             THEN NULL
+            WHEN SUBSTRING(${capture.captureTime} || '0' FROM 1 FOR 2)::int > 23
+              OR SUBSTRING(${capture.captureTime} || '0' FROM 3 FOR 2)::int > 59
+            THEN NULL
             ELSE TO_CHAR(
               TO_TIMESTAMP(${capture.captureTime} || '0', 'HH24MI0')::TIME,
               'HH24:MI'
