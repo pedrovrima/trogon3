@@ -1024,7 +1024,7 @@ export default function CaptureInfo() {
               <span className="text-slate-500">-</span>
               {data.bandNumber ? (
                 <Link
-                  href={`/bands/${data.bandNumber}`}
+                  href={`/bands/${data.bandSize ?? ""}${data.bandNumber}`}
                   className="text-center font-mono text-3xl font-semibold tracking-widest text-cyan-200 transition-colors hover:text-cyan-100 hover:underline"
                 >
                   {`${data.bandSize ?? ""}${data.bandNumber}`}
