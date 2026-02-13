@@ -27,6 +27,7 @@ export default function NewBands() {
     finalBandNumber: z
       .string()
       .regex(/^[0-9]*$/, { message: "Apenas Números" }),
+    isExternal: z.boolean().optional().default(false),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,6 +36,7 @@ export default function NewBands() {
       bandSize: "",
       initialBandNumber: "",
       finalBandNumber: "",
+      isExternal: false,
     },
   });
 
@@ -102,6 +104,23 @@ export default function NewBands() {
                   <Input placeholder="10050" {...field} />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="isExternal"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="h-4 w-4"
+                  />
+                </FormControl>
+                <FormLabel className="font-normal">Anilha Externa</FormLabel>
               </FormItem>
             )}
           />

@@ -117,13 +117,16 @@ export const bands = pgTable(
   {
     bandId: bigserial("band_id", { mode: "bigint" }).primaryKey().notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    stringId: bigint("string_id", { mode: "number" })
-      .notNull()
-      .references(() => bandStringRegister.stringId, {
+    stringId: bigint("string_id", { mode: "number" }).references(
+      () => bandStringRegister.stringId,
+      {
         onDelete: "restrict",
         onUpdate: "restrict",
-      }),
+      }
+    ),
     bandNumber: varchar("band_number", { length: 45 }).notNull(),
+    bandSize: varchar("band_size", { length: 2 }).notNull(),
+    isExternal: boolean("is_external").default(false).notNull(),
     used: integer("used").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()

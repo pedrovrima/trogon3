@@ -20,7 +20,6 @@ import {
   stationRegister,
   capture,
   bands,
-  bandStringRegister,
   sppRegister,
   changeLog,
 } from "drizzle/schema";
@@ -352,7 +351,7 @@ export const effortRouter = createTRPCRouter({
             )
           END`,
           bandNumber: bands.bandNumber,
-          bandSize: bandStringRegister.size,
+          bandSize: bands.bandSize,
           captureCode: capture.captureCode,
           sppCode: sppRegister.sciCode,
           sppName: sql<string>`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species})`,
@@ -360,10 +359,6 @@ export const effortRouter = createTRPCRouter({
         .from(capture)
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
         .leftJoin(bands, eq(capture.bandId, bands.bandId))
-        .leftJoin(
-          bandStringRegister,
-          eq(bands.stringId, bandStringRegister.stringId)
-        )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         .where(
           and(eq(netEffort.effortId, effortId), eq(capture.hasChanged, false))

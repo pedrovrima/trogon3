@@ -11,7 +11,6 @@ import { TRPCError } from "@trpc/server";
 
 import db from "@/db";
 import {
-  bandStringRegister,
   bands,
   capture,
   captureCategoricalOptions,
@@ -52,10 +51,6 @@ export const testRouter = createTRPCRouter({
         })
         .from(bands)
         .leftJoin(capture, eq(bands.bandId, capture.bandId))
-        .rightJoin(
-          bandStringRegister,
-          eq(bands.stringId, bandStringRegister.stringId)
-        )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
         .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
@@ -85,7 +80,7 @@ export const testRouter = createTRPCRouter({
         .where(
           and(
             eq(bands.bandNumber, bandNumber as string),
-            eq(bandStringRegister.size, bandSize as string),
+            eq(bands.bandSize, bandSize as string),
             eq(captureVariableRegister.name, "status"),
             eq(capture.hasChanged, false)
           )
@@ -96,14 +91,10 @@ export const testRouter = createTRPCRouter({
         const bands_info = await db
           .select()
           .from(bands)
-          .leftJoin(
-            bandStringRegister,
-            eq(bands.stringId, bandStringRegister.stringId)
-          )
           .where(
             and(
               eq(bands.bandNumber, bandNumber as string),
-              eq(bandStringRegister.size, bandSize as string)
+              eq(bands.bandSize, bandSize as string)
             )
           );
 

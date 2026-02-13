@@ -8,7 +8,6 @@ import {
 import db from "@/db";
 
 import {
-  bandStringRegister,
   bands,
   capture,
   effort,
@@ -325,7 +324,7 @@ export const capturesRouter = createTRPCRouter({
           captureTime: capture.captureTime,
           bander: banderRegister.code,
           captureCode: capture.captureCode,
-          bandSize: bandStringRegister.size,
+          bandSize: bands.bandSize,
           bandNumber: bands.bandNumber,
           sppCode: sppRegister.sciCode,
           family: sppRegister.family,
@@ -343,10 +342,6 @@ export const capturesRouter = createTRPCRouter({
         .leftJoin(banderRegister, eq(capture.banderId, banderRegister.banderId))
         .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
         .leftJoin(bands, eq(capture.bandId, bands.bandId))
-        .leftJoin(
-          bandStringRegister,
-          eq(bands.stringId, bandStringRegister.stringId)
-        )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         .leftJoin(
           protocolRegister,
@@ -533,7 +528,7 @@ export const capturesRouter = createTRPCRouter({
           captureTime: capture.captureTime,
           bander: banderRegister.code,
           captureCode: capture.captureCode,
-          bandSize: bandStringRegister.size,
+          bandSize: bands.bandSize,
           bandNumber: bands.bandNumber,
           sppCode: sppRegister.sciCode,
           sppName: sql<string>`CONCAT(${sppRegister.genus}, ' ', ${sppRegister.species}) `,
@@ -551,10 +546,6 @@ export const capturesRouter = createTRPCRouter({
         .leftJoin(banderRegister, eq(capture.banderId, banderRegister.banderId))
         .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))
         .leftJoin(bands, eq(capture.bandId, bands.bandId))
-        .leftJoin(
-          bandStringRegister,
-          eq(bands.stringId, bandStringRegister.stringId)
-        )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         //@ts-expect-error drizzle bigint typing mismatch for captureId filter
         .where(eq(capture.captureId, captureId));

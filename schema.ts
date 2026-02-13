@@ -34,13 +34,13 @@ export const bands = mysqlTable(
   "BANDS",
   {
     bandId: int("band_id").autoincrement().primaryKey().notNull(),
-    stringId: int("string_id")
-      .notNull()
-      .references(() => bandStringRegister.stringId, {
-        onDelete: "restrict",
-        onUpdate: "restrict",
-      }),
+    stringId: int("string_id").references(() => bandStringRegister.stringId, {
+      onDelete: "restrict",
+      onUpdate: "restrict",
+    }),
     bandNumber: varchar("band_number", { length: 45 }).notNull(),
+    bandSize: varchar("band_size", { length: 2 }).notNull(),
+    isExternal: tinyint("is_external").default(0).notNull(),
     used: int("used").notNull().default(0),
     createdAt: datetime("created_at", { mode: "string" }).default(
       "current_timestamp()"

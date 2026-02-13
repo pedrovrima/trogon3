@@ -4,7 +4,6 @@ import {
   sppRegister,
   capture,
   bands,
-  bandStringRegister,
   captureCategoricalOptions,
   captureCategoricalValues,
   captureVariableRegister,
@@ -101,14 +100,10 @@ export const speciesRouter = createTRPCRouter({
           station: stationRegister.stationCode,
           age: captureCategoricalOptions.valueOama,
           netNumber: netRegister.netNumber,
-          bandSize: bandStringRegister.size,
+          bandSize: bands.bandSize,
         })
         .from(capture)
         .leftJoin(bands, eq(bands.bandId, capture.bandId))
-        .rightJoin(
-          bandStringRegister,
-          eq(bands.stringId, bandStringRegister.stringId)
-        )
         .leftJoin(sppRegister, eq(capture.sppId, sppRegister.sppId))
         .leftJoin(netEffort, eq(capture.netEffId, netEffort.netEffId))
         .leftJoin(netRegister, eq(netEffort.netId, netRegister.netId))

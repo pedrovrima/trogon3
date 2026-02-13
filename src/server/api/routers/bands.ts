@@ -18,16 +18,12 @@ export const bandsRouter = createTRPCRouter({
   getBandReport: publicProcedure.query(async () => {
     const bandReport = await db
       .select({
-        bandNumber: sql`CONCAT(${bandStringRegister.size},${bands.bandNumber})`,
+        bandNumber: sql`CONCAT(${bands.bandSize},${bands.bandNumber})`,
         captures: sql<number | string>`count(${capture.captureId})`,
       })
       .from(bands)
-      .leftJoin(
-        bandStringRegister,
-        eq(bands.stringId, bandStringRegister.stringId)
-      )
       .leftJoin(capture, eq(bands.bandId, capture.bandId))
-      .groupBy(bands.bandId, bandStringRegister.size, bands.bandNumber)
+      .groupBy(bands.bandId, bands.bandSize, bands.bandNumber)
       .where(eq(capture.hasChanged, false))
       .execute();
     return bandReport;
@@ -36,13 +32,12 @@ export const bandsRouter = createTRPCRouter({
     console.log("starting");
     const _bandCount = await db
       .select({
-        bandSize: bandStringRegister.size,
+        bandSize: bands.bandSize,
         totalCaptures: sql<number | string>`count(${capture.captureId})`,
       })
-      .from(bandStringRegister)
-      .leftJoin(bands, eq(bandStringRegister.stringId, bands.stringId))
+      .from(bands)
       .leftJoin(capture, eq(bands.bandId, capture.bandId))
-      .groupBy(bands.bandId, bandStringRegister.size);
+      .groupBy(bands.bandId, bands.bandSize);
 
     console.log(_bandCount);
 
@@ -107,10 +102,11 @@ export const bandsRouter = createTRPCRouter({
         bandSize: z.string().min(1).max(2),
         initialBandNumber: z.string().regex(/^[0-9]*$/),
         finalBandNumber: z.string().regex(/^[0-9]*$/),
+        isExternal: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ input }) => {
-      const { initialBandNumber, finalBandNumber, bandSize } = input;
+      const { initialBandNumber, finalBandNumber, bandSize, isExternal } = input;
 
       const initial = parseInt(initialBandNumber);
       const final = parseInt(finalBandNumber);
@@ -143,14 +139,10 @@ export const bandsRouter = createTRPCRouter({
       const checkBands = await db
         .select()
         .from(bands)
-        .leftJoin(
-          bandStringRegister,
-          eq(bands.stringId, bandStringRegister.stringId)
-        )
         .where(
           and(
             inArray(bands.bandNumber, _bands),
-            eq(bandStringRegister.size, bandSize)
+            eq(bands.bandSize, bandSize)
           )
         )
         .execute();
@@ -175,9 +167,11 @@ export const bandsRouter = createTRPCRouter({
           return {
             stringId: Number(stringRegister[0]?.insertId),
             bandNumber,
+            bandSize,
+            isExternal,
             used: 0,
             hasChanged: 0,
-            createdAt: new Date().toISOString(), // Ensure createdAt is set to the current date and time in ISO format
+            createdAt: new Date().toISOString(),
           };
         });
 
