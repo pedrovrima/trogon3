@@ -592,6 +592,121 @@ function CaptureVariableModal({
   );
 }
 
+function CaptureTimeModal({
+  isOpen,
+  onClose,
+  captureId,
+  currentCaptureTime,
+  onUpdated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  captureId: number;
+  currentCaptureTime: string;
+  onUpdated: () => Promise<void>;
+}) {
+  const [captureTime, setCaptureTime] = useState("");
+  const [justification, setJustification] = useState("");
+
+  const updateCaptureTimeMutation =
+    api.captures.updateCaptureTime.useMutation();
+
+  useEffect(() => {
+    if (isOpen) {
+      setCaptureTime(currentCaptureTime);
+      setJustification("");
+    }
+  }, [isOpen, currentCaptureTime]);
+
+  if (!isOpen) return null;
+
+  const handleClose = () => {
+    setCaptureTime("");
+    setJustification("");
+    onClose();
+  };
+
+  const isValidTime = (() => {
+    if (!/^\d{3}$/.test(captureTime)) return false;
+    const padded = captureTime + "0";
+    const hours = parseInt(padded.slice(0, 2), 10);
+    const minutes = parseInt(padded.slice(2, 4), 10);
+    return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+  })();
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6">
+        <h2 className="mb-4 text-xl font-bold">Editar horário de captura</h2>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Horário (3 dígitos)</label>
+          <input
+            className="w-full rounded border p-2"
+            value={captureTime}
+            onChange={(e) => setCaptureTime(e.target.value)}
+            placeholder="Ex: 069, 102, 145"
+            maxLength={3}
+          />
+          {captureTime && !isValidTime && (
+            <p className="mt-1 text-sm text-red-500">
+              O horário deve ter 3 dígitos e formar um horário válido (ex: 069 = 06:90 inválido, 065 = 06:50 válido).
+            </p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="mb-2 block">Justificativa</label>
+          <textarea
+            className="w-full rounded border p-2"
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            placeholder="Justificativa da alteração"
+          />
+          <p className="mt-1 text-sm text-muted-foreground">
+            Justificativa obrigatória para salvar.
+          </p>
+        </div>
+
+        {updateCaptureTimeMutation.error && (
+          <p className="mb-4 text-red-500">
+            {updateCaptureTimeMutation.error.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button className="rounded border px-4 py-2" onClick={handleClose}>
+            Cancelar
+          </button>
+          <button
+            className="rounded bg-green-600 px-4 py-2 text-white disabled:bg-green-300"
+            disabled={
+              !isValidTime ||
+              !justification.trim() ||
+              captureTime === currentCaptureTime ||
+              updateCaptureTimeMutation.isLoading
+            }
+            onClick={async () => {
+              if (!isValidTime || !justification.trim()) return;
+
+              await updateCaptureTimeMutation.mutateAsync({
+                captureId,
+                newCaptureTime: captureTime,
+                justification: justification.trim(),
+              });
+
+              handleClose();
+              await onUpdated();
+            }}
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function normalizeVariableKey(value: string | null | undefined) {
   if (!value) return "";
   return value
@@ -791,6 +906,7 @@ export default function CaptureInfo() {
   const [isCaptureCodeModalOpen, setIsCaptureCodeModalOpen] = useState(false);
   const [isCaptureSpeciesModalOpen, setIsCaptureSpeciesModalOpen] =
     useState(false);
+  const [isCaptureTimeModalOpen, setIsCaptureTimeModalOpen] = useState(false);
   const [editingVariable, setEditingVariable] =
     useState<EditableCaptureVariable | null>(null);
 
@@ -1104,8 +1220,17 @@ export default function CaptureInfo() {
               <p className="mt-3 text-sm text-slate-300">
                 Anilhador: {displayValue(data.bander, "—")}
               </p>
-              <p className="text-sm text-slate-300">
+              <p className="inline-flex items-center gap-1 text-sm text-slate-300">
                 Horário de captura: {formatUsageTime(data.captureTime)}
+                {canEdit && (
+                  <button
+                    className="border border-transparent p-0.5 text-slate-400 transition-colors hover:border-cyan-300/40 hover:text-cyan-200"
+                    onClick={() => setIsCaptureTimeModalOpen(true)}
+                    title="Editar horário de captura"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </button>
+                )}
               </p>
             </CardContent>
           </Card>
@@ -1587,6 +1712,15 @@ export default function CaptureInfo() {
           onClose={() => setIsCaptureSpeciesModalOpen(false)}
           captureId={captureId}
           currentSppId={Number(data.sppId)}
+          onUpdated={async () => {
+            await query.refetch();
+          }}
+        />
+        <CaptureTimeModal
+          isOpen={isCaptureTimeModalOpen}
+          onClose={() => setIsCaptureTimeModalOpen(false)}
+          captureId={captureId}
+          currentCaptureTime={data.captureTime ?? ""}
           onUpdated={async () => {
             await query.refetch();
           }}

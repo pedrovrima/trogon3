@@ -119,9 +119,10 @@ export default function Effort() {
   const { id } = router.query;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const addNANet = api.efforts.addNANet.useMutation();
-  console.log(id);
   const { data, isLoading } = api.efforts.getEffortById.useQuery({
     effortId: Number(id),
+  }, {
+    enabled: !!id,
   });
 
   const hasErrorStyle = " text-red-300 underline  font-bold bg-opacity-50";
@@ -168,9 +169,12 @@ export default function Effort() {
     // Add padding of 40 minutes (in milliseconds)
     const paddingTime = 40 * 60 * 1000;
 
+    const safeOpenTime = openTime ?? "05:00";
+    const safeCloseTime = closeTime ?? "18:00";
+
     // Convert times to hours
-    const startHour = parseInt(openTime?.split(":")[0] ?? "5");
-    const endHour = parseInt(closeTime?.split(":")[0] ?? "18");
+    const startHour = parseInt(safeOpenTime.split(":")[0]);
+    const endHour = parseInt(safeCloseTime.split(":")[0]);
 
     // Create bins for each hour from start to end
     for (let i = startHour; i <= endHour; i++) {
@@ -179,12 +183,13 @@ export default function Effort() {
     }
 
     // Add exact open/close times with 0 captures if they don't exist
-    if (openTime) hourlyBins[openTime] = 0;
-    if (closeTime) hourlyBins[closeTime] = 0;
+    hourlyBins[safeOpenTime] = 0;
+    hourlyBins[safeCloseTime] = 0;
 
-    // Count captures per hour
+    // Count captures per hour (skip captures with null/invalid times)
     captures?.forEach((capture) => {
-      const hour = capture.captureTime?.split(":")[0] + ":00";
+      if (!capture.captureTime) return;
+      const hour = capture.captureTime.split(":")[0] + ":00";
       if (hourlyBins[hour] !== undefined) {
         hourlyBins[hour]++;
       }
@@ -199,8 +204,8 @@ export default function Effort() {
           hourLabel: hour,
           captures: count,
         })),
-      startTime: new Date(`1970-01-01T${openTime}`).getTime() - paddingTime,
-      endTime: new Date(`1970-01-01T${closeTime}`).getTime() + paddingTime,
+      startTime: new Date(`1970-01-01T${safeOpenTime}`).getTime() - paddingTime,
+      endTime: new Date(`1970-01-01T${safeCloseTime}`).getTime() + paddingTime,
     };
   };
 

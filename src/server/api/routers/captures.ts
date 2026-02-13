@@ -1088,6 +1088,73 @@ export const capturesRouter = createTRPCRouter({
       // Return a simple success response instead of the changeLog
       return { success: true };
     }),
+  updateCaptureTime: protectedProcedure
+    .input(
+      z.object({
+        captureId: z.number(),
+        newCaptureTime: z.string().length(3).regex(/^\d{3}$/).refine((val) => {
+          const padded = val + "0";
+          const hours = parseInt(padded.slice(0, 2), 10);
+          const minutes = parseInt(padded.slice(2, 4), 10);
+          return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+        }, "Invalid time"),
+        justification: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { captureId, newCaptureTime, justification } = input;
+
+      return await db.transaction(async (tx) => {
+        const originalCapture = await tx
+          .select()
+          .from(capture)
+          //@ts-expect-error drizzle bigint typing mismatch for captureId filter
+          .where(eq(capture.captureId, captureId));
+
+        if (!originalCapture || originalCapture.length === 0) {
+          throw new Error("Capture not found");
+        }
+
+        const backupCapture = {
+          ...originalCapture[0],
+          captureId: undefined,
+          originalId: captureId,
+          hasChanged: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        //@ts-expect-error backup row can include nullable fields from legacy records
+        const [backupRecord] = await tx
+          .insert(capture)
+          .values(backupCapture)
+          .returning({ backupId: capture.captureId });
+
+        if (!backupRecord?.backupId) {
+          throw new Error("Failed to create capture backup record");
+        }
+
+        await tx
+          .update(capture)
+          .set({
+            captureTime: newCaptureTime,
+            updatedAt: sql`now()`,
+          })
+          //@ts-expect-error drizzle bigint typing mismatch for captureId filter
+          .where(eq(capture.captureId, captureId));
+
+        await tx.insert(changeLog).values({
+          table: "capture",
+          oldRecordId: captureId,
+          newRecordId: Number(backupRecord.backupId),
+          isDeleted: false,
+          justification,
+          createdAt: sql`now()`,
+        });
+
+        return { captureId, captureTime: newCaptureTime };
+      });
+    }),
   updateCaptureNetEffort: protectedProcedure
     .input(
       z.object({
