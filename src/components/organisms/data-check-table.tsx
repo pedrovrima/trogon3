@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Link from "next/link";
+import { formatDatabaseDate } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -42,11 +42,7 @@ export const columns: ColumnDef<DataCheckRow>[] = [
 
   {
     header: "Data",
-    accessorFn: (data) => {
-      if (data.date) {
-        return new Date(data.date).toLocaleDateString("pt-BR");
-      }
-    },
+    accessorFn: (data) => formatDatabaseDate(data.date),
   },
   {
     accessorKey: "errorType",

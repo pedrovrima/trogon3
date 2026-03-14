@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { formatDatabaseDate } from "@/lib/utils";
 
 type EditableCaptureVariable =
   | {
@@ -107,8 +108,7 @@ function NetEffortModal({
               <option value="">Select a date</option>
               {efforts.data?.map((effort) => (
                 <option key={effort.effortId} value={effort.effortId}>
-                  {new Date(effort.dateEffort).toLocaleDateString()} -{" "}
-                  {effort.protocolCode}
+                  {formatDatabaseDate(effort.dateEffort)} - {effort.protocolCode}
                 </option>
               ))}
             </select>
@@ -895,8 +895,11 @@ function formatValueWithUnit(
 }
 
 function formatDate(dateStr: unknown) {
-  if (typeof dateStr !== "string") return "";
-  return new Date(dateStr).toLocaleDateString("pt-BR", { timeZone: "GMT" });
+  if (dateStr instanceof Date || typeof dateStr === "string") {
+    return formatDatabaseDate(dateStr);
+  }
+
+  return "";
 }
 
 export default function CaptureInfo() {
