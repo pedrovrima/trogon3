@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { api } from "@/utils/api";
-import { AlertCircle, Book, Calendar, Clock, Quote, Edit } from "lucide-react";
+import { AlertCircle, Book, Calendar, Clock, Quote, Edit, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -241,19 +241,27 @@ export default function Effort() {
               <p>{data?.notes}</p>
             </div>
           )}
-          <button
-            className="w-fit cursor-pointer rounded-md border border-slate-300 bg-slate-100 px-8 py-2 text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={() => {
-              addNANet.mutate({
-                effortId: Number(id),
-                stationId: data?.stationId,
-              });
-            }}
-            disabled={data?.hasNANet}
-            title={data?.hasNANet ? "Effort already has NA net" : ""}
-          >
-            Add NA Net
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="w-fit cursor-pointer rounded-md border border-slate-300 bg-slate-100 px-8 py-2 text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => {
+                addNANet.mutate({
+                  effortId: Number(id),
+                  stationId: data?.stationId,
+                });
+              }}
+              disabled={data?.hasNANet}
+              title={data?.hasNANet ? "Effort already has NA net" : ""}
+            >
+              Add NA Net
+            </button>
+            <Link
+              href={`/captures/new?effortId=${id}`}
+              className="flex w-fit cursor-pointer items-center gap-1 rounded-md border border-blue-400 bg-blue-500 px-8 py-2 text-white"
+            >
+              <Plus size={16} /> Nova Captura
+            </Link>
+          </div>
         </div>
 
         <div className="w-1/2 rounded-md bg-slate-700 px-6 py-8">

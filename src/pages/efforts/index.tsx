@@ -36,6 +36,9 @@ const EffortsPage: NextPage = () => {
     <div className="mx-auto w-full max-w-6xl p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Esforços</h1>
+        <Button onClick={() => router.push("/efforts/new")}>
+          Novo Esforço
+        </Button>
       </div>
       <div className="overflow-x-auto">
         <Table>
