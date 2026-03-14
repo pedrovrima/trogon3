@@ -7,6 +7,9 @@ import {
   AlertTriangle,
   ExternalLink,
   Camera,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -705,6 +708,168 @@ function CaptureTimeModal({
         </div>
       </div>
     </div>
+  );
+}
+
+function PhotoCarousel({ captureId }: { captureId: number }) {
+  const photosQuery = api.photos.getPhotosByCapture.useQuery({ captureId });
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  const photos = photosQuery.data ?? [];
+
+  if (photosQuery.isLoading) return null;
+  if (photos.length === 0) return null;
+
+  const safeIndex = Math.min(currentIndex, photos.length - 1);
+  const current = photos[safeIndex];
+
+  const goTo = (index: number) => {
+    setCurrentIndex((index + photos.length) % photos.length);
+  };
+
+  return (
+    <>
+      <Card className="rounded-none border-[#2d3f64] bg-[#0a1224] text-slate-100 shadow-none">
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+              Fotos ({photos.length})
+            </p>
+            <Link
+              href={`/captures/${captureId}/pictures`}
+              className="flex items-center gap-1 text-xs font-medium text-cyan-200 transition-colors hover:text-cyan-100 hover:underline"
+            >
+              Gerenciar fotos
+              <ExternalLink size={12} />
+            </Link>
+          </div>
+
+          {/* Main image */}
+          <div className="relative">
+            <button
+              type="button"
+              className="block w-full cursor-pointer"
+              onClick={() => setFullscreen(true)}
+            >
+              {current && (
+                <img
+                  src={`https://drive.google.com/thumbnail?id=${current.driveFileId}&sz=w800`}
+                  alt={current.position ?? current.fileName ?? "Foto"}
+                  className="mx-auto max-h-[400px] w-full object-contain"
+                  loading="lazy"
+                />
+              )}
+            </button>
+
+            {photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white transition hover:bg-black/70"
+                  onClick={() => goTo(safeIndex - 1)}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white transition hover:bg-black/70"
+                  onClick={() => goTo(safeIndex + 1)}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Position label */}
+          {current?.position && (
+            <p className="mt-2 text-center text-xs uppercase tracking-widest text-slate-400">
+              {current.position}
+            </p>
+          )}
+
+          {/* Thumbnail strip */}
+          {photos.length > 1 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {photos.map((photo, index) => (
+                <button
+                  key={photo.photoId}
+                  type="button"
+                  className={`flex-shrink-0 border-2 transition ${
+                    index === safeIndex
+                      ? "border-cyan-400"
+                      : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
+                  onClick={() => setCurrentIndex(index)}
+                >
+                  <img
+                    src={`https://drive.google.com/thumbnail?id=${photo.driveFileId}&sz=w120`}
+                    alt={photo.position ?? photo.fileName ?? "Foto"}
+                    className="h-16 w-20 object-cover"
+                    loading="lazy"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Fullscreen overlay */}
+      {fullscreen && current && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          onClick={() => setFullscreen(false)}
+        >
+          <button
+            type="button"
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+            onClick={() => setFullscreen(false)}
+          >
+            <X size={24} />
+          </button>
+
+          {photos.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goTo(safeIndex - 1);
+                }}
+              >
+                <ChevronLeft size={28} />
+              </button>
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goTo(safeIndex + 1);
+                }}
+              >
+                <ChevronRight size={28} />
+              </button>
+            </>
+          )}
+
+          <img
+            src={`https://drive.google.com/thumbnail?id=${current.driveFileId}&sz=w1200`}
+            alt={current.position ?? current.fileName ?? "Foto"}
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {current.position && (
+            <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm uppercase tracking-widest text-white/70">
+              {current.position}
+            </p>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -1687,6 +1852,9 @@ export default function CaptureInfo() {
             </Card>
           )}
         </div>
+
+        {/* Photos Carousel */}
+        <PhotoCarousel captureId={captureId} />
 
         {/* Notes Card */}
         {data.notes && (
