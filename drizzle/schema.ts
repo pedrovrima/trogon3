@@ -828,3 +828,38 @@ export const changeLog = pgTable("change_log", {
   justification: text("justification").notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull(),
 });
+
+export const capturePhotos = pgTable(
+  "capture_photos",
+  {
+    photoId: bigserial("photo_id", { mode: "bigint" }).primaryKey().notNull(),
+    captureId: bigint("capture_id", { mode: "number" })
+      .notNull()
+      .references(() => capture.captureId, {
+        onDelete: "restrict",
+        onUpdate: "restrict",
+      }),
+    fileName: varchar("file_name", { length: 255 }).notNull(),
+    originalFileName: varchar("original_file_name", { length: 255 }).notNull(),
+    position: varchar("position", { length: 50 }).notNull(),
+    driveFileId: varchar("drive_file_id", { length: 100 }).notNull(),
+    driveFolderId: varchar("drive_folder_id", { length: 100 }).notNull(),
+    mimeType: varchar("mime_type", { length: 50 }).notNull(),
+    fileSize: integer("file_size"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    hasChanged: boolean("has_changed").default(false).notNull(),
+  },
+  (table) => {
+    return {
+      capturePhotoCaptureId: index("capture_photos_capture_id").on(
+        table.captureId
+      ),
+      capturePhotoDriveFileId: uniqueIndex("capture_photos_drive_file_id").on(
+        table.driveFileId
+      ),
+    };
+  }
+);
