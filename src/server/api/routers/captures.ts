@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, sql, and, inArray, like } from "drizzle-orm";
+import { eq, sql, and, inArray, like, desc } from "drizzle-orm";
 import {
   createTRPCRouter,
   publicProcedure,
@@ -222,6 +222,42 @@ const getResolvedCaptureCodeOptions = async () => {
     optionsByVariable.get(selectedVariableId)?.options ?? [];
   return await mergeWithUniversalOptions(selectedOptions, true);
 };
+
+const createCaptureSchema = z.object({
+  captureTime: z
+    .string()
+    .length(3)
+    .regex(/^\d{3}$/)
+    .refine((val) => {
+      const padded = val + "0";
+      const hours = parseInt(padded.slice(0, 2), 10);
+      const minutes = parseInt(padded.slice(2, 4), 10);
+      return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+    }, "Invalid time"),
+  captureCode: z.string().min(1).max(1),
+  netEffId: z.number().int().positive(),
+  banderId: z.number().int().positive(),
+  bandId: z.number().int().positive(),
+  sppId: z.number().int().positive(),
+  notes: z.string().max(1500).default(""),
+  categoricalValues: z
+    .array(
+      z.object({
+        captureVariableId: z.number().int().positive(),
+        captureCategoricalOptionId: z.number().int().positive(),
+      })
+    )
+    .default([]),
+  continuousValues: z
+    .array(
+      z.object({
+        captureVariableId: z.number().int().positive(),
+        value: z.string().max(50),
+      })
+    )
+    .default([]),
+  clientId: z.string().uuid().optional(),
+});
 
 export const capturesRouter = createTRPCRouter({
   getTopCapturedSpeciesNumbers: publicProcedure
@@ -1245,7 +1281,7 @@ export const capturesRouter = createTRPCRouter({
           eq(effort.protocolId, protocolRegister.protocolId)
         )
         .where(and(eq(effort.stationId, input.stationId)))
-        .orderBy(effort.dateEffort);
+        .orderBy(desc(effort.dateEffort));
     }),
 
   getNetEffortsByEffort: publicProcedure
@@ -1269,5 +1305,220 @@ export const capturesRouter = createTRPCRouter({
           )
         )
         .orderBy(netRegister.netNumber);
+    }),
+
+  // ── Lookup procedures for forms ──
+
+  getProtocolVariables: publicProcedure
+    .input(z.object({ protocolId: z.number().int().positive() }))
+    .query(async ({ input }) => {
+      const pvRows = await db
+        .select({
+          captureVariableId: protocolVars.captureVariableId,
+          order: protocolVars.order,
+          mandatory: protocolVars.mandatory,
+          name: captureVariableRegister.name,
+          portugueseLabel: captureVariableRegister.portugueseLabel,
+          type: captureVariableRegister.type,
+          unit: captureVariableRegister.unit,
+          precision: captureVariableRegister.precision,
+          duplicable: captureVariableRegister.duplicable,
+          special: captureVariableRegister.special,
+        })
+        .from(protocolVars)
+        .leftJoin(
+          captureVariableRegister,
+          eq(
+            protocolVars.captureVariableId,
+            captureVariableRegister.captureVariableId
+          )
+        )
+        .where(eq(protocolVars.protocolId, input.protocolId))
+        .orderBy(protocolVars.order);
+
+      // Fetch categorical options for all variables in this protocol
+      const variableIds = pvRows
+        .map((r) => r.captureVariableId)
+        .filter((id): id is number => id !== null);
+
+      let options: {
+        captureCategoricalOptionId: number;
+        captureVariableId: number;
+        valueOama: string;
+        description: string;
+      }[] = [];
+
+      // Fetch universal NA/U options
+      const universalOpts = await getUniversalNaValueOptions();
+
+      if (variableIds.length > 0) {
+        options = (
+          await db
+            .select({
+              captureCategoricalOptionId:
+                captureCategoricalOptions.captureCategoricalOptionId,
+              captureVariableId: captureCategoricalOptions.captureVariableId,
+              valueOama: captureCategoricalOptions.valueOama,
+              description: captureCategoricalOptions.description,
+            })
+            .from(captureCategoricalOptions)
+            .where(
+              and(
+                inArray(
+                  captureCategoricalOptions.captureVariableId,
+                  variableIds
+                ),
+                eq(captureCategoricalOptions.hasChanged, false)
+              )
+            )
+        ).map((o) => ({
+          captureCategoricalOptionId: Number(o.captureCategoricalOptionId),
+          captureVariableId: Number(o.captureVariableId),
+          valueOama: o.valueOama,
+          description: o.description,
+        }));
+      }
+
+      const variables = pvRows.map((v) => {
+        const varOpts = options.filter(
+          (o) => o.captureVariableId === Number(v.captureVariableId)
+        );
+        // Add universal NA/U options to categorical variables
+        const existingValues = new Set(varOpts.map((o) => o.valueOama));
+        const mergedOpts = [
+          ...varOpts,
+          ...universalOpts
+            .filter((u) => !existingValues.has(u.value))
+            .map((u) => ({
+              captureCategoricalOptionId: u.optionId,
+              captureVariableId: Number(v.captureVariableId),
+              valueOama: u.value,
+              description: u.description,
+            })),
+        ];
+        return {
+          ...v,
+          captureVariableId: Number(v.captureVariableId),
+          duplicable: Number(v.duplicable),
+          special: Number(v.special ?? 0),
+          options: mergedOpts,
+        };
+      });
+
+      const isMandatory = (v: (typeof variables)[number]) => Number(v.mandatory) === 1;
+      const isSpecial = (v: (typeof variables)[number]) => v.special === 1;
+
+      return {
+        mandatory: variables.filter((v) => isMandatory(v)),
+        finalization: variables.filter((v) => !isMandatory(v) && isSpecial(v) && v.name !== "captureCode"),
+        optional: variables.filter((v) => !isMandatory(v) && !isSpecial(v)),
+      };
+    }),
+
+  getAvailableBands: publicProcedure
+    .input(
+      z.object({
+        bandSize: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      const conditions = [eq(bands.used, 0)];
+      if (input.bandSize) {
+        conditions.push(eq(bands.bandSize, input.bandSize));
+      }
+      return await db
+        .select({
+          bandId: bands.bandId,
+          bandNumber: bands.bandNumber,
+          bandSize: bands.bandSize,
+        })
+        .from(bands)
+        .where(and(...conditions))
+        .orderBy(bands.bandNumber);
+    }),
+
+  getBandSizes: publicProcedure.query(async () => {
+    const sizes = await db
+      .select({
+        bandSize: bands.bandSize,
+      })
+      .from(bands)
+      .groupBy(bands.bandSize)
+      .orderBy(bands.bandSize);
+    return sizes.map((s) => s.bandSize);
+  }),
+
+  // ── Create mutation ──
+
+  createCapture: protectedProcedure
+    .input(createCaptureSchema)
+    .mutation(async ({ input }) => {
+      const {
+        captureTime,
+        captureCode,
+        netEffId,
+        banderId,
+        bandId,
+        sppId,
+        notes,
+        categoricalValues,
+        continuousValues,
+      } = input;
+
+      return await db.transaction(async (tx) => {
+        // 1. Insert capture
+        const [newCapture] = await tx
+          .insert(capture)
+          .values({
+            captureTime,
+            captureCode,
+            netEffId,
+            banderId,
+            bandId,
+            sppId,
+            notes,
+            hasChanged: false,
+            createdAt: sql`now()`,
+          })
+          .returning({ captureId: capture.captureId });
+
+        if (!newCapture) {
+          throw new Error("Failed to create capture");
+        }
+
+        const captureId = newCapture.captureId;
+
+        // 2. Mark band as used for new captures
+        if (captureCode === "N") {
+          await tx
+            .update(bands)
+            .set({ used: 1, updatedAt: sql`now()` })
+            .where(eq(bands.bandId, bandId));
+        }
+
+        // 3. Insert categorical values
+        for (const cv of categoricalValues) {
+          await tx.insert(captureCategoricalValues).values({
+            captureId,
+            captureVariableId: cv.captureVariableId,
+            captureCategoricalOptionId: cv.captureCategoricalOptionId,
+            hasChanged: false,
+            createdAt: sql`now()`,
+          });
+        }
+
+        // 4. Insert continuous values
+        for (const cv of continuousValues) {
+          await tx.insert(captureContinuousValues).values({
+            captureId,
+            captureVariableId: cv.captureVariableId,
+            value: cv.value,
+            hasChanged: false,
+            createdAt: sql`now()`,
+          });
+        }
+
+        return { captureId };
+      });
     }),
 });

@@ -22,8 +22,44 @@ import {
   bands,
   sppRegister,
   changeLog,
+  banderRegister,
 } from "drizzle/schema";
 import { z } from "zod";
+
+const createEffortSchema = z.object({
+  dateEffort: z.string(), // ISO date string
+  stationId: z.number().int().positive(),
+  protocolId: z.number().int().positive(),
+  notes: z.string().max(250).default(""),
+  nets: z.array(
+    z.object({
+      netId: z.number().int().positive(),
+      openCloseTimes: z.array(
+        z.object({
+          openTime: z.string(), // ISO datetime or HH:MM
+          closeTime: z.string(),
+        })
+      ).min(1),
+    })
+  ).min(1),
+  effortVariables: z.array(
+    z.object({
+      effortVariableId: z.number().int().positive(),
+      effortTimeId: z.number().int().positive(),
+      type: z.enum(["categorical", "continuous"]),
+      // For categorical: the option ID
+      optionId: z.number().int().positive().optional(),
+      // For continuous: the raw value
+      value: z.string().max(6).optional(),
+    })
+  ).default([]),
+  summary: z.object({
+    newBands: z.number().int().min(0),
+    recapture: z.number().int().min(0),
+    unbanded: z.number().int().min(0),
+  }),
+  clientId: z.string().uuid().optional(), // For mobile idempotency
+});
 
 type Vars = {
   [key: string]: number | string;
@@ -293,6 +329,7 @@ export const effortRouter = createTRPCRouter({
           date: sql<string>`TO_CHAR(${effort.dateEffort}, 'DD/MM/YYYY')`,
           stationCode: stationRegister.stationCode,
           protocolCode: protocolRegister.protocolCode,
+          protocolId: effort.protocolId,
           totalNetHours: sql<number>`ROUND(EXTRACT(EPOCH FROM SUM(age(${netOc.closeTime},${netOc.openTime}))) / 3600.0, 2)`,
           summary_new: effortSummaries.newBands,
           summary_recapture: effortSummaries.recapture,
@@ -335,6 +372,7 @@ export const effortRouter = createTRPCRouter({
           effort.effortId,
           stationRegister.stationCode,
           protocolRegister.protocolCode,
+          effort.protocolId,
           effortSummaries.effortSummaryId,
           stationRegister.stationId
         );
@@ -367,7 +405,8 @@ export const effortRouter = createTRPCRouter({
           and(eq(netEffort.effortId, effortId), eq(capture.hasChanged, false))
         );
 
-      return { ...effortData[0], captures: effortCaptures };
+      const ed = effortData[0];
+      return { ...ed, protocolId: Number(ed?.protocolId), captures: effortCaptures };
     }),
   updateEffortSummary: protectedProcedure
     .input(
@@ -470,6 +509,201 @@ export const effortRouter = createTRPCRouter({
         netId: stationNANetId,
         createdAt: sql`now()`,
         hasChanged: false,
+      });
+    }),
+
+  // ── Lookup procedures for forms ──
+
+  getProtocols: publicProcedure.query(async () => {
+    return await db
+      .select({
+        protocolId: protocolRegister.protocolId,
+        protocolCode: protocolRegister.protocolCode,
+        protocolDescription: protocolRegister.protocolDescription,
+      })
+      .from(protocolRegister)
+      .where(eq(protocolRegister.hasChanged, false));
+  }),
+
+  getNetsByStation: publicProcedure
+    .input(z.object({ stationId: z.number().int().positive() }))
+    .query(async ({ input }) => {
+      return await db
+        .select({
+          netId: netRegister.netId,
+          netNumber: netRegister.netNumber,
+        })
+        .from(netRegister)
+        .where(
+          and(
+            eq(netRegister.stationId, input.stationId),
+            eq(netRegister.hasChanged, false)
+          )
+        )
+        .orderBy(netRegister.netNumber);
+    }),
+
+  getEffortVariables: publicProcedure.query(async () => {
+    const variables = await db
+      .select({
+        effortVariableId: effortVariableRegister.effortVariableId,
+        name: effortVariableRegister.name,
+        portugueseLabel: effortVariableRegister.portugueseLabel,
+        type: effortVariableRegister.type,
+        unit: effortVariableRegister.unit,
+      })
+      .from(effortVariableRegister)
+      .where(eq(effortVariableRegister.hasChanged, false));
+
+    const categoricalOptions = await db
+      .select({
+        effortCategoricalOptionId:
+          effortCategoricalOptions.effortCategoricalOptionId,
+        effortVariableId: effortCategoricalOptions.effortVariableId,
+        valueOama: effortCategoricalOptions.valueOama,
+        description: effortCategoricalOptions.description,
+      })
+      .from(effortCategoricalOptions)
+      .where(eq(effortCategoricalOptions.hasChanged, false));
+
+    const timePeriods = await db
+      .select({
+        effortTimeId: effortTime.effortTimeId,
+        description: effortTime.description,
+        portugueseLabel: effortTime.portugueseLabel,
+      })
+      .from(effortTime)
+      .where(eq(effortTime.hasChanged, false));
+
+    return {
+      variables: variables.map((v) => ({
+        ...v,
+        effortVariableId: Number(v.effortVariableId),
+        options: categoricalOptions
+          .filter(
+            (o) => Number(o.effortVariableId) === Number(v.effortVariableId)
+          )
+          .map((o) => ({
+            ...o,
+            effortCategoricalOptionId: Number(o.effortCategoricalOptionId),
+            effortVariableId: Number(o.effortVariableId),
+          })),
+      })),
+      timePeriods: timePeriods.map((t) => ({
+        ...t,
+        effortTimeId: Number(t.effortTimeId),
+      })),
+    };
+  }),
+
+  getBanders: publicProcedure.query(async () => {
+    return await db
+      .select({
+        banderId: banderRegister.banderId,
+        name: banderRegister.name,
+        code: banderRegister.code,
+      })
+      .from(banderRegister)
+      .where(eq(banderRegister.hasChanged, false))
+      .orderBy(banderRegister.code);
+  }),
+
+  // ── Create mutation ──
+
+  createEffort: protectedProcedure
+    .input(createEffortSchema)
+    .mutation(async ({ input }) => {
+      const {
+        dateEffort,
+        stationId,
+        protocolId,
+        notes,
+        nets,
+        effortVariables,
+        summary,
+      } = input;
+
+      return await db.transaction(async (tx) => {
+        // 1. Insert effort
+        const [newEffort] = await tx
+          .insert(effort)
+          .values({
+            dateEffort,
+            stationId,
+            protocolId,
+            notes,
+            hasChanged: false,
+            createdAt: sql`now()`,
+          })
+          .returning({ effortId: effort.effortId });
+
+        if (!newEffort) {
+          throw new Error("Failed to create effort");
+        }
+
+        const effortId = newEffort.effortId;
+
+        // 2. Insert net efforts and their open/close times
+        for (const net of nets) {
+          const [newNetEffort] = await tx
+            .insert(netEffort)
+            .values({
+              effortId,
+              netId: net.netId,
+              hasChanged: false,
+              createdAt: sql`now()`,
+            })
+            .returning({ netEffId: netEffort.netEffId });
+
+          if (!newNetEffort) {
+            throw new Error("Failed to create net effort");
+          }
+
+          for (const oc of net.openCloseTimes) {
+            await tx.insert(netOc).values({
+              netEffId: newNetEffort.netEffId,
+              openTime: oc.openTime,
+              closeTime: oc.closeTime,
+              hasChanged: false,
+              createdAt: sql`now()`,
+            });
+          }
+        }
+
+        // 3. Insert effort variables
+        for (const variable of effortVariables) {
+          if (variable.type === "categorical" && variable.optionId) {
+            await tx.insert(effortCategoricalValues).values({
+              effortId,
+              effortVariableId: variable.effortVariableId,
+              effortCategoricalOptionId: variable.optionId,
+              effortTimeId: variable.effortTimeId,
+              hasChanged: false,
+              createdAt: sql`now()`,
+            });
+          } else if (variable.type === "continuous" && variable.value) {
+            await tx.insert(effortContinuousValues).values({
+              effortId,
+              effortVariableId: variable.effortVariableId,
+              value: variable.value,
+              effortTimeId: variable.effortTimeId,
+              hasChanged: false,
+              createdAt: sql`now()`,
+            });
+          }
+        }
+
+        // 4. Insert effort summary
+        await tx.insert(effortSummaries).values({
+          effortId,
+          newBands: summary.newBands,
+          recapture: summary.recapture,
+          unbanded: summary.unbanded,
+          hasChanged: false,
+          createdAt: sql`now()`,
+        });
+
+        return { effortId };
       });
     }),
 });
