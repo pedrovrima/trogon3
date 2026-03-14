@@ -1128,12 +1128,16 @@ export const capturesRouter = createTRPCRouter({
     .input(
       z.object({
         captureId: z.number(),
-        newCaptureTime: z.string().length(3).regex(/^\d{3}$/).refine((val) => {
-          const padded = val + "0";
-          const hours = parseInt(padded.slice(0, 2), 10);
-          const minutes = parseInt(padded.slice(2, 4), 10);
-          return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
-        }, "Invalid time"),
+        newCaptureTime: z
+          .string()
+          .length(3)
+          .regex(/^\d{3}$/)
+          .refine((val) => {
+            const padded = val + "0";
+            const hours = parseInt(padded.slice(0, 2), 10);
+            const minutes = parseInt(padded.slice(2, 4), 10);
+            return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+          }, "Invalid time"),
         justification: z.string().trim().min(1),
       })
     )
@@ -1405,13 +1409,22 @@ export const capturesRouter = createTRPCRouter({
         };
       });
 
-      const isMandatory = (v: (typeof variables)[number]) => Number(v.mandatory) === 1;
-      const isSpecial = (v: (typeof variables)[number]) => v.special === 1;
+      const isMandatory = (v: (typeof variables)[number]) =>
+        Number(v.mandatory) === 1;
+
+      const FINALIZATION_NAMES = ["age_wrp", "age_criteria", "sex", "sex_criteria", "status"];
+      const isFinalization = (v: (typeof variables)[number]) =>
+        FINALIZATION_NAMES.includes(v.name ?? "");
+
+      // Sort finalization variables in the defined order
+      const finalizationVars = FINALIZATION_NAMES
+        .map((name) => variables.find((v) => !isMandatory(v) && v.name === name))
+        .filter((v): v is (typeof variables)[number] => v !== undefined);
 
       return {
         mandatory: variables.filter((v) => isMandatory(v)),
-        finalization: variables.filter((v) => !isMandatory(v) && isSpecial(v) && v.name !== "captureCode"),
-        optional: variables.filter((v) => !isMandatory(v) && !isSpecial(v)),
+        finalization: finalizationVars,
+        optional: variables.filter((v) => !isMandatory(v) && !isFinalization(v)),
       };
     }),
 

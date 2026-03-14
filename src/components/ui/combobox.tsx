@@ -5,6 +5,7 @@ export type ComboboxOption = {
   value: string | number;
   label: string;
   searchText?: string;
+  displayValue?: string;
 };
 
 type ComboboxProps = {
@@ -39,7 +40,8 @@ export function Combobox({
   const justSelected = React.useRef(false);
 
   const selectedOption = options.find((o) => o.value === value);
-  const displayText = open ? query : selectedOption?.label ?? query;
+  const closedText = selectedOption?.displayValue ?? selectedOption?.label ?? query;
+  const displayText = open ? query : closedText;
 
   const filtered = React.useMemo(() => {
     if (!query) return options;

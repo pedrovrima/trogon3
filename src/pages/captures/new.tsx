@@ -43,11 +43,13 @@ function Section({
   enabled,
   children,
   sectionRef,
+  onLeave,
 }: {
   title: string;
   enabled: boolean;
   children: React.ReactNode;
   sectionRef?: React.RefObject<HTMLDivElement>;
+  onLeave?: () => void;
 }) {
   return (
     <div
@@ -55,6 +57,11 @@ function Section({
       className={`scroll-mt-4 rounded-md p-6 transition-opacity ${
         enabled ? "bg-slate-700" : "pointer-events-none bg-slate-800 opacity-40"
       }`}
+      onBlur={(e) => {
+        if (onLeave && !e.currentTarget.contains(e.relatedTarget as Node)) {
+          onLeave();
+        }
+      }}
     >
       <h2 className="mb-4 text-lg font-semibold">{title}</h2>
       {children}
@@ -100,6 +107,7 @@ const NewCapturePage: NextPage = () => {
   // Selected optional variables
   const [selectedOptionalIds, setSelectedOptionalIds] = useState<number[]>([]);
   const [optionalModalOpen, setOptionalModalOpen] = useState(false);
+  const [optionalSearch, setOptionalSearch] = useState("");
 
   // Notes
   const [notes, setNotes] = useState("");
@@ -335,6 +343,7 @@ const NewCapturePage: NextPage = () => {
       variable.options.map((opt) => ({
         value: opt.captureCategoricalOptionId,
         label: `${opt.valueOama} - ${opt.description}`,
+        displayValue: opt.valueOama,
         searchText: `${opt.valueOama} ${opt.description}`,
       })),
     []
@@ -480,35 +489,11 @@ const NewCapturePage: NextPage = () => {
 
   const canSubmit = optionalComplete && allFinalizationFilled;
 
-  // ── Auto-scroll when sections unlock ──
+  // ── Scroll helpers (triggered on section blur) ──
 
-  const prevUnlocked = useRef({
-    capture: false,
-    mandatory: false,
-    optional: false,
-    finalization: false,
-  });
-
-  useEffect(() => {
-    const scroll = (ref: React.RefObject<HTMLDivElement>) => {
-      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-    if (effortComplete && !prevUnlocked.current.capture) {
-      scroll(sectionRefs.capture);
-    } else if (captureDataComplete && !prevUnlocked.current.mandatory) {
-      scroll(sectionRefs.mandatory);
-    } else if (mandatoryComplete && !prevUnlocked.current.optional) {
-      scroll(sectionRefs.optional);
-    } else if (optionalComplete && !prevUnlocked.current.finalization) {
-      scroll(sectionRefs.finalization);
-    }
-    prevUnlocked.current = {
-      capture: effortComplete,
-      mandatory: captureDataComplete,
-      optional: mandatoryComplete,
-      finalization: optionalComplete,
-    };
-  }, [effortComplete, captureDataComplete, mandatoryComplete, optionalComplete]);
+  const scrollTo = (ref: React.RefObject<HTMLDivElement>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // ── Submit ──
 
@@ -606,7 +591,12 @@ const NewCapturePage: NextPage = () => {
       <h1 className="text-2xl font-bold">Nova Captura</h1>
 
       {/* ── Section 1: Esforço ── */}
-      <Section title="Esforço" enabled={true} sectionRef={sectionRefs.effort}>
+      <Section
+        title="Esforço"
+        enabled={true}
+        sectionRef={sectionRefs.effort}
+        onLeave={() => effortComplete && scrollTo(sectionRefs.capture)}
+      >
         {!preselectedEffortId ? (
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -662,6 +652,7 @@ const NewCapturePage: NextPage = () => {
         title="Dados da Captura"
         enabled={effortComplete}
         sectionRef={sectionRefs.capture}
+        onLeave={() => captureDataComplete && scrollTo(sectionRefs.mandatory)}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -765,6 +756,7 @@ const NewCapturePage: NextPage = () => {
         title="Variáveis Obrigatórias"
         enabled={captureDataComplete}
         sectionRef={sectionRefs.mandatory}
+        onLeave={() => mandatoryComplete && scrollTo(sectionRefs.optional)}
       >
         {!effortDetail.data?.protocolId && (
           <p className="text-slate-400">Aguardando protocolo...</p>
@@ -798,6 +790,7 @@ const NewCapturePage: NextPage = () => {
         title="Variáveis Opcionais"
         enabled={mandatoryComplete}
         sectionRef={sectionRefs.optional}
+        onLeave={() => optionalComplete && scrollTo(sectionRefs.finalization)}
       >
         <div className="space-y-4">
           {availableOptional.length > 0 && (
@@ -931,50 +924,78 @@ const NewCapturePage: NextPage = () => {
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold">Selecionar Variáveis</h2>
               <button
-                onClick={() => setOptionalModalOpen(false)}
+                onClick={() => {
+                  setOptionalModalOpen(false);
+                  setOptionalSearch("");
+                }}
                 className="text-slate-400 hover:text-white"
               >
                 <X size={20} />
               </button>
             </div>
+            <Input
+              placeholder="Buscar variável..."
+              value={optionalSearch}
+              onChange={(e) => setOptionalSearch(e.target.value)}
+              className="mb-3"
+              autoFocus
+            />
             <div className="space-y-2">
-              {availableOptional.map((v) => {
-                const isSelected = selectedOptionalIds.includes(
-                  v.captureVariableId
-                );
-                return (
-                  <button
-                    key={v.captureVariableId}
-                    type="button"
-                    className={`flex w-full items-center gap-2 rounded border px-3 py-2 text-left text-sm ${
-                      isSelected
-                        ? "border-blue-500 bg-blue-900 text-blue-200"
-                        : "border-slate-600 bg-slate-700 hover:bg-slate-600"
-                    }`}
-                    onClick={() => toggleOptionalVariable(v.captureVariableId)}
-                  >
-                    {isSelected ? (
-                      <Check size={14} className="text-blue-400" />
-                    ) : (
-                      <Plus size={14} className="text-slate-400" />
-                    )}
-                    <span>
-                      {v.portugueseLabel || v.name}
-                      {v.unit && (
-                        <span className="ml-1 text-slate-400">
-                          ({v.unit})
-                        </span>
+              {[...availableOptional]
+                .sort((a, b) =>
+                  (a.portugueseLabel || a.name || "").localeCompare(
+                    b.portugueseLabel || b.name || "",
+                    "pt-BR"
+                  )
+                )
+                .filter((v) => {
+                  if (!optionalSearch) return true;
+                  const q = optionalSearch.toLowerCase();
+                  const label = (v.portugueseLabel || v.name || "").toLowerCase();
+                  return label.includes(q);
+                })
+                .map((v) => {
+                  const isSelected = selectedOptionalIds.includes(
+                    v.captureVariableId
+                  );
+                  return (
+                    <button
+                      key={v.captureVariableId}
+                      type="button"
+                      className={`flex w-full items-center gap-2 rounded border px-3 py-2 text-left text-sm ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-900 text-blue-200"
+                          : "border-slate-600 bg-slate-700 hover:bg-slate-600"
+                      }`}
+                      onClick={() => toggleOptionalVariable(v.captureVariableId)}
+                    >
+                      {isSelected ? (
+                        <Check size={14} className="text-blue-400" />
+                      ) : (
+                        <Plus size={14} className="text-slate-400" />
                       )}
-                    </span>
-                    <span className="ml-auto text-xs text-slate-500">
-                      {v.type}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span>
+                        {v.portugueseLabel || v.name}
+                        {v.unit && (
+                          <span className="ml-1 text-slate-400">
+                            ({v.unit})
+                          </span>
+                        )}
+                      </span>
+                      <span className="ml-auto text-xs text-slate-500">
+                        {v.type}
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
             <div className="mt-4 flex justify-end">
-              <Button onClick={() => setOptionalModalOpen(false)}>
+              <Button
+                onClick={() => {
+                  setOptionalModalOpen(false);
+                  setOptionalSearch("");
+                }}
+              >
                 Fechar
               </Button>
             </div>
