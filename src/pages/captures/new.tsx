@@ -524,7 +524,7 @@ const NewCapturePage: NextPage = () => {
       },
       {
         onSuccess: (data) => {
-          void router.push(`/captures/${data.captureId}`);
+          void router.push(`/captures/${data.captureId}/created`);
         },
       }
     );
