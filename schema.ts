@@ -621,3 +621,36 @@ export const changeLog = mysqlTable("CHANGE_LOG", {
   justification: text("justification").notNull(),
   createdAt: datetime("created_at", { mode: "string" }).notNull(),
 });
+
+export const capturePhotos = mysqlTable(
+  "CAPTURE_PHOTOS",
+  {
+    photoId: int("photo_id").autoincrement().primaryKey().notNull(),
+    captureId: int("capture_id")
+      .notNull()
+      .references(() => capture.captureId, {
+        onDelete: "restrict",
+        onUpdate: "restrict",
+      }),
+    fileName: varchar("file_name", { length: 255 }).notNull(),
+    originalFileName: varchar("original_file_name", { length: 255 }).notNull(),
+    position: varchar("position", { length: 50 }).notNull(),
+    driveFileId: varchar("drive_file_id", { length: 100 }).notNull(),
+    driveFolderId: varchar("drive_folder_id", { length: 100 }).notNull(),
+    mimeType: varchar("mime_type", { length: 50 }).notNull(),
+    fileSize: int("file_size"),
+    createdAt: datetime("created_at", { mode: "string" })
+      .notNull()
+      .default("current_timestamp()"),
+    updatedAt: datetime("updated_at", { mode: "string" }),
+    hasChanged: tinyint("has_changed").default(0).notNull(),
+  },
+  (table) => {
+    return {
+      captureId: index("capture_photos_capture_id").on(table.captureId),
+      driveFileId: uniqueIndex("capture_photos_drive_file_id").on(
+        table.driveFileId
+      ),
+    };
+  }
+);

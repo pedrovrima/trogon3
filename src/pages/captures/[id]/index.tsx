@@ -6,6 +6,7 @@ import {
   FileText,
   AlertTriangle,
   ExternalLink,
+  Camera,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -1116,21 +1117,30 @@ export default function CaptureInfo() {
                 </label>
               )}
 
-              {canEdit && (
-                <button
-                  className="border border-transparent p-1.5 text-red-300 transition-colors hover:border-red-400/40 hover:bg-red-500/10 hover:text-red-200"
-                  onClick={async () => {
-                    await deleteMutation.mutateAsync({
-                      recordId: Number(data.captureId),
-                      justification: "delete duplicated record",
-                    });
-                    await query.refetch();
-                  }}
-                  disabled={deleteMutation.isLoading}
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/captures/${data.captureId}/pictures`}
+                  className="border border-transparent p-1.5 text-cyan-300 transition-colors hover:border-cyan-300/40 hover:bg-cyan-500/10 hover:text-cyan-200"
+                  title="Fotos"
                 >
-                  <Trash className="h-4 w-4" />
-                </button>
-              )}
+                  <Camera className="h-4 w-4" />
+                </Link>
+                {canEdit && (
+                  <button
+                    className="border border-transparent p-1.5 text-red-300 transition-colors hover:border-red-400/40 hover:bg-red-500/10 hover:text-red-200"
+                    onClick={async () => {
+                      await deleteMutation.mutateAsync({
+                        recordId: Number(data.captureId),
+                        justification: "delete duplicated record",
+                      });
+                      await query.refetch();
+                    }}
+                    disabled={deleteMutation.isLoading}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-center gap-2">

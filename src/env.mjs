@@ -22,6 +22,9 @@ export const env = createEnv({
     // DB_DATABASE_PROD: z.string().min(1),
     // DB_DATABASE_DEV: z.string().min(1),
     CONNECTION_URL: z.string().min(1),
+    GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().min(1).optional(),
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: z.string().min(1).optional(),
+    GOOGLE_DRIVE_ROOT_FOLDER_ID: z.string().min(1).optional(),
 
     // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   },
@@ -52,5 +55,8 @@ export const env = createEnv({
     // DB_DATABASE_PROD: process.env.DB_DATABASE_PROD,
     // DB_DATABASE_DEV: process.env.DB_DATABASE_DEV,
     CONNECTION_URL: process.env.CONNECTION_URL,
+    GOOGLE_SERVICE_ACCOUNT_EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+    GOOGLE_DRIVE_ROOT_FOLDER_ID: process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID,
   },
 });
