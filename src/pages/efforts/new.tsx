@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import { api } from "@/utils/api";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,13 @@ function Section({
   enabled,
   children,
   sectionRef,
+  onLeave,
 }: {
   title: string;
   enabled: boolean;
   children: React.ReactNode;
   sectionRef?: React.RefObject<HTMLDivElement>;
+  onLeave?: () => void;
 }) {
   return (
     <div
@@ -42,6 +44,11 @@ function Section({
       className={`scroll-mt-4 rounded-md p-6 transition-opacity ${
         enabled ? "bg-slate-700" : "pointer-events-none bg-slate-800 opacity-40"
       }`}
+      onBlur={(e) => {
+        if (onLeave && !e.currentTarget.contains(e.relatedTarget as Node)) {
+          onLeave();
+        }
+      }}
     >
       <h2 className="mb-4 text-lg font-semibold">{title}</h2>
       {children}
@@ -245,31 +252,11 @@ const NewEffortPage: NextPage = () => {
   // Variables are always optional, so just need nets done
   const variablesComplete = netsComplete;
 
-  // ── Auto-scroll ──
+  // ── Scroll helpers (triggered on section blur) ──
 
-  const prevUnlocked = useRef({
-    nets: false,
-    variables: false,
-    summary: false,
-  });
-
-  useEffect(() => {
-    const scroll = (ref: React.RefObject<HTMLDivElement>) => {
-      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-    if (basicComplete && !prevUnlocked.current.nets) {
-      scroll(sectionRefs.nets);
-    } else if (netsComplete && !prevUnlocked.current.variables) {
-      scroll(sectionRefs.variables);
-    } else if (variablesComplete && !prevUnlocked.current.summary) {
-      scroll(sectionRefs.summary);
-    }
-    prevUnlocked.current = {
-      nets: basicComplete,
-      variables: netsComplete,
-      summary: variablesComplete,
-    };
-  }, [basicComplete, netsComplete, variablesComplete]);
+  const scrollTo = (ref: React.RefObject<HTMLDivElement>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // ── Submit ──
 
@@ -311,6 +298,7 @@ const NewEffortPage: NextPage = () => {
         title="Informações Básicas"
         enabled={true}
         sectionRef={sectionRefs.basic}
+        onLeave={() => basicComplete && scrollTo(sectionRefs.nets)}
       >
         <div className="grid grid-cols-3 gap-4">
           <div>
@@ -356,6 +344,7 @@ const NewEffortPage: NextPage = () => {
         title="Redes"
         enabled={basicComplete}
         sectionRef={sectionRefs.nets}
+        onLeave={() => netsComplete && scrollTo(sectionRefs.variables)}
       >
         <div className="space-y-4">
           <div className="flex items-end gap-4">
@@ -393,8 +382,9 @@ const NewEffortPage: NextPage = () => {
               {availableNets.filter((n) => n.netNumber !== "NA").length})
             </Label>
             <div className="space-y-3">
-              {availableNets
+              {[...availableNets]
                 .filter((n) => n.netNumber !== "NA")
+                .sort((a, b) => a.netNumber.localeCompare(b.netNumber, undefined, { numeric: true }))
                 .map((net) => {
                   const selected = nets.find(
                     (n) => n.netId === Number(net.netId)
@@ -489,6 +479,7 @@ const NewEffortPage: NextPage = () => {
         title="Variáveis do Esforço"
         enabled={netsComplete}
         sectionRef={sectionRefs.variables}
+        onLeave={() => variablesComplete && scrollTo(sectionRefs.summary)}
       >
         {effortVars.isLoading && <Loader />}
         {effortVars.data && (
@@ -539,6 +530,7 @@ const NewEffortPage: NextPage = () => {
                               variable.options.map((opt) => ({
                                 value: Number(opt.effortCategoricalOptionId),
                                 label: `${opt.valueOama} - ${opt.description}`,
+                                displayValue: opt.valueOama,
                                 searchText: `${opt.valueOama} ${opt.description}`,
                               }));
 

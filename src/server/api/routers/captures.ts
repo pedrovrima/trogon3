@@ -1411,18 +1411,20 @@ export const capturesRouter = createTRPCRouter({
 
       const isMandatory = (v: (typeof variables)[number]) =>
         Number(v.mandatory) === 1;
-      const isSpecial = (v: (typeof variables)[number]) => v.special === 1;
+
+      const FINALIZATION_NAMES = ["age_wrp", "age_criteria", "sex", "sex_criteria", "status"];
+      const isFinalization = (v: (typeof variables)[number]) =>
+        FINALIZATION_NAMES.includes(v.name ?? "");
+
+      // Sort finalization variables in the defined order
+      const finalizationVars = FINALIZATION_NAMES
+        .map((name) => variables.find((v) => !isMandatory(v) && v.name === name))
+        .filter((v): v is (typeof variables)[number] => v !== undefined);
 
       return {
         mandatory: variables.filter((v) => isMandatory(v)),
-        finalization: variables.filter(
-          (v) =>
-            !isMandatory(v) &&
-            isSpecial(v) &&
-            v.name !== "captureCode" &&
-            v.name !== "band_code"
-        ),
-        optional: variables.filter((v) => !isMandatory(v) && !isSpecial(v)),
+        finalization: finalizationVars,
+        optional: variables.filter((v) => !isMandatory(v) && !isFinalization(v)),
       };
     }),
 
