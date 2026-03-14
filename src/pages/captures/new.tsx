@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import Loader from "@/components/organisms/loader";
+import { formatDatabaseDate } from "@/lib/utils";
 import { Plus, X, Check } from "lucide-react";
 
 type CatValue = {
@@ -156,7 +157,7 @@ const NewCapturePage: NextPage = () => {
     () =>
       (efforts.data ?? []).map((e) => ({
         value: Number(e.effortId),
-        label: `${new Date(e.dateEffort).toLocaleDateString("pt-BR")} - ${e.protocolCode}`,
+        label: `${formatDatabaseDate(e.dateEffort)} - ${e.protocolCode}`,
       })),
     [efforts.data]
   );
